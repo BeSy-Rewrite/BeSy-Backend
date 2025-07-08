@@ -33,7 +33,7 @@ services:
     ports:
       - "5050:80"
     depends_on:
-      - besy_postgres_devpostgres_dev
+      - besy_postgres_dev
     networks:
       - postgres
 
