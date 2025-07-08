@@ -1,0 +1,15 @@
+# Use root/example as user/password credentials
+
+services:
+
+  besy-mysql:
+    container_name: "besy-mysql"
+    image: mysql:8.0
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+    volumes:
+      - ./BeSy1_DB.sql:/docker-entrypoint-initdb.d/dump.sql
+    # (this is just an example, not intended to be a production configuration)
