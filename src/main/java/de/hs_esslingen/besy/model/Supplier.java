@@ -54,13 +54,19 @@ public class Supplier {
     @Column(name = "supplier_county")
     private String supplierCounty;
 
+    @Column(name = "country_name", insertable = false, updatable = false)
+    private String countryName;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "country_name", nullable = false)
-    private Country countryName;
+    private Country country;
+
+    @Column(name = "address_type", insertable = false, updatable = false)
+    private String addressType;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "address_type", nullable = false)
-    private AddressType addressType;
+    private AddressType address;
 
     @Column(name = "supplier_deactivated_date")
     private LocalDate supplierDeactivatedDate;

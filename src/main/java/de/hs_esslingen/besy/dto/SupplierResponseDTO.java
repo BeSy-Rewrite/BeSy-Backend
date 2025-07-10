@@ -4,6 +4,7 @@ import lombok.Value;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /**
  * DTO for {@link de.hs_esslingen.besy.model.Supplier}
@@ -23,8 +24,8 @@ public class SupplierResponseDTO implements Serializable {
     String supplierTown;
     String supplierPostalCode;
     String supplierCounty;
-    CountryResponseDTO countryName;
-    AddressTypeResponseDTO addressType;
+    String countryName;
+    String addressType;
+    LocalDate supplierDeactivatedDate;
     BigDecimal supplierCashbackPercentage;
-    Short supplierCashbackDays;
 }

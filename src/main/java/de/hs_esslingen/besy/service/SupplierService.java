@@ -40,8 +40,8 @@ public class SupplierService {
         AddressType addressTypeRef = addressTypeRepository.getReferenceById(supplierDTO.getAddressTypeId());
 
         Supplier supplier = supplierRequestMapper.toEntity(supplierDTO);
-        supplier.setCountryName(countryRef);
-        supplier.setAddressType(addressTypeRef);
+        supplier.setCountry(countryRef);
+        supplier.setAddress(addressTypeRef);
 
         Supplier savedSupplier = supplierRepository.save(supplier);
         return ResponseEntity.ok(supplierResponseMapper.toDto(savedSupplier));
@@ -55,8 +55,8 @@ public class SupplierService {
 
         Supplier supplier = supplierRequestMapper.toEntity(supplierDTO);
         supplier.setSupplierName(supplierName);
-        supplier.setCountryName(countryRef);
-        supplier.setAddressType(addressTypeRef);
+        supplier.setCountry(countryRef);
+        supplier.setAddress(addressTypeRef);
 
         Supplier savedSupplier = supplierRepository.save(supplier);
         return ResponseEntity.ok(supplierResponseMapper.toDto(savedSupplier));
