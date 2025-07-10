@@ -57,6 +57,7 @@ public class SupplierService {
         supplier.setSupplierName(supplierName);
         supplier.setCountryName(countryRef);
         supplier.setAddressType(addressTypeRef);
+
         Supplier savedSupplier = supplierRepository.save(supplier);
         return ResponseEntity.ok(supplierResponseMapper.toDto(savedSupplier));
     }
