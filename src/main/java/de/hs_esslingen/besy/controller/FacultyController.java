@@ -1,7 +1,7 @@
 package de.hs_esslingen.besy.controller;
 
-import de.hs_esslingen.besy.model.Faculty;
-import de.hs_esslingen.besy.repository.FacultyRepository;
+import de.hs_esslingen.besy.dto.FacultyResponseDTO;
+import de.hs_esslingen.besy.service.FacultyService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +15,10 @@ import java.util.List;
 @RequestMapping("${api.prefix}/faculties")
 public class FacultyController {
 
-    private final FacultyRepository facultyRepository;
+    private final FacultyService facultyService;
 
     @GetMapping
-    public ResponseEntity<List<Faculty>> getAddressTypes() {
-        return ResponseEntity.ok(facultyRepository.findAll());
+    public ResponseEntity<List<FacultyResponseDTO>> getFaculties() {
+        return facultyService.getAllFaculties();
     }
 }

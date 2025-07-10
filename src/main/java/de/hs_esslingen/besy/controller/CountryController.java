@@ -1,7 +1,7 @@
 package de.hs_esslingen.besy.controller;
 
-import de.hs_esslingen.besy.model.Country;
-import de.hs_esslingen.besy.repository.CountryRepository;
+import de.hs_esslingen.besy.dto.CountryResponseDTO;
+import de.hs_esslingen.besy.service.CountryService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +15,10 @@ import java.util.List;
 @RequestMapping("${api.prefix}/countries")
 public class CountryController {
 
-    private final CountryRepository countryRepository;
+    private final CountryService countryService;
 
     @GetMapping
-    public ResponseEntity<List<Country>> getAddressTypes() {
-        return ResponseEntity.ok(countryRepository.findAll());
+    public ResponseEntity<List<CountryResponseDTO>> getAddressTypes() {
+        return countryService.getAllCountries();
     }
 }
