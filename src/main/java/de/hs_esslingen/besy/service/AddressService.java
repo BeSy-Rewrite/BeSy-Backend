@@ -35,7 +35,7 @@ public class AddressService {
     }
 
     public ResponseEntity<AddressResponseDTO> addAddress(AddressRequestDTO addressDTO) {
-        if(addressRepository.findById(addressDTO.getAddressName()).isPresent()) return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        if(addressRepository.existsById(addressDTO.getAddressName())) return ResponseEntity.status(HttpStatus.CONFLICT).build();
 
         Country countryRef = countryRepository.getReferenceById(addressDTO.getCountryNameId());
         AddressType addressTypeRef = addressTypeRepository.getReferenceById(addressDTO.getAddressTypeId());
@@ -59,6 +59,6 @@ public class AddressService {
         updatedAddress.setCountryName(countryRef);
         updatedAddress.setAddressType(addressTypeRef);
         Address savedAddress = addressRepository.save(updatedAddress);
-        return ResponseEntity.ok().body(addressResponseMapper.toDto(savedAddress));
+        return ResponseEntity.ok(addressResponseMapper.toDto(savedAddress));
     }
 }
