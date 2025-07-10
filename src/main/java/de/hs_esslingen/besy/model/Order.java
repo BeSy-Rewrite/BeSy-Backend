@@ -18,7 +18,7 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id", nullable = false)
-    private Long id;
+    private Long orderId;
 
     @Column(name = "primary_cost_center_id", nullable = false, length = 20)
     private String primaryCostCenterId;
@@ -38,20 +38,29 @@ public class Order {
     @Column(name = "order_legacy_alias", length = 2)
     private String orderLegacyAlias;
 
+    @Column(name = "owner_user_name", insertable = false, updatable = false)
+    private String ownerUserName;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_user_name", nullable = false)
-    private de.hs_esslingen.besy.model.User ownerUserName;
+    private de.hs_esslingen.besy.model.User owner;
 
     @Column(name = "order_content_description", nullable = false)
     private String orderContentDescription;
 
+    @Column(name = "order_status", insertable = false, updatable = false)
+    private String orderStatus;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_status", nullable = false)
-    private de.hs_esslingen.besy.model.OrderStatus orderStatus;
+    private de.hs_esslingen.besy.model.OrderStatus orderStatusRef;
+
+    @Column(name = "currency_short", insertable = false, updatable = false)
+    private String currencyShort;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "currency_short", nullable = false)
-    private Currency currencyShort;
+    private Currency currency;
 
     @ColumnDefault("''")
     @Column(name = "order_comment")
@@ -72,17 +81,29 @@ public class Order {
     @Column(name = "order_quote_price", precision = 10, scale = 2)
     private BigDecimal orderQuotePrice;
 
+    @Column(name = "delivery_person_id", insertable = false, updatable = false)
+    private String deliveryPersonId;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "delivery_person_id", nullable = false)
     private de.hs_esslingen.besy.model.Person deliveryPerson;
+
+    @Column(name = "invoice_person_id", insertable = false, updatable = false)
+    private String invoicePersonId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "invoice_person_id", nullable = false)
     private de.hs_esslingen.besy.model.Person invoicePerson;
 
+    @Column(name = "queries_person_id", insertable = false, updatable = false)
+    private String queriesPersonId;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "queries_person_id", nullable = false)
     private de.hs_esslingen.besy.model.Person queriesPerson;
+
+    @Column(name = "customer_id", insertable = false, updatable = false)
+    private String customerId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumns({
@@ -90,6 +111,9 @@ public class Order {
             @JoinColumn(name = "supplier_name", referencedColumnName = "supplier_name", nullable = false)
     })
     private CustomerId customer;
+
+    @Column(name = "secondary_cost_center_id", insertable = false, updatable = false)
+    private String secondaryCostCenterId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "secondary_cost_center_id", nullable = false)
