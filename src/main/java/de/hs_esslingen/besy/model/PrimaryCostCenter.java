@@ -18,8 +18,11 @@ public class PrimaryCostCenter {
     @JoinColumn(name = "cost_center_id", nullable = false)
     private CostCenter costCenter;
 
+    @Column(name = "faculty_abbr", insertable = false, updatable = false)
+    private String facultyAbbr;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "faculty_abbr", nullable = false)
-    private Faculty facultyAbbr;
+    private Faculty faculty;
 
 }

@@ -12,13 +12,13 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("${api.prefix}/primary_cost_center")
-public class CurrencyController {
+@RequestMapping("${api.prefix}/currencies")
+public class PrimaryCostCenterController {
 
     private final PrimaryCostCenterService primaryCostCenterService;
 
     @GetMapping
-    public ResponseEntity<List<PrimaryCostCenterResponseDTO>> getAllCurrencies() {
+    public ResponseEntity<List<PrimaryCostCenterResponseDTO>> getAll() {
         return primaryCostCenterService.getAllPrimaryCostCenters();
     }
 }

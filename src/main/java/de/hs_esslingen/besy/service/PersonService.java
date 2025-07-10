@@ -28,7 +28,7 @@ public class PersonService {
     private final PersonRequestMapper personRequestMapper;
 
     public ResponseEntity<List<PersonResponseDTO>> getAllPersons() {
-        List<Person> persons = personRepository.findAllWithAddressNameAndFacultyAbbr();
+        List<Person> persons = personRepository.findAll();
         List<PersonResponseDTO> personResponseDTOS = personResponseMapper.toDto(persons);
         return ResponseEntity.ok(personResponseDTOS);
     }
@@ -38,8 +38,8 @@ public class PersonService {
         Faculty faculty = facultyRepository.getReferenceById(personDTO.getFacultyAbbrId());
 
         Person person = personRequestMapper.toEntity(personDTO);
-        person.setAddressName(address);
-        person.setFacultyAbbr(faculty);
+        person.setAddress(address);
+        person.setFaculty(faculty);
 
         Person savedPerson = personRepository.save(person);
         return ResponseEntity.ok(personResponseMapper.toDto(savedPerson));
@@ -51,9 +51,9 @@ public class PersonService {
         Address address = addressRepository.getReferenceById(personDTO.getAddressNameId());
         Faculty faculty = facultyRepository.getReferenceById(personDTO.getFacultyAbbrId());
         Person person = personRequestMapper.toEntity(personDTO);
-        person.setId(id);
-        person.setAddressName(address);
-        person.setFacultyAbbr(faculty);
+        person.setPersonId(id);
+        person.setAddress(address);
+        person.setFaculty(faculty);
 
         Person savedPerson = personRepository.save(person);
         return ResponseEntity.ok(personResponseMapper.toDto(savedPerson));

@@ -13,7 +13,7 @@ public class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "person_id", nullable = false)
-    private Long id;
+    private Long personId;
 
     @Column(name = "person_given_name", nullable = false)
     private String personGivenName;
@@ -36,12 +36,19 @@ public class Person {
     @Column(name = "person_comment")
     private String personComment;
 
+    @Column(name = "address_name", insertable = false, updatable = false)
+    private String addressName;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "address_name", nullable = false)
-    private Address addressName;
+    private Address address;
+
+    @Column(name = "faculty_abbr", insertable = false, updatable = false)
+    private String facultyAbbr;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "faculty_abbr")
-    private Faculty facultyAbbr;
+    private Faculty faculty;
 
 /*
  TODO [Reverse Engineering] create field to map the 'person_gender' column
