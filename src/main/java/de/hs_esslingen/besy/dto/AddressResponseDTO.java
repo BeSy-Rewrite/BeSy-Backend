@@ -8,7 +8,7 @@ import java.io.Serializable;
  * DTO for {@link de.hs_esslingen.besy.model.Address}
  */
 @Value
-public class AddressDto1 implements Serializable {
+public class AddressResponseDTO implements Serializable {
     String addressName;
     String addressBuildingName;
     String addressStreet;
@@ -16,7 +16,7 @@ public class AddressDto1 implements Serializable {
     String addressTown;
     String addressPostalCode;
     String addressCounty;
-    String countryName;
-    String addressType;
+    CountryResponseDTO countryName;
+    AddressTypeResponseDTO addressType;
     String addressComment;
 }

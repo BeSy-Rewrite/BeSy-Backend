@@ -1,7 +1,6 @@
 package de.hs_esslingen.besy.controller;
 
-import de.hs_esslingen.besy.model.AddressType;
-import de.hs_esslingen.besy.repository.AddressTypeRepository;
+import de.hs_esslingen.besy.dto.AddressTypeResponseDTO;
 import de.hs_esslingen.besy.service.AddressTypeService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +18,7 @@ public class AddressTypeController {
     private final AddressTypeService addressTypeService;
 
     @GetMapping
-    public ResponseEntity<List<AddressType>> getAddressTypes() {
-        return ResponseEntity.ok(addressTypeService.getAllAddressTypes());
+    public ResponseEntity<List<AddressTypeResponseDTO>> getAddressTypes() {
+        return addressTypeService.getAllAddressTypes();
     }
 }

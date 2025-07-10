@@ -1,8 +1,8 @@
 package de.hs_esslingen.besy.controller;
 
-import de.hs_esslingen.besy.dto.AddressDto;
-import de.hs_esslingen.besy.dto.AddressDto1;
-import de.hs_esslingen.besy.model.Address;
+import de.hs_esslingen.besy.dto.AddressRequestDTO;
+import de.hs_esslingen.besy.dto.AddressResponseDTO;
+import de.hs_esslingen.besy.dto.AddressTypeResponseDTO;
 import de.hs_esslingen.besy.service.AddressService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +18,12 @@ public class AddressController {
     private final AddressService addressService;
 
     @GetMapping
-    public ResponseEntity<List<Address>> getAddressTypes() {
+    public ResponseEntity<List<AddressResponseDTO>> getAddressTypes() {
         return addressService.getAllAddresses();
     }
 
     @PostMapping
-    public ResponseEntity<AddressDto> createAddress(@RequestBody AddressDto1 addressDTO) {
+    public ResponseEntity<AddressResponseDTO> createAddress(@RequestBody AddressRequestDTO addressDTO) {
         return addressService.addAddress(addressDTO);
     }
 }

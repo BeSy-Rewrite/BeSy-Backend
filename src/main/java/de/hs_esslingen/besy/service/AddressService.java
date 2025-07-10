@@ -1,8 +1,9 @@
 package de.hs_esslingen.besy.service;
 
-import de.hs_esslingen.besy.dto.AddressDto;
-import de.hs_esslingen.besy.dto.AddressDto1;
-import de.hs_esslingen.besy.mapper.AddressMapper;
+import de.hs_esslingen.besy.dto.AddressRequestDTO;
+import de.hs_esslingen.besy.dto.AddressResponseDTO;
+import de.hs_esslingen.besy.mapper.AddressResponseMapper;
+import de.hs_esslingen.besy.mapper.AddressRequestMapper;
 import de.hs_esslingen.besy.model.Address;
 import de.hs_esslingen.besy.model.AddressType;
 import de.hs_esslingen.besy.model.Country;
@@ -23,27 +24,27 @@ public class AddressService {
     private final AddressRepository addressRepository;
     private final CountryRepository countryRepository;
     private final AddressTypeRepository addressTypeRepository;
-    private final AddressMapper addressMapper;
+    private final AddressResponseMapper addressResponseMapper;
+    private final AddressRequestMapper addressRequestMapper;
 
 
-    public ResponseEntity<List<Address>> getAllAddresses() {
-        return new ResponseEntity<>(addressRepository.findAll(), HttpStatus.OK);
+    public ResponseEntity<List<AddressResponseDTO>> getAllAddresses() {
+        List<Address> addresses = addressRepository.findAll();
+        List<AddressResponseDTO> addressResponseDTOs = addressResponseMapper.toDto(addresses);
+        return ResponseEntity.ok(addressResponseDTOs);
     }
 
-    public ResponseEntity<AddressDto> addAddress(AddressDto1 addressDTO) {
+    public ResponseEntity<AddressResponseDTO> addAddress(AddressRequestDTO addressDTO) {
         if(addressRepository.findById(addressDTO.getAddressName()).isPresent()) return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
 
-        Country countryRef = countryRepository.getReferenceById(addressDTO.getCountryName());
-        AddressType addressTypeRef = addressTypeRepository.getReferenceById(addressDTO.getAddressType());
+        Country countryRef = countryRepository.getReferenceById(addressDTO.getCountryNameId());
+        AddressType addressTypeRef = addressTypeRepository.getReferenceById(addressDTO.getAddressTypeId());
 
-        System.out.println("Country: " + countryRef.getCountryName() + " AddressType: " + addressTypeRef.getAddressType());
-
-        Address address = addressMapper.toEntity(addressDTO);
-        System.out.println("Address: " + address);
+        Address address = addressRequestMapper.toEntity(addressDTO);
         address.setCountryName(countryRef);
         address.setAddressType(addressTypeRef);
 
         Address savedAddress = addressRepository.save(address);
-        return ResponseEntity.ok().body(addressMapper.toDto1(savedAddress));
+        return ResponseEntity.ok().body(addressResponseMapper.toDto(savedAddress));
     }
 }
