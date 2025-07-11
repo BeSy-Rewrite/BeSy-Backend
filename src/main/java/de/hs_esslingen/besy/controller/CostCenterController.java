@@ -1,6 +1,6 @@
 package de.hs_esslingen.besy.controller;
 
-import de.hs_esslingen.besy.dto.CostCenterResponseDTO;
+import de.hs_esslingen.besy.dto.response.CostCenterResponseDTO;
 import de.hs_esslingen.besy.service.CostCenterService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

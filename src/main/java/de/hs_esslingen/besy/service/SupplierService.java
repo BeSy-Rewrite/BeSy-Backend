@@ -1,9 +1,9 @@
 package de.hs_esslingen.besy.service;
 
-import de.hs_esslingen.besy.dto.SupplierRequestDTO;
-import de.hs_esslingen.besy.dto.SupplierResponseDTO;
-import de.hs_esslingen.besy.mapper.SupplierRequestMapper;
-import de.hs_esslingen.besy.mapper.SupplierResponseMapper;
+import de.hs_esslingen.besy.dto.request.SupplierRequestDTO;
+import de.hs_esslingen.besy.dto.response.SupplierResponseDTO;
+import de.hs_esslingen.besy.mapper.request.SupplierRequestMapper;
+import de.hs_esslingen.besy.mapper.response.SupplierResponseMapper;
 import de.hs_esslingen.besy.model.AddressType;
 import de.hs_esslingen.besy.model.Country;
 import de.hs_esslingen.besy.model.Supplier;

@@ -1,6 +1,6 @@
 package de.hs_esslingen.besy.controller;
 
-import de.hs_esslingen.besy.dto.QuotationResponseDTO;
+import de.hs_esslingen.besy.dto.response.QuotationResponseDTO;
 import de.hs_esslingen.besy.service.QuotationService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

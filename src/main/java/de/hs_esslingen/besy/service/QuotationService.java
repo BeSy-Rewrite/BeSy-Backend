@@ -1,7 +1,7 @@
 package de.hs_esslingen.besy.service;
 
-import de.hs_esslingen.besy.dto.QuotationResponseDTO;
-import de.hs_esslingen.besy.mapper.QuotationResponseMapper;
+import de.hs_esslingen.besy.dto.response.QuotationResponseDTO;
+import de.hs_esslingen.besy.mapper.response.QuotationResponseMapper;
 import de.hs_esslingen.besy.model.Quotation;
 import de.hs_esslingen.besy.repository.QuotationRepository;
 import lombok.AllArgsConstructor;

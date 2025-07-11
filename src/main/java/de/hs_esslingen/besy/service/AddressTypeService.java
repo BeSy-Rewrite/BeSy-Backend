@@ -1,6 +1,6 @@
 package de.hs_esslingen.besy.service;
 
-import de.hs_esslingen.besy.dto.AddressTypeResponseDTO;
+import de.hs_esslingen.besy.dto.response.AddressTypeResponseDTO;
 import de.hs_esslingen.besy.mapper.AddressTypeMapper;
 import de.hs_esslingen.besy.model.AddressType;
 import de.hs_esslingen.besy.repository.AddressTypeRepository;
@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service

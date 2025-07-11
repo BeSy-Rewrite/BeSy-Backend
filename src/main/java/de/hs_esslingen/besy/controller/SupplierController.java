@@ -1,7 +1,7 @@
 package de.hs_esslingen.besy.controller;
 
-import de.hs_esslingen.besy.dto.SupplierRequestDTO;
-import de.hs_esslingen.besy.dto.SupplierResponseDTO;
+import de.hs_esslingen.besy.dto.request.SupplierRequestDTO;
+import de.hs_esslingen.besy.dto.response.SupplierResponseDTO;
 import de.hs_esslingen.besy.service.SupplierService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

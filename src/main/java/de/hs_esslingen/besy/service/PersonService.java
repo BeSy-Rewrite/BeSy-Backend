@@ -1,10 +1,10 @@
 package de.hs_esslingen.besy.service;
 
-import de.hs_esslingen.besy.dto.PersonRequestDTO;
-import de.hs_esslingen.besy.dto.PersonResponseDTO;
+import de.hs_esslingen.besy.dto.request.PersonRequestDTO;
+import de.hs_esslingen.besy.dto.response.PersonResponseDTO;
 import de.hs_esslingen.besy.exception.NotFoundException;
-import de.hs_esslingen.besy.mapper.PersonRequestMapper;
-import de.hs_esslingen.besy.mapper.PersonResponseMapper;
+import de.hs_esslingen.besy.mapper.request.PersonRequestMapper;
+import de.hs_esslingen.besy.mapper.response.PersonResponseMapper;
 import de.hs_esslingen.besy.model.Address;
 import de.hs_esslingen.besy.model.Faculty;
 import de.hs_esslingen.besy.model.Person;
@@ -12,7 +12,6 @@ import de.hs_esslingen.besy.repository.AddressRepository;
 import de.hs_esslingen.besy.repository.FacultyRepository;
 import de.hs_esslingen.besy.repository.PersonRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 

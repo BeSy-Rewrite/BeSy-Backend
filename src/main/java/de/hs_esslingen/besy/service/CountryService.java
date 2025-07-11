@@ -1,7 +1,7 @@
 package de.hs_esslingen.besy.service;
 
-import de.hs_esslingen.besy.dto.CountryResponseDTO;
-import de.hs_esslingen.besy.mapper.CountryResponseMapper;
+import de.hs_esslingen.besy.dto.response.CountryResponseDTO;
+import de.hs_esslingen.besy.mapper.response.CountryResponseMapper;
 import de.hs_esslingen.besy.model.Country;
 import de.hs_esslingen.besy.repository.CountryRepository;
 import lombok.AllArgsConstructor;

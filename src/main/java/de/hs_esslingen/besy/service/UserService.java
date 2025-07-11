@@ -1,8 +1,8 @@
 package de.hs_esslingen.besy.service;
 
-import de.hs_esslingen.besy.dto.UserResponseDTO;
+import de.hs_esslingen.besy.dto.response.UserResponseDTO;
 import de.hs_esslingen.besy.exception.NotFoundException;
-import de.hs_esslingen.besy.mapper.UserResponseMapper;
+import de.hs_esslingen.besy.mapper.response.UserResponseMapper;
 import de.hs_esslingen.besy.model.User;
 import de.hs_esslingen.besy.repository.UserRepository;
 import lombok.AllArgsConstructor;

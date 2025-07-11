@@ -1,7 +1,7 @@
 package de.hs_esslingen.besy.service;
 
-import de.hs_esslingen.besy.dto.CostCenterResponseDTO;
-import de.hs_esslingen.besy.mapper.CostCenterResponseMapper;
+import de.hs_esslingen.besy.dto.response.CostCenterResponseDTO;
+import de.hs_esslingen.besy.mapper.response.CostCenterResponseMapper;
 import de.hs_esslingen.besy.model.CostCenter;
 import de.hs_esslingen.besy.repository.CostCenterRepository;
 import lombok.AllArgsConstructor;

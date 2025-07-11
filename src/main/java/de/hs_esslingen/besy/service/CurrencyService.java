@@ -1,7 +1,7 @@
 package de.hs_esslingen.besy.service;
 
-import de.hs_esslingen.besy.dto.CurrencyResponseDTO;
-import de.hs_esslingen.besy.mapper.CurrencyResponseMapper;
+import de.hs_esslingen.besy.dto.response.CurrencyResponseDTO;
+import de.hs_esslingen.besy.mapper.response.CurrencyResponseMapper;
 import de.hs_esslingen.besy.model.Currency;
 import de.hs_esslingen.besy.repository.CurrencyRepository;
 import lombok.AllArgsConstructor;

@@ -1,7 +1,7 @@
 package de.hs_esslingen.besy.service;
 
-import de.hs_esslingen.besy.dto.FacultyResponseDTO;
-import de.hs_esslingen.besy.mapper.FacultyResponseMapper;
+import de.hs_esslingen.besy.dto.response.FacultyResponseDTO;
+import de.hs_esslingen.besy.mapper.response.FacultyResponseMapper;
 import de.hs_esslingen.besy.model.Faculty;
 import de.hs_esslingen.besy.repository.FacultyRepository;
 import lombok.AllArgsConstructor;
