@@ -1,6 +1,7 @@
 package de.hs_esslingen.besy.controller;
 
-import de.hs_esslingen.besy.dto.request.SupplierRequestDTO;
+import de.hs_esslingen.besy.dto.request.SupplierPOSTRequestDTO;
+import de.hs_esslingen.besy.dto.request.SupplierPUTRequestDTO;
 import de.hs_esslingen.besy.dto.response.SupplierResponseDTO;
 import de.hs_esslingen.besy.service.SupplierService;
 import lombok.AllArgsConstructor;
@@ -22,14 +23,14 @@ public class SupplierController {
     }
 
     @PostMapping
-    public ResponseEntity<SupplierResponseDTO> createSupplier(@RequestBody SupplierRequestDTO supplierRequestDTO) {
-        return supplierService.createSupplier(supplierRequestDTO);
+    public ResponseEntity<SupplierResponseDTO> createSupplier(@RequestBody SupplierPOSTRequestDTO supplierPOSTRequestDTO) {
+        return supplierService.createSupplier(supplierPOSTRequestDTO);
     }
 
     @PutMapping("{supplier-name}")
     public ResponseEntity<SupplierResponseDTO> updateSupplier(
             @PathVariable("supplier-name") String supplierName,
-            @RequestBody SupplierRequestDTO supplierRequestDTO) {
-        return supplierService.updateSupplier(supplierName, supplierRequestDTO);
+            @RequestBody SupplierPUTRequestDTO supplierPOSTRequestDTO) {
+        return supplierService.updateSupplier(supplierName, supplierPOSTRequestDTO);
     }
 }

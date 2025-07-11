@@ -6,13 +6,12 @@ import lombok.Value;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 /**
  * DTO for {@link de.hs_esslingen.besy.model.Supplier}
  */
 @Value
-public class SupplierRequestDTO implements Serializable {
+public class SupplierPOSTRequestDTO implements Serializable {
     String supplierName;
     String supplierPhone;
     String supplierFax;

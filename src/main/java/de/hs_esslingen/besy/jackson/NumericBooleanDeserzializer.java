@@ -9,8 +9,11 @@ import java.io.IOException;
 
 public class NumericBooleanDeserzializer extends JsonDeserializer<Boolean> {
     @Override
-    public Boolean deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
-        int value = jsonParser.getIntValue();
+    public Boolean deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+
+        // Long ago, someone declared: 'Let there be Strings!' — even for integers. And so it was.
+        String str = jsonParser.getText();
+        int value = Integer.parseInt(str);
         return value == 1;
     }
 }
