@@ -16,7 +16,6 @@ public class CustomerId {
     @EmbeddedId
     private CustomerIdId id;
 
-
     @Column(name = "supplier_name", insertable = false, updatable = false)
     private String supplierName;
 

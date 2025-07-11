@@ -1,4 +1,4 @@
-package de.hs_esslingen.besy.dto.response;
+package de.hs_esslingen.besy.dto.request;
 
 import lombok.Value;
 
@@ -11,13 +11,10 @@ import java.time.OffsetDateTime;
  * DTO for {@link de.hs_esslingen.besy.model.Order}
  */
 @Value
-public class OrderResponseDTO implements Serializable {
-    Long orderId;
+public class OrderRequestDTO implements Serializable {
     String primaryCostCenterId;
     String primaryCostCenterFaculty;
     String orderBookingYear;
-    Short orderAutoIndex;
-    OffsetDateTime orderCreatedDate;
     String orderLegacyAlias;
     String ownerUserName;
     String orderContentDescription;
@@ -43,7 +40,6 @@ public class OrderResponseDTO implements Serializable {
     Boolean orderFlagDecisionCheapestOffer;
     Boolean orderFlagDecisionSoleSupplier;
     Boolean orderFlagDecisionContractPartner;
-    Boolean orderFlagDecisionOtherReasons;
     String orderDecisionOtherReasonsDescription;
     Boolean orderFlagEdvPermission;
     Boolean orderFlagFurniturePermission;

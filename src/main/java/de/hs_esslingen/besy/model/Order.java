@@ -105,6 +105,9 @@ public class Order {
     @Column(name = "customer_id", insertable = false, updatable = false)
     private String customerId;
 
+    @Column(name = "supplier_name", insertable = false, updatable = false)
+    private String supplierName;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumns({
             @JoinColumn(name = "customer_id", referencedColumnName = "customer_id", nullable = false),

@@ -1,12 +1,11 @@
 package de.hs_esslingen.besy.controller;
 
+import de.hs_esslingen.besy.dto.request.CostCenterRequestDTO;
 import de.hs_esslingen.besy.dto.response.CostCenterResponseDTO;
 import de.hs_esslingen.besy.service.CostCenterService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,5 +19,10 @@ public class CostCenterController {
     @GetMapping
     public ResponseEntity<List<CostCenterResponseDTO>> getCostCenters() {
         return costCenterService.getAllCostCenters();
+    }
+
+    @PostMapping
+    public ResponseEntity<CostCenterResponseDTO> createCostCenter(@RequestBody CostCenterRequestDTO costCenterRequest) {
+        return costCenterService.createCostCenter(costCenterRequest);
     }
 }
