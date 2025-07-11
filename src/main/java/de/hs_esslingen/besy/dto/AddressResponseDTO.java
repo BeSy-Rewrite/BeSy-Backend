@@ -16,7 +16,7 @@ public class AddressResponseDTO implements Serializable {
     String addressTown;
     String addressPostalCode;
     String addressCounty;
-    CountryResponseDTO countryName;
-    AddressTypeResponseDTO addressType;
+    String countryName;
+    String addressType;
     String addressComment;
 }

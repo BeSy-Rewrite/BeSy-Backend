@@ -30,8 +30,8 @@ public class AddressService {
 
     public ResponseEntity<List<AddressResponseDTO>> getAllAddresses() {
         List<Address> addresses = addressRepository.findAll();
-        List<AddressResponseDTO> addressResponseDTOs = addressResponseMapper.toDto(addresses);
-        return ResponseEntity.ok(addressResponseDTOs);
+        List<AddressResponseDTO> addressResponseDTOS = addressResponseMapper.toDto(addresses);
+        return ResponseEntity.ok(addressResponseDTOS);
     }
 
     public ResponseEntity<AddressResponseDTO> addAddress(AddressRequestDTO addressDTO) {
@@ -41,8 +41,8 @@ public class AddressService {
         AddressType addressTypeRef = addressTypeRepository.getReferenceById(addressDTO.getAddressTypeId());
 
         Address address = addressRequestMapper.toEntity(addressDTO);
-        address.setCountryName(countryRef);
-        address.setAddressType(addressTypeRef);
+        address.setCountry(countryRef);
+        address.setAddressTypeRef(addressTypeRef);
 
         Address savedAddress = addressRepository.save(address);
         return ResponseEntity.ok().body(addressResponseMapper.toDto(savedAddress));
@@ -56,8 +56,8 @@ public class AddressService {
 
         Address updatedAddress = addressRequestMapper.toEntity(addressDTO);
         updatedAddress.setAddressName(addressName);
-        updatedAddress.setCountryName(countryRef);
-        updatedAddress.setAddressType(addressTypeRef);
+        updatedAddress.setCountry(countryRef);
+        updatedAddress.setAddressTypeRef(addressTypeRef);
         Address savedAddress = addressRepository.save(updatedAddress);
         return ResponseEntity.ok(addressResponseMapper.toDto(savedAddress));
     }

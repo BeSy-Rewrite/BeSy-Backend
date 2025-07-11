@@ -33,15 +33,21 @@ public class Address {
     @Column(name = "address_county")
     private String addressCounty;
 
+    @Column(name = "country_name", insertable = false, updatable = false)
+    private String countryName;
+
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "country_name")
-    private de.hs_esslingen.besy.model.Country countryName;
+    private de.hs_esslingen.besy.model.Country country;
+
+    @Column(name = "address_type", insertable = false, updatable = false)
+    private String addressType;
 
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "address_type")
-    private de.hs_esslingen.besy.model.AddressType addressType;
+    private de.hs_esslingen.besy.model.AddressType addressTypeRef;
 
     @Column(name = "address_comment")
     private String addressComment;

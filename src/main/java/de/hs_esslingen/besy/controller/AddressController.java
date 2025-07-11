@@ -2,7 +2,6 @@ package de.hs_esslingen.besy.controller;
 
 import de.hs_esslingen.besy.dto.AddressRequestDTO;
 import de.hs_esslingen.besy.dto.AddressResponseDTO;
-import de.hs_esslingen.besy.dto.AddressTypeResponseDTO;
 import de.hs_esslingen.besy.service.AddressService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
