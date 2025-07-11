@@ -1,6 +1,8 @@
 package de.hs_esslingen.besy.controller;
 
+import de.hs_esslingen.besy.dto.response.CurrencyResponseDTO;
 import de.hs_esslingen.besy.dto.response.PrimaryCostCenterResponseDTO;
+import de.hs_esslingen.besy.service.CurrencyService;
 import de.hs_esslingen.besy.service.PrimaryCostCenterService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,13 +14,13 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("${api.prefix}/primary_cost_center")
+@RequestMapping("${api.prefix}/currencies")
 public class CurrencyController {
 
-    private final PrimaryCostCenterService primaryCostCenterService;
+    private final CurrencyService currencyService;
 
     @GetMapping
-    public ResponseEntity<List<PrimaryCostCenterResponseDTO>> getAllCurrencies() {
-        return primaryCostCenterService.getAllPrimaryCostCenters();
+    public ResponseEntity<List<CurrencyResponseDTO>> getAllCurrencies() {
+        return currencyService.getAllCurrencies();
     }
 }

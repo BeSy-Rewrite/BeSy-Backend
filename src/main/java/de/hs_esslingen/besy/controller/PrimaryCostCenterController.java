@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("${api.prefix}/currencies")
+@RequestMapping("${api.prefix}/primary_cost_center")
 public class PrimaryCostCenterController {
 
     private final PrimaryCostCenterService primaryCostCenterService;
