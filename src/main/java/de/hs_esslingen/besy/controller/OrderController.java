@@ -33,4 +33,10 @@ public class OrderController {
     ) {
         return orderService.updateOrder(id, orderRequestDTO);
     }
+
+    @GetMapping
+    @RequestMapping("/user/{owner-username}")
+    public ResponseEntity<List<OrderResponseDTO>> getUserOrders(@PathVariable("owner-username") String ownerUsername) {
+        return orderService.getOrdersOfOwnerUser(ownerUsername);
+    }
 }
