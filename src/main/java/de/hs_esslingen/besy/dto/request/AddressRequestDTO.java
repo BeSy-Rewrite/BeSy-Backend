@@ -16,7 +16,7 @@ public class AddressRequestDTO implements Serializable {
     String addressTown;
     String addressPostalCode;
     String addressCounty;
-    String countryNameId;
-    String addressTypeId;
+    String countryName;
+    String addressType;
     String addressComment;
 }

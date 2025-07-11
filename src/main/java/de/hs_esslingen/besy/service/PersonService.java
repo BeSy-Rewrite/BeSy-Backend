@@ -40,8 +40,8 @@ public class PersonService {
     }
 
     public ResponseEntity<PersonResponseDTO> createPerson(PersonRequestDTO personDTO) {
-        Address address = addressRepository.getReferenceById(personDTO.getAddressNameId());
-        Faculty faculty = facultyRepository.getReferenceById(personDTO.getFacultyAbbrId());
+        Address address = addressRepository.getReferenceById(personDTO.getAddressName());
+        Faculty faculty = facultyRepository.getReferenceById(personDTO.getFacultyAbbr());
 
         Person person = personRequestMapper.toEntity(personDTO);
         person.setAddress(address);
@@ -54,8 +54,8 @@ public class PersonService {
     public ResponseEntity<PersonResponseDTO> updatePerson(Long id, PersonRequestDTO personDTO) {
         if(!personRepository.existsById(id)) return ResponseEntity.notFound().build();
 
-        Address address = addressRepository.getReferenceById(personDTO.getAddressNameId());
-        Faculty faculty = facultyRepository.getReferenceById(personDTO.getFacultyAbbrId());
+        Address address = addressRepository.getReferenceById(personDTO.getAddressName());
+        Faculty faculty = facultyRepository.getReferenceById(personDTO.getFacultyAbbr());
         Person person = personRequestMapper.toEntity(personDTO);
         person.setPersonId(id);
         person.setAddress(address);

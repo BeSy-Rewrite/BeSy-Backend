@@ -36,8 +36,8 @@ public class SupplierService {
     public ResponseEntity<SupplierResponseDTO> createSupplier(SupplierRequestDTO supplierDTO) {
         if(supplierRepository.existsById(supplierDTO.getSupplierName())) return ResponseEntity.status(HttpStatus.CONFLICT).build();
 
-        Country countryRef = countryRepository.getReferenceById(supplierDTO.getCountryNameId());
-        AddressType addressTypeRef = addressTypeRepository.getReferenceById(supplierDTO.getAddressTypeId());
+        Country countryRef = countryRepository.getReferenceById(supplierDTO.getCountryName());
+        AddressType addressTypeRef = addressTypeRepository.getReferenceById(supplierDTO.getAddressType());
 
         Supplier supplier = supplierRequestMapper.toEntity(supplierDTO);
         supplier.setCountry(countryRef);
@@ -50,8 +50,8 @@ public class SupplierService {
     public ResponseEntity<SupplierResponseDTO> updateSupplier(String supplierName, SupplierRequestDTO supplierDTO) {
         if(!supplierRepository.existsById(supplierName)) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-        Country countryRef = countryRepository.getReferenceById(supplierDTO.getCountryNameId());
-        AddressType addressTypeRef = addressTypeRepository.getReferenceById(supplierDTO.getAddressTypeId());
+        Country countryRef = countryRepository.getReferenceById(supplierDTO.getCountryName());
+        AddressType addressTypeRef = addressTypeRepository.getReferenceById(supplierDTO.getAddressType());
 
         Supplier supplier = supplierRequestMapper.toEntity(supplierDTO);
         supplier.setSupplierName(supplierName);

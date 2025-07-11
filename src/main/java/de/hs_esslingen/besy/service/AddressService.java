@@ -37,8 +37,8 @@ public class AddressService {
     public ResponseEntity<AddressResponseDTO> addAddress(AddressRequestDTO addressDTO) {
         if(addressRepository.existsById(addressDTO.getAddressName())) return ResponseEntity.status(HttpStatus.CONFLICT).build();
 
-        Country countryRef = countryRepository.getReferenceById(addressDTO.getCountryNameId());
-        AddressType addressTypeRef = addressTypeRepository.getReferenceById(addressDTO.getAddressTypeId());
+        Country countryRef = countryRepository.getReferenceById(addressDTO.getCountryName());
+        AddressType addressTypeRef = addressTypeRepository.getReferenceById(addressDTO.getAddressType());
 
         Address address = addressRequestMapper.toEntity(addressDTO);
         address.setCountry(countryRef);
@@ -51,8 +51,8 @@ public class AddressService {
     public ResponseEntity<AddressResponseDTO> updateAddress(String addressName, AddressRequestDTO addressDTO) {
         if(!addressRepository.existsById(addressName)) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-        Country countryRef = countryRepository.getReferenceById(addressDTO.getCountryNameId());
-        AddressType addressTypeRef = addressTypeRepository.getReferenceById(addressDTO.getAddressTypeId());
+        Country countryRef = countryRepository.getReferenceById(addressDTO.getCountryName());
+        AddressType addressTypeRef = addressTypeRepository.getReferenceById(addressDTO.getAddressType());
 
         Address updatedAddress = addressRequestMapper.toEntity(addressDTO);
         updatedAddress.setAddressName(addressName);

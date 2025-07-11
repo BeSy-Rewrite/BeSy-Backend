@@ -24,8 +24,8 @@ public class SupplierRequestDTO implements Serializable {
     String supplierTown;
     String supplierPostalCode;
     String supplierCounty;
-    String countryNameId;
-    String addressTypeId;
+    String countryName;
+    String addressType;
     LocalDate supplierDeactivatedDate;
     BigDecimal supplierCashbackPercentage;
     Short supplierCashbackDays;
