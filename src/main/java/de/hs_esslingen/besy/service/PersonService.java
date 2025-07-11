@@ -2,6 +2,7 @@ package de.hs_esslingen.besy.service;
 
 import de.hs_esslingen.besy.dto.PersonRequestDTO;
 import de.hs_esslingen.besy.dto.PersonResponseDTO;
+import de.hs_esslingen.besy.exception.NotFoundException;
 import de.hs_esslingen.besy.mapper.PersonRequestMapper;
 import de.hs_esslingen.besy.mapper.PersonResponseMapper;
 import de.hs_esslingen.besy.model.Address;
@@ -31,6 +32,12 @@ public class PersonService {
         List<Person> persons = personRepository.findAll();
         List<PersonResponseDTO> personResponseDTOS = personResponseMapper.toDto(persons);
         return ResponseEntity.ok(personResponseDTOS);
+    }
+
+    public ResponseEntity<PersonResponseDTO> getPersonById(Long id) {
+        Person person = personRepository.findById(id).orElseThrow(() -> new NotFoundException("Person with id " + id + " not found"));
+        PersonResponseDTO personResponseDTO = personResponseMapper.toDto(person);
+        return ResponseEntity.ok(personResponseDTO);
     }
 
     public ResponseEntity<PersonResponseDTO> createPerson(PersonRequestDTO personDTO) {

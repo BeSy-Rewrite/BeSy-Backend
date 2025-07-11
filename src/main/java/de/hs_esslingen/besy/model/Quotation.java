@@ -12,8 +12,12 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "quotation")
 public class Quotation {
+
     @EmbeddedId
     private QuotationId id;
+
+    @Column(name = "order_id", insertable = false, updatable = false)
+    private String orderId;
 
     @MapsId("orderId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

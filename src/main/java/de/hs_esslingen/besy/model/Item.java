@@ -12,8 +12,15 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "item")
 public class Item {
+
+    @Column(name = "item_id", insertable = false, updatable = false)
+    private String itemId;
+
     @EmbeddedId
     private ItemId id;
+
+    @Column(name = "order_id", insertable = false, updatable = false)
+    private String orderId;
 
     @MapsId("orderId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -40,13 +47,19 @@ public class Item {
     @Column(name = "item_comment")
     private String itemComment;
 
+    @Column(name = "vat_value", insertable = false, updatable = false)
+    private String vatValue;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "vat_value", nullable = false)
-    private de.hs_esslingen.besy.model.Vat vatValue;
+    private de.hs_esslingen.besy.model.Vat vat;
+
+    @Column(name = "preferred_list_abbr", insertable = false, updatable = false)
+    private String preferredListAbbr;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "preferred_list_abbr")
-    private de.hs_esslingen.besy.model.PreferredList preferredListAbbr;
+    private de.hs_esslingen.besy.model.PreferredList prefferedList;
 
     @Column(name = "item_preferred_list_number", length = 20)
     private String itemPreferredListNumber;
