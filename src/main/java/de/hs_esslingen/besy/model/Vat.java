@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 public class Vat {
     @Id
     @Column(name = "vat_value", nullable = false, precision = 2)
-    private BigDecimal id;
+    private BigDecimal vatValue;
 
     @ColumnDefault("''")
     @Column(name = "vat_description", nullable = false)
