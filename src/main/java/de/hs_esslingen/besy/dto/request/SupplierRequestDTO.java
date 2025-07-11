@@ -1,5 +1,7 @@
 package de.hs_esslingen.besy.dto.request;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.hs_esslingen.besy.jackson.NumericBooleanDeserzializer;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -17,16 +19,19 @@ public class SupplierRequestDTO implements Serializable {
     String supplierComment;
     String supplierWebsite;
     String supplierVatId;
+
+    // Because someone in the past decided Booleans were too mainstream — now we speak in 0s and 1s 🙃
+    @JsonDeserialize(using = NumericBooleanDeserzializer.class)
     Boolean supplierFlagPreferred;
+
+    BigDecimal supplierCashbackPercentage;
+    Short supplierCashbackDays;
+    String addressType;
     String supplierBuildingName;
     String supplierStreet;
     String supplierBuildingNumber;
-    String supplierTown;
     String supplierPostalCode;
+    String supplierTown;
     String supplierCounty;
     String countryName;
-    String addressType;
-    LocalDate supplierDeactivatedDate;
-    BigDecimal supplierCashbackPercentage;
-    Short supplierCashbackDays;
 }

@@ -8,6 +8,7 @@ import de.hs_esslingen.besy.mapper.response.OrderResponseMapper;
 import de.hs_esslingen.besy.model.*;
 import de.hs_esslingen.besy.repository.*;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -35,8 +36,15 @@ public class OrderService {
     }
 
 
+    public ResponseEntity<OrderResponseDTO> createOrder(OrderRequestDTO orderDTO) {
+        Long id = orderDTO.getOrderId();
+        if(orderRepository.existsById(id)) return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        return updateOrder(id, orderDTO);
+    }
+
+
     /**
-     * Partially updates an existing order with new data provided in the {@link OrderRequestDTO}.
+     * Completely updates an existing order with new data provided in the {@link OrderRequestDTO}.
      * <p>
      * This method performs the following steps:
      * <ul>
@@ -55,13 +63,19 @@ public class OrderService {
      * @throws de.hs_esslingen.besy.exception.NotFoundException; if any referenced entity (e.g., User, Currency, etc.)
      *         does not exist in the database
      */
-    public ResponseEntity<OrderResponseDTO> patchOrder(Long id, OrderRequestDTO orderDTO) {
+
+    // ⚠️ Warning: This logic is critical to the createOrder method.
+    // ⚠️ Changes here may impact POST request processing — verify carefully.
+    // As of now, they are identical.
+
+    public ResponseEntity<OrderResponseDTO> updateOrder(Long id, OrderRequestDTO orderDTO) {
         // Ensure the order to be updated exists
         Order order = orderRepository.findById(id).orElseThrow(() -> new NotFoundException("Order not found."));
 
         // Obtain JPA proxies for all related entities using getReferenceById
         // These references must point to valid existing entities, otherwise an exception will be thrown at flush time
         // This approach avoids immediate database queries and improves performance by deferring data loading
+        // Important: As long as those  references are NOT nullable, it can stay like this. Otherwise this needs to be changed, so proxies are only created if not null.
         User ownerRef = userRepository.getReferenceById(orderDTO.getOwnerUserName());
         OrderStatus orderstatusRef = orderStatusRepository.getReferenceById(orderDTO.getOrderStatus());
         Currency currencyRef = currencyRepository.getReferenceById(orderDTO.getCurrencyShort());

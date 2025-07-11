@@ -153,7 +153,7 @@ public class Order {
 
     @ColumnDefault("false")
     @Column(name = "order_flag_decision_other_reasons")
-    private Boolean orderFlagDecisionOtherReasons;
+    private Boolean orderFlagDecisionOtherReason;
 
     @Column(name = "order_decision_other_reasons_description", length = Integer.MAX_VALUE)
     private String orderDecisionOtherReasonsDescription;

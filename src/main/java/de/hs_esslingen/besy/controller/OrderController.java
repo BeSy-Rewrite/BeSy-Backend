@@ -20,12 +20,17 @@ public class OrderController {
         return orderService.getAllOrders();
     }
 
-    @PatchMapping
+    @PostMapping
+    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO orderRequestDTO) {
+        return orderService.createOrder(orderRequestDTO);
+    }
+
+    @PutMapping
     @RequestMapping("/{id}")
-    public ResponseEntity<OrderResponseDTO> updateOrder(
-            @PathVariable long id,
+    public ResponseEntity<OrderResponseDTO> patchOrder(
+            @PathVariable("id") Long id,
             @RequestBody OrderRequestDTO orderRequestDTO
     ) {
-        return orderService.patchOrder(id, orderRequestDTO);
+        return orderService.updateOrder(id, orderRequestDTO);
     }
 }

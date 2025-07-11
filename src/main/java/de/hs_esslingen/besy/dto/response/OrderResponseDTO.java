@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -40,16 +41,39 @@ public class OrderResponseDTO implements Serializable {
     BigDecimal orderCashbackPercentage;
     Short orderCashbackDays;
     OffsetDateTime orderLastUpdatedTime;
+
+    // Because someone in the past decided Booleans were too mainstream — now we speak in 0s and 1s 🙃
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     Boolean orderFlagDecisionCheapestOffer;
+
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     Boolean orderFlagDecisionSoleSupplier;
+
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     Boolean orderFlagDecisionContractPartner;
+
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     Boolean orderFlagDecisionOtherReasons;
+
     String orderDecisionOtherReasonsDescription;
+
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     Boolean orderFlagEdvPermission;
+
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     Boolean orderFlagFurniturePermission;
+
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     Boolean orderFlagFurnitureRoom;
+
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     Boolean orderFlagInvestmentRoom;
+
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     Boolean orderFlagInvestmentStructuralMeasures;
+
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     Boolean orderFlagMediaPermission;
+
     String orderDfgKey;
 }
