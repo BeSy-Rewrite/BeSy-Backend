@@ -1,7 +1,6 @@
 package de.hs_esslingen.besy.dto.request;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.deser.std.NumberDeserializers;
 import de.hs_esslingen.besy.jackson.NumericBooleanDeserzializer;
 import lombok.Value;
 
