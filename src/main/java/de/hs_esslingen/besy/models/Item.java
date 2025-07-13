@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.models;
 
+import de.hs_esslingen.besy.enums.VatType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -64,11 +65,9 @@ public class Item {
     @Column(name = "item_preferred_list_number", length = 20)
     private String itemPreferredListNumber;
 
-/*
- TODO [Reverse Engineering] create field to map the 'item_vat_type' column
- Available actions: Define target Java type | Uncomment as is | Remove column mapping
     @ColumnDefault("'netto'")
-    @Column(name = "item_vat_type", columnDefinition = "item_item_vat_type not null")
-    private Object itemVatType;
-*/
+    @Column(name = "item_vat_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private VatType itemVatType;
+
 }

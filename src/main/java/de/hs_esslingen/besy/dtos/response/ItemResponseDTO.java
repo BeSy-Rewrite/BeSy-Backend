@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.dtos.response;
 
+import de.hs_esslingen.besy.enums.VatType;
 import de.hs_esslingen.besy.models.Item;
 import lombok.Value;
 
@@ -22,4 +23,5 @@ public class ItemResponseDTO implements Serializable {
     BigDecimal vatValue;
     String preferredListAbbr;
     String itemPreferredListNumber;
+    VatType itemVatType;
 }
