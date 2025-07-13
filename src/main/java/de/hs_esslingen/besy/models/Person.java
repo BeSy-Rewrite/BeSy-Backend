@@ -1,8 +1,10 @@
 package de.hs_esslingen.besy.models;
 
+import de.hs_esslingen.besy.enums.Gender;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Setter
@@ -50,11 +52,8 @@ public class Person {
     @JoinColumn(name = "faculty_abbr")
     private Faculty faculty;
 
-/*
- TODO [Reverse Engineering] create field to map the 'person_gender' column
- Available actions: Define target Java type | Uncomment as is | Remove column mapping
-    @ColumnDefault("'m'")
-    @Column(name = "person_gender", columnDefinition = "person_person_gender not null")
-    private Object personGender;
-*/
+    @Column(name = "person_gender", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Gender personGender;
+
 }

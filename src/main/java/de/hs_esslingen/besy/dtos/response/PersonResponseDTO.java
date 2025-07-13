@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.dtos.response;
 
+import de.hs_esslingen.besy.enums.Gender;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -19,5 +20,5 @@ public class PersonResponseDTO implements Serializable {
     String personComment;
     String addressName;
     String facultyAbbr;
-
+    Gender personGender;
 }
