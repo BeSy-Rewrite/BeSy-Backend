@@ -3,7 +3,9 @@ package de.hs_esslingen.besy.services;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
+import de.hs_esslingen.besy.mappers.request.ItemRequestMapper;
 import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
+import de.hs_esslingen.besy.mappers.request.QuotationRequestMapper;
 import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
 import de.hs_esslingen.besy.models.*;
 import de.hs_esslingen.besy.repositories.*;
@@ -19,15 +21,20 @@ import java.util.List;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-
-    private final OrderResponseMapper orderResponseMapper;
-    private final OrderRequestMapper orderRequestMapper;
     private final UserRepository userRepository;
     private final OrderStatusRepository orderStatusRepository;
     private final CurrencyRepository currencyRepository;
     private final PersonRepository personRepository;
     private final CostCenterRepository costCenterRepository;
     private final CustomerIdRepository customerIdRepository;
+    private final ItemRepository itemRepository;
+    private final QuotationRepository quotationRepository;
+
+    private final OrderResponseMapper orderResponseMapper;
+    private final OrderRequestMapper orderRequestMapper;
+    private final ItemRequestMapper itemRequestMapper;
+    private final QuotationRequestMapper quotationRequestMapper;
+
 
     public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
         List<Order> orders = orderRepository.findAll();
@@ -37,72 +44,63 @@ public class OrderService {
 
 
     public ResponseEntity<OrderResponseDTO> createOrder(OrderRequestDTO orderDTO) {
-        Long id = orderDTO.getOrderId();
-        if(orderRepository.existsById(id)) return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        return updateOrder(id, orderDTO);
-    }
+        // Now construct the order
+        Order order = orderRequestMapper.toEntity(orderDTO);
 
-
-    /**
-     * Completely updates an existing order with new data provided in the {@link OrderRequestDTO}.
-     * <p>
-     * This method performs the following steps:
-     * <ul>
-     *   <li>Validates that the order with the given ID exists; throws a {@link NotFoundException} if not.</li>
-     *   <li>Fetches JPA references (proxies) for all related entities using {@code getReferenceById()}, improving
-     *       performance by deferring database access until flush time.</li>
-     *   <li>Manually constructs the composite key for the {@link CustomerId} reference and retrieves its proxy.</li>
-     *   <li>Updates the order entity with the provided DTO values using the {@code partialUpdate} method.</li>
-     *   <li>Saves the updated order and returns the response DTO wrapped in a {@link ResponseEntity}.</li>
-     * </ul>
-     *
-     * @param id        the ID of the order to update
-     * @param orderDTO  the DTO containing the fields to update in the order
-     * @return          a {@link ResponseEntity} containing the updated order as a {@link OrderResponseDTO}
-     * @throws NotFoundException if the order does not exist or any referenced entity is missing
-     * @throws de.hs_esslingen.besy.exceptions.NotFoundException; if any referenced entity (e.g., User, Currency, etc.)
-     *         does not exist in the database
-     */
-
-    // ⚠️ Warning: This logic is critical to the createOrder method.
-    // ⚠️ Changes here may impact POST request processing — verify carefully.
-    // As of now, they are identical.
-
-    public ResponseEntity<OrderResponseDTO> updateOrder(Long id, OrderRequestDTO orderDTO) {
-        // Ensure the order to be updated exists
-        Order order = orderRepository.findById(id).orElseThrow(() -> new NotFoundException("Order not found."));
-
-        // Obtain JPA proxies for all related entities using getReferenceById
-        // These references must point to valid existing entities, otherwise an exception will be thrown at flush time
-        // This approach avoids immediate database queries and improves performance by deferring data loading
-        // Important: As long as those  references are NOT nullable, it can stay like this. Otherwise this needs to be changed, so proxies are only created if not null.
+        // Create entity proxies without null checks, since they must exist
+        // Otherwise the transaction needs to fail
         User ownerRef = userRepository.getReferenceById(orderDTO.getOwnerUserName());
-        OrderStatus orderstatusRef = orderStatusRepository.getReferenceById(orderDTO.getOrderStatus());
+        OrderStatus orderStatusRef = orderStatusRepository.getReferenceById(orderDTO.getOrderStatus());
         Currency currencyRef = currencyRepository.getReferenceById(orderDTO.getCurrencyShort());
         Person deliveryPersonRef = personRepository.getReferenceById(orderDTO.getDeliveryPersonId());
         Person invoicePersonRef = personRepository.getReferenceById(orderDTO.getInvoicePersonId());
         Person queriesPersonRef = personRepository.getReferenceById(orderDTO.getQueriesPersonId());
-        CostCenter costCenterRef = costCenterRepository.getReferenceById(orderDTO.getSecondaryCostCenterId());
+        CostCenter secondaryCostCenterRef = costCenterRepository.getReferenceById(orderDTO.getSecondaryCostCenterId());
 
-        // Manually construct the composite primary key for CustomerId
         CustomerIdId customerIdId = new CustomerIdId();
-        customerIdId.setSupplierName(orderDTO.getSupplierName());
         customerIdId.setCustomerId(orderDTO.getCustomerId());
+        customerIdId.setSupplierName(orderDTO.getSupplierName());
         CustomerId customerIdRef = customerIdRepository.getReferenceById(customerIdId);
 
         order.setOwner(ownerRef);
-        order.setOrderStatusRef(orderstatusRef);
+        order.setOrderStatusRef(orderStatusRef);
         order.setCurrency(currencyRef);
         order.setDeliveryPerson(deliveryPersonRef);
         order.setInvoicePerson(invoicePersonRef);
         order.setQueriesPerson(queriesPersonRef);
-        order.setSecondaryCostCenter(costCenterRef);
+        order.setSecondaryCostCenter(secondaryCostCenterRef);
         order.setCustomer(customerIdRef);
 
-        orderRequestMapper.partialUpdate(order, orderDTO);
-        Order savedOrder = orderRepository.save(order);
-        return ResponseEntity.ok(orderResponseMapper.toDto(savedOrder));
+        // TODO: Replace this.
+        // Construct all items and manually map the composite primary key (ItemId)
+        // This is a temporary workaround and should be replaced by proper REST endpoints in the future
+        List<Item> items = itemRequestMapper.toEntity(orderDTO.getItems());
+        items.forEach(item -> {
+            ItemId itemId = new ItemId();
+            itemId.setOrderId(item.getOrderId());
+            itemId.setItemId(item.getItemId());
+            item.setId(itemId);
+            item.setOrder(order);
+        });
+
+        List<Quotation> quotations = quotationRequestMapper.toEntity(orderDTO.getQuotations());
+        quotations.forEach(quotation -> {
+            QuotationId quotationId = new QuotationId();
+            quotationId.setOrderId(quotation.getOrderId());
+            quotationId.setQuotationIndex(quotation.getQuotationIndex());
+            quotation.setId(quotationId);
+            quotation.setOrder(order);
+        });
+
+        // Persist them to DB
+        // Order first, since item and quotation reference it
+        orderRepository.save(order);
+        itemRepository.saveAll(items);
+        quotationRepository.saveAll(quotations);
+
+        return ResponseEntity.ok().build();
     }
+
 
 
     public ResponseEntity<List<OrderResponseDTO>> getOrdersOfOwnerUser(String username) {

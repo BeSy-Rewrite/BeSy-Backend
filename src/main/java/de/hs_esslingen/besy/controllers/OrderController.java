@@ -25,15 +25,6 @@ public class OrderController {
         return orderService.createOrder(orderRequestDTO);
     }
 
-    @PutMapping
-    @RequestMapping("/{id}")
-    public ResponseEntity<OrderResponseDTO> patchOrder(
-            @PathVariable("id") Long id,
-            @RequestBody OrderRequestDTO orderRequestDTO
-    ) {
-        return orderService.updateOrder(id, orderRequestDTO);
-    }
-
     @GetMapping
     @RequestMapping("/user/{owner-username}")
     public ResponseEntity<List<OrderResponseDTO>> getUserOrders(@PathVariable("owner-username") String ownerUsername) {

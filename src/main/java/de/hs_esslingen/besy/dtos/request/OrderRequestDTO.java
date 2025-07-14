@@ -8,16 +8,18 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * DTO for {@link de.hs_esslingen.besy.models.Order}
  */
 @Value
 public class OrderRequestDTO implements Serializable {
-    Long orderId; // Only used in POST & GET
+    Long orderId;
     String primaryCostCenterId;
     String primaryCostCenterFaculty;
     String orderBookingYear;
+    Short orderAutoIndex;
     OffsetDateTime orderCreatedDate;
     String orderLegacyAlias;
     String ownerUserName;
@@ -33,45 +35,26 @@ public class OrderRequestDTO implements Serializable {
     Long deliveryPersonId;
     Long invoicePersonId;
     Long queriesPersonId;
-    String supplierName;
     String customerId;
+    String supplierName;
     String secondaryCostCenterId;
     BigDecimal orderFixedDiscount;
     BigDecimal orderPercentageDiscount;
     BigDecimal orderCashbackPercentage;
     Short orderCashbackDays;
     OffsetDateTime orderLastUpdatedTime;
-
-    // Because someone in the past decided Booleans were too mainstream — now we speak in 0s and 1s 🙃
-    @JsonDeserialize(using = NumericBooleanDeserzializer.class)
     Boolean orderFlagDecisionCheapestOffer;
-
-    @JsonDeserialize(using = NumericBooleanDeserzializer.class)
     Boolean orderFlagDecisionSoleSupplier;
-
-    @JsonDeserialize(using = NumericBooleanDeserzializer.class)
     Boolean orderFlagDecisionContractPartner;
-
-    @JsonDeserialize(using = NumericBooleanDeserzializer.class)
     Boolean orderFlagDecisionOtherReason;
     String orderDecisionOtherReasonsDescription;
-
-    @JsonDeserialize(using = NumericBooleanDeserzializer.class)
     Boolean orderFlagEdvPermission;
-
-    @JsonDeserialize(using = NumericBooleanDeserzializer.class)
     Boolean orderFlagFurniturePermission;
-
-    @JsonDeserialize(using = NumericBooleanDeserzializer.class)
     Boolean orderFlagFurnitureRoom;
-
-    @JsonDeserialize(using = NumericBooleanDeserzializer.class)
     Boolean orderFlagInvestmentRoom;
-
-    @JsonDeserialize(using = NumericBooleanDeserzializer.class)
     Boolean orderFlagInvestmentStructuralMeasures;
-
-    @JsonDeserialize(using = NumericBooleanDeserzializer.class)
     Boolean orderFlagMediaPermission;
     String orderDfgKey;
+    List<ItemRequestDTO> items;
+    List<QuotationRequestDTO> quotations;
 }

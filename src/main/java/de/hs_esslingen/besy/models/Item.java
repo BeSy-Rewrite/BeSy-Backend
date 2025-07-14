@@ -15,13 +15,13 @@ import java.math.BigDecimal;
 public class Item {
 
     @Column(name = "item_id", insertable = false, updatable = false)
-    private String itemId;
+    private Integer itemId;
 
     @EmbeddedId
     private ItemId id;
 
     @Column(name = "order_id", insertable = false, updatable = false)
-    private String orderId;
+    private Long orderId;
 
     @MapsId("orderId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

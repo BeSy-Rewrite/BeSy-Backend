@@ -1,4 +1,4 @@
-package de.hs_esslingen.besy.dtos.response;
+package de.hs_esslingen.besy.dtos.request;
 
 import lombok.Value;
 
@@ -10,7 +10,7 @@ import java.time.LocalDate;
  * DTO for {@link de.hs_esslingen.besy.models.Quotation}
  */
 @Value
-public class QuotationResponseDTO implements Serializable {
+public class QuotationRequestDTO implements Serializable {
     Long orderId;
     Short quotationIndex;
     LocalDate quotationQuoteDate;

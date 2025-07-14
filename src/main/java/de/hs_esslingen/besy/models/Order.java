@@ -21,7 +21,7 @@ public class Order {
     private Long orderId;
 
     @Column(name = "primary_cost_center_id", nullable = false, length = 20)
-    private String primaryCostCenterId;
+    private String primaryCostCenterId; // check
 
     @Column(name = "primary_cost_center_faculty", nullable = false, length = 10)
     private String primaryCostCenterFaculty;
@@ -29,7 +29,8 @@ public class Order {
     @Column(name = "order_booking_year", nullable = false, length = 2)
     private String orderBookingYear;
 
-    @Column(name = "order_auto_index", nullable = false)
+    // TODO: Set this back to nullable = true
+    @Column(name = "order_auto_index", nullable = true)
     private Short orderAutoIndex;
 
     @Column(name = "order_created_date", nullable = false)
@@ -82,21 +83,21 @@ public class Order {
     private BigDecimal orderQuotePrice;
 
     @Column(name = "delivery_person_id", insertable = false, updatable = false)
-    private String deliveryPersonId;
+    private Long deliveryPersonId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "delivery_person_id", nullable = false)
     private de.hs_esslingen.besy.models.Person deliveryPerson;
 
     @Column(name = "invoice_person_id", insertable = false, updatable = false)
-    private String invoicePersonId;
+    private Long invoicePersonId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "invoice_person_id", nullable = false)
     private de.hs_esslingen.besy.models.Person invoicePerson;
 
     @Column(name = "queries_person_id", insertable = false, updatable = false)
-    private String queriesPersonId;
+    private Long queriesPersonId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "queries_person_id", nullable = false)
@@ -153,7 +154,7 @@ public class Order {
 
     @ColumnDefault("false")
     @Column(name = "order_flag_decision_other_reasons")
-    private Boolean orderFlagDecisionOtherReason;
+    private Boolean orderFlagDecisionOtherReasons;
 
     @Column(name = "order_decision_other_reasons_description", length = Integer.MAX_VALUE)
     private String orderDecisionOtherReasonsDescription;

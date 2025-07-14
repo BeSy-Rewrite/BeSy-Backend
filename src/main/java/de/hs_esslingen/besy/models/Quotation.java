@@ -17,7 +17,10 @@ public class Quotation {
     private QuotationId id;
 
     @Column(name = "order_id", insertable = false, updatable = false)
-    private String orderId;
+    private Long orderId;
+
+    @Column(name = "quotation_index", insertable = false, updatable = false)
+    private Short quotationIndex;
 
     @MapsId("orderId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
