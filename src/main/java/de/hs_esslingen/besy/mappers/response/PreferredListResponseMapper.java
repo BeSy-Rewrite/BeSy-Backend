@@ -2,7 +2,6 @@ package de.hs_esslingen.besy.mappers.response;
 
 import de.hs_esslingen.besy.dtos.response.PreferredListResponseDTO;
 import de.hs_esslingen.besy.mappers.EntityMapper;
-import de.hs_esslingen.besy.models.PreferredList;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;

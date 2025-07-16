@@ -2,7 +2,6 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.response.AddressTypeResponseDTO;
 import de.hs_esslingen.besy.mappers.AddressTypeMapper;
-import de.hs_esslingen.besy.models.AddressType;
 import de.hs_esslingen.besy.repositories.AddressTypeRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

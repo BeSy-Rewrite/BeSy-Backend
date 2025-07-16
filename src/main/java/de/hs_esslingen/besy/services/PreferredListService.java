@@ -2,7 +2,6 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.response.PreferredListResponseDTO;
 import de.hs_esslingen.besy.mappers.response.PreferredListResponseMapper;
-import de.hs_esslingen.besy.models.PreferredList;
 import de.hs_esslingen.besy.repositories.PreferredListRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

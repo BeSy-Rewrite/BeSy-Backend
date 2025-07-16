@@ -6,8 +6,6 @@ import de.hs_esslingen.besy.dtos.response.SupplierResponseDTO;
 import de.hs_esslingen.besy.mappers.request.SupplierPUTRequestMapper;
 import de.hs_esslingen.besy.mappers.request.SupplierRequestMapper;
 import de.hs_esslingen.besy.mappers.response.SupplierResponseMapper;
-import de.hs_esslingen.besy.models.AddressType;
-import de.hs_esslingen.besy.models.Country;
 import de.hs_esslingen.besy.models.Supplier;
 import de.hs_esslingen.besy.repositories.AddressTypeRepository;
 import de.hs_esslingen.besy.repositories.CountryRepository;

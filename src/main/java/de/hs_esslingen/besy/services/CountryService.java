@@ -2,7 +2,6 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.response.CountryResponseDTO;
 import de.hs_esslingen.besy.mappers.response.CountryResponseMapper;
-import de.hs_esslingen.besy.models.Country;
 import de.hs_esslingen.besy.repositories.CountryRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

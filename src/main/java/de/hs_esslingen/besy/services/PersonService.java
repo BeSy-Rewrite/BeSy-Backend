@@ -6,7 +6,6 @@ import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.PersonRequestMapper;
 import de.hs_esslingen.besy.mappers.response.PersonResponseMapper;
 import de.hs_esslingen.besy.models.Address;
-import de.hs_esslingen.besy.models.Faculty;
 import de.hs_esslingen.besy.models.Person;
 import de.hs_esslingen.besy.repositories.AddressRepository;
 import de.hs_esslingen.besy.repositories.FacultyRepository;

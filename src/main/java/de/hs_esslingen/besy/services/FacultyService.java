@@ -2,7 +2,6 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.response.FacultyResponseDTO;
 import de.hs_esslingen.besy.mappers.response.FacultyResponseMapper;
-import de.hs_esslingen.besy.models.Faculty;
 import de.hs_esslingen.besy.repositories.FacultyRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -2,7 +2,6 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.response.OrderStatusResponseDTO;
 import de.hs_esslingen.besy.mappers.response.OrderStatusResponseMapper;
-import de.hs_esslingen.besy.models.OrderStatus;
 import de.hs_esslingen.besy.repositories.OrderStatusRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

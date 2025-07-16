@@ -2,7 +2,6 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.response.PrimaryCostCenterResponseDTO;
 import de.hs_esslingen.besy.mappers.response.PrimaryCostCenterResponseMapper;
-import de.hs_esslingen.besy.models.PrimaryCostCenter;
 import de.hs_esslingen.besy.repositories.PrimaryCostCenterRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

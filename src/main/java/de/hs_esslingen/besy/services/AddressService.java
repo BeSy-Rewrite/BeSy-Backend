@@ -5,8 +5,6 @@ import de.hs_esslingen.besy.dtos.response.AddressResponseDTO;
 import de.hs_esslingen.besy.mappers.request.AddressRequestMapper;
 import de.hs_esslingen.besy.mappers.response.AddressResponseMapper;
 import de.hs_esslingen.besy.models.Address;
-import de.hs_esslingen.besy.models.AddressType;
-import de.hs_esslingen.besy.models.Country;
 import de.hs_esslingen.besy.repositories.AddressRepository;
 import de.hs_esslingen.besy.repositories.AddressTypeRepository;
 import de.hs_esslingen.besy.repositories.CountryRepository;
