@@ -8,7 +8,6 @@ import de.hs_esslingen.besy.mappers.request.SupplierRequestMapper;
 import de.hs_esslingen.besy.mappers.response.SupplierResponseMapper;
 import de.hs_esslingen.besy.models.Supplier;
 import de.hs_esslingen.besy.repositories.AddressTypeRepository;
-import de.hs_esslingen.besy.repositories.CountryRepository;
 import de.hs_esslingen.besy.repositories.SupplierRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;

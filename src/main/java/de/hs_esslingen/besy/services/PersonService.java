@@ -8,7 +8,6 @@ import de.hs_esslingen.besy.mappers.response.PersonResponseMapper;
 import de.hs_esslingen.besy.models.Address;
 import de.hs_esslingen.besy.models.Person;
 import de.hs_esslingen.besy.repositories.AddressRepository;
-import de.hs_esslingen.besy.repositories.FacultyRepository;
 import de.hs_esslingen.besy.repositories.PersonRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

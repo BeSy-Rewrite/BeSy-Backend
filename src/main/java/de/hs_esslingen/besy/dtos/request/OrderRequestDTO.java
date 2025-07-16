@@ -1,6 +1,7 @@
 package de.hs_esslingen.besy.dtos.request;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.jackson.NumericBooleanDeserzializer;
 import lombok.Value;
 
@@ -24,7 +25,7 @@ public class OrderRequestDTO implements Serializable {
     String orderLegacyAlias;
     String ownerUserName;
     String orderContentDescription;
-    String orderStatus;
+    OrderStatus orderStatus;
     String currencyShort;
     String orderComment;
     String orderCommentForSupplier;
