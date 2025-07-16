@@ -1,7 +1,5 @@
 package de.hs_esslingen.besy.controllers;
 
-import de.hs_esslingen.besy.dtos.request.SupplierPOSTRequestDTO;
-import de.hs_esslingen.besy.dtos.request.SupplierPUTRequestDTO;
 import de.hs_esslingen.besy.dtos.response.SupplierResponseDTO;
 import de.hs_esslingen.besy.services.SupplierService;
 import lombok.AllArgsConstructor;

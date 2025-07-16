@@ -1,6 +1,5 @@
 package de.hs_esslingen.besy.mappers.response;
 
-import de.hs_esslingen.besy.dtos.response.CustomerIdResponseDTO;
 import de.hs_esslingen.besy.mappers.EntityMapper;
 import de.hs_esslingen.besy.models.CustomerId;
 import org.mapstruct.Mapper;
