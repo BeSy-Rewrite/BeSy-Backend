@@ -10,21 +10,16 @@ import lombok.Setter;
 @Table(name = "\"user\"")
 public class User {
     @Id
-    @Column(name = "user_name", nullable = false)
-    private String userName;
+    @Column(name = "keycloak_uuid")
+    private String id;
 
-    @Column(name = "person_id", insertable = false, updatable = false)
-    private Long personId;
+    @Column(name = "surname", nullable = false)
+    private String surname;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "person_id", nullable = false)
-    private Person person;
+    @Column(name = "name", nullable = false)
+    private String name;
 
-    @Column(name = "preferred_cost_center_id", insertable = false, updatable = false)
-    private String preferredCostCenterId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "preferred_cost_center_id")
-    private CostCenter preferredCostCenter;
+    @Column(name = "email", nullable = false)
+    private String email;
 
 }

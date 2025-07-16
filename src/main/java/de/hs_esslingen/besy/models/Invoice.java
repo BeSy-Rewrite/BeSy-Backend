@@ -17,8 +17,8 @@ import java.time.OffsetDateTime;
 @Table(name = "invoice")
 public class Invoice {
     @Id
-    @Column(name = "invoice_id", nullable = false)
-    private String invoiceId;
+    @Column(name = "id", nullable = false)
+    private String id;
 
     @Column(name = "cost_center_id", nullable = false, length = 20)
     private String costCenterId;
@@ -26,16 +26,16 @@ public class Invoice {
     @Column(name = "order_id", nullable = false)
     private Long orderId;
 
-    @Column(name = "invoice_price", nullable = false, precision = 8, scale = 2)
-    private BigDecimal invoicePrice;
+    @Column(name = "iprice", nullable = false, precision = 8, scale = 2)
+    private BigDecimal price;
 
-    @Column(name = "invoice_date", nullable = false)
-    private LocalDate invoiceDate;
+    @Column(name = "date", nullable = false)
+    private LocalDate date;
 
-    @Column(name = "invoice_comment")
-    private String invoiceComment;
+    @Column(name = "comment")
+    private String comment;
 
-    @Column(name = "invoice_created_date", nullable = false)
-    private OffsetDateTime invoiceCreatedDate;
+    @Column(name = "created_date", nullable = false)
+    private OffsetDateTime createdDate;
 
 }

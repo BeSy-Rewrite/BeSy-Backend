@@ -1,5 +1,7 @@
 package de.hs_esslingen.besy.models;
 
+import de.hs_esslingen.besy.enums.Gender;
+import de.hs_esslingen.besy.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,44 +19,42 @@ public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "order_id", nullable = false)
-    private Long orderId;
+    @Column(name = "id", nullable = false)
+    private Long id;
 
-    @Column(name = "primary_cost_center_id", nullable = false, length = 20)
-    private String primaryCostCenterId; // check
-
-    @Column(name = "primary_cost_center_faculty", nullable = false, length = 10)
-    private String primaryCostCenterFaculty;
-
-    @Column(name = "order_booking_year", nullable = false, length = 2)
-    private String orderBookingYear;
-
-    // TODO: Set this back to nullable = true
-    @Column(name = "order_auto_index", nullable = true)
-    private Short orderAutoIndex;
-
-    @Column(name = "order_created_date", nullable = false)
-    private OffsetDateTime orderCreatedDate;
-
-    @Column(name = "order_legacy_alias", length = 2)
-    private String orderLegacyAlias;
-
-    @Column(name = "owner_user_name", insertable = false, updatable = false)
-    private String ownerUserName;
+    @Column(name = "primary_cost_center_id", insertable = false, updatable = false)
+    private String primaryCostCenterId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "owner_user_name", nullable = false)
+    @JoinColumn(name = "primary_cost_center_id", nullable = false)
+    private CostCenter primaryCostCenter;
+
+    @Column(name = "booking_year", nullable = false, length = 2)
+    private String bookingYear;
+
+    // TODO: Set this back to nullable = false
+    @Column(name = "auto_index", nullable = true)
+    private Short autoIndex;
+
+    @Column(name = "created_date", nullable = false)
+    private OffsetDateTime createdDate;
+
+    @Column(name = "legacy_alias", length = 2)
+    private String legacyAlias;
+
+    @Column(name = "owner_user_id", insertable = false, updatable = false)
+    private String ownerId;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "owner_user_id",referencedColumnName = "id", nullable = false)
     private de.hs_esslingen.besy.models.User owner;
 
-    @Column(name = "order_content_description", nullable = false)
-    private String orderContentDescription;
+    @Column(name = "content_description", nullable = false)
+    private String contentDescription;
 
-    @Column(name = "order_status", insertable = false, updatable = false)
-    private String orderStatus;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "order_status", nullable = false)
-    private de.hs_esslingen.besy.models.OrderStatus orderStatusRef;
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
 
     @Column(name = "currency_short", insertable = false, updatable = false)
     private String currencyShort;
@@ -64,23 +64,23 @@ public class Order {
     private Currency currency;
 
     @ColumnDefault("''")
-    @Column(name = "order_comment")
-    private String orderComment;
+    @Column(name = "comment")
+    private String comment;
 
-    @Column(name = "order_comment_for_supplier", length = Integer.MAX_VALUE)
-    private String orderCommentForSupplier;
+    @Column(name = "comment_for_supplier", length = Integer.MAX_VALUE)
+    private String commentForSupplier;
 
-    @Column(name = "order_quote_number")
-    private String orderQuoteNumber;
+    @Column(name = "quote_number")
+    private String quoteNumber;
 
-    @Column(name = "order_quote_sign")
-    private String orderQuoteSign;
+    @Column(name = "quote_sign")
+    private String quoteSign;
 
-    @Column(name = "order_quote_date")
-    private LocalDate orderQuoteDate;
+    @Column(name = "quote_date")
+    private LocalDate quoteDate;
 
-    @Column(name = "order_quote_price", precision = 10, scale = 2)
-    private BigDecimal orderQuotePrice;
+    @Column(name = "quote_price", precision = 10, scale = 2)
+    private BigDecimal quotePrice;
 
     @Column(name = "delivery_person_id", insertable = false, updatable = false)
     private Long deliveryPersonId;
@@ -106,8 +106,12 @@ public class Order {
     @Column(name = "customer_id", insertable = false, updatable = false)
     private String customerId;
 
-    @Column(name = "supplier_name", insertable = false, updatable = false)
-    private String supplierName;
+    @Column(name = "supplier_id", insertable = false, updatable = false)
+    private String supplierId;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "supplier_id", referencedColumnName = "id", nullable = false)
+    private Supplier supplier;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumns({
@@ -124,66 +128,66 @@ public class Order {
     private CostCenter secondaryCostCenter;
 
     @ColumnDefault("0.00")
-    @Column(name = "order_fixed_discount", precision = 10, scale = 2)
-    private BigDecimal orderFixedDiscount;
+    @Column(name = "fixed_discount", precision = 10, scale = 2)
+    private BigDecimal fixedDiscount;
 
     @ColumnDefault("0.00")
-    @Column(name = "order_percentage_discount", precision = 4, scale = 2)
-    private BigDecimal orderPercentageDiscount;
+    @Column(name = "percentage_discount", precision = 4, scale = 2)
+    private BigDecimal percentageDiscount;
 
-    @Column(name = "order_cashback_percentage", precision = 3, scale = 2)
-    private BigDecimal orderCashbackPercentage;
+    @Column(name = "cashback_percentage", precision = 3, scale = 2)
+    private BigDecimal cashbackPercentage;
 
-    @Column(name = "order_cashback_days")
-    private Short orderCashbackDays;
+    @Column(name = "cashback_days")
+    private Short cashbackDays;
 
-    @Column(name = "order_last_updated_time", nullable = false)
-    private OffsetDateTime orderLastUpdatedTime;
-
-    @ColumnDefault("false")
-    @Column(name = "order_flag_decision_cheapest_offer")
-    private Boolean orderFlagDecisionCheapestOffer;
+    @Column(name = "last_updated_time", nullable = false)
+    private OffsetDateTime lastUpdatedTime;
 
     @ColumnDefault("false")
-    @Column(name = "order_flag_decision_sole_supplier")
-    private Boolean orderFlagDecisionSoleSupplier;
+    @Column(name = "flag_decision_cheapest_offer")
+    private Boolean flagDecisionCheapestOffer;
 
     @ColumnDefault("false")
-    @Column(name = "order_flag_decision_contract_partner")
-    private Boolean orderFlagDecisionContractPartner;
+    @Column(name = "flag_decision_sole_supplier")
+    private Boolean flagDecisionSoleSupplier;
 
     @ColumnDefault("false")
-    @Column(name = "order_flag_decision_other_reasons")
-    private Boolean orderFlagDecisionOtherReasons;
+    @Column(name = "flag_decision_contract_partner")
+    private Boolean flagDecisionContractPartner;
 
-    @Column(name = "order_decision_other_reasons_description", length = Integer.MAX_VALUE)
-    private String orderDecisionOtherReasonsDescription;
+    @ColumnDefault("false")
+    @Column(name = "flag_decision_other_reasons")
+    private Boolean flagDecisionOtherReasons;
+
+    @Column(name = "decision_other_reasons_description", length = Integer.MAX_VALUE)
+    private String decisionOtherReasonsDescription;
 
     @ColumnDefault("false")
     @Column(name = "order_flag_edv_permission")
     private Boolean orderFlagEdvPermission;
 
     @ColumnDefault("false")
-    @Column(name = "order_flag_furniture_permission")
-    private Boolean orderFlagFurniturePermission;
+    @Column(name = "flag_furniture_permission")
+    private Boolean flagFurniturePermission;
 
     @ColumnDefault("false")
-    @Column(name = "order_flag_furniture_room")
-    private Boolean orderFlagFurnitureRoom;
+    @Column(name = "flag_furniture_room")
+    private Boolean flagFurnitureRoom;
 
     @ColumnDefault("false")
-    @Column(name = "order_flag_investment_room")
-    private Boolean orderFlagInvestmentRoom;
+    @Column(name = "flag_investment_room")
+    private Boolean flagInvestmentRoom;
 
     @ColumnDefault("false")
-    @Column(name = "order_flag_investment_structural_measures")
-    private Boolean orderFlagInvestmentStructuralMeasures;
+    @Column(name = "flag_investment_structural_measures")
+    private Boolean flagInvestmentStructuralMeasures;
 
     @ColumnDefault("false")
-    @Column(name = "order_flag_media_permission")
-    private Boolean orderFlagMediaPermission;
+    @Column(name = "flag_media_permission")
+    private Boolean flagMediaPermission;
 
-    @Column(name = "order_dfg_key", length = 45)
-    private String orderDfgKey;
+    @Column(name = "dfg_key", length = 45)
+    private String dfgKey;
 
 }

@@ -14,67 +14,57 @@ import java.time.LocalDate;
 @Table(name = "supplier")
 public class Supplier {
     @Id
-    @Column(name = "supplier_name", nullable = false)
-    private String supplierName;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Integer id;
 
-    @Column(name = "supplier_phone", length = 45)
-    private String supplierPhone;
+    @Column(name = "name", nullable = false)
+    private String name;
 
-    @Column(name = "supplier_fax", length = 45)
-    private String supplierFax;
+    @Column(name = "phone", length = 45)
+    private String phone;
 
-    @Column(name = "supplier_comment")
-    private String supplierComment;
+    @Column(name = "fax", length = 45)
+    private String fax;
 
-    @Column(name = "supplier_website")
-    private String supplierWebsite;
+    @Column(name = "comment")
+    private String comment;
 
-    @Column(name = "supplier_vat_id", length = 20)
-    private String supplierVatId;
+    @Column(name = "website")
+    private String website;
+
+    @Column(name = "vat_id", length = 20)
+    private String vatId;
 
     @ColumnDefault("false")
-    @Column(name = "supplier_flag_preferred", nullable = false)
-    private Boolean supplierFlagPreferred = false;
+    @Column(name = "flag_preferred", nullable = false)
+    private Boolean flagPreferred = false;
 
-    @Column(name = "supplier_building_name")
-    private String supplierBuildingName;
+    @Column(name = "building_name")
+    private String buildingname;
 
-    @Column(name = "supplier_street", nullable = false)
-    private String supplierStreet;
+    @Column(name = "street", nullable = false)
+    private String street;
 
-    @Column(name = "supplier_building_number")
-    private String supplierBuildingNumber;
+    @Column(name = "building_number")
+    private String buildingNumber;
 
-    @Column(name = "supplier_town", nullable = false)
-    private String supplierTown;
+    @Column(name = "town", nullable = false)
+    private String town;
 
-    @Column(name = "supplier_postal_code", nullable = false)
-    private String supplierPostalCode;
+    @Column(name = "postal_code", nullable = false)
+    private String postalCode;
 
-    @Column(name = "supplier_county")
-    private String supplierCounty;
+    @Column(name = "county")
+    private String county;
 
-    @Column(name = "country_name", insertable = false, updatable = false)
-    private String countryName;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "country_name", nullable = false)
-    private Country country;
-
-    @Column(name = "address_type", insertable = false, updatable = false)
-    private String addressType;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "address_type", nullable = false)
-    private AddressType address;
+    @Column(name = "country", nullable = false)
+    private String country;
 
     @Column(name = "supplier_deactivated_date")
     private LocalDate supplierDeactivatedDate;
 
-    @Column(name = "supplier_cashback_percentage", precision = 3, scale = 2)
-    private BigDecimal supplierCashbackPercentage;
-
-    @Column(name = "supplier_cashback_days")
-    private Short supplierCashbackDays;
+    @OneToOne
+    @JoinColumn(name = "address_id", referencedColumnName = "id")
+    private Address address;
 
 }

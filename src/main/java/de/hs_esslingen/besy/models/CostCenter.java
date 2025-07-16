@@ -15,19 +15,19 @@ import java.time.LocalDate;
 @Table(name = "cost_center")
 public class CostCenter {
     @Id
-    @Column(name = "cost_center_id", nullable = false, length = 20)
-    private String costCenterId;
+    @Column(name = "id", nullable = false, length = 20)
+    private String id;
 
-    @Column(name = "cost_center_name", nullable = false)
-    private String costCenterName;
+    @Column(name = "name", nullable = false)
+    private String name;
 
-    @Column(name = "cost_center_begin_date")
-    private LocalDate costCenterBeginDate;
+    @Column(name = "begin_date")
+    private LocalDate beginDate;
 
-    @Column(name = "cost_center_end_date")
-    private LocalDate costCenterEndDate;
+    @Column(name = "end_date")
+    private LocalDate endDate;
 
-    @Column(name = "cost_center_comment")
-    private String costCenterComment;
+    @Column(name = "comment")
+    private String comment;
 
 }

@@ -24,7 +24,7 @@ public class CustomerId {
     @JoinColumn(name = "supplier_name", nullable = false)
     private de.hs_esslingen.besy.models.Supplier supplier;
 
-    @Column(name = "customer_id_comment")
-    private String customerIdComment;
+    @Column(name = "comment")
+    private String comment;
 
 }
