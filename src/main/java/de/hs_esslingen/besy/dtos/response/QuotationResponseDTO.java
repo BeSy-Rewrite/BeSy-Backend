@@ -1,0 +1,20 @@
+package de.hs_esslingen.besy.dtos.response;
+
+import lombok.Value;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+/**
+ * DTO for {@link de.hs_esslingen.besy.models.Quotation}
+ */
+@Value
+public class QuotationResponseDTO implements Serializable {
+    Long orderId;
+    Short quotationIndex;
+    LocalDate quotationQuoteDate;
+    BigDecimal quotationPrice;
+    String quotationCompanyName;
+    String quotationCompanyCity;
+}

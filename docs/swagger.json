@@ -1,0 +1,3127 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Generated server url"
+    }
+  ],
+  "paths": {
+    "/suppliers/{supplier-name}": {
+      "put": {
+        "tags": [
+          "supplier-controller"
+        ],
+        "operationId": "updateSupplier",
+        "parameters": [
+          {
+            "name": "supplier-name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplierPUTRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/persons/{id}": {
+      "get": {
+        "tags": [
+          "person-controller"
+        ],
+        "operationId": "getPersonById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "person-controller"
+        ],
+        "operationId": "updatePerson",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/suppliers": {
+      "get": {
+        "tags": [
+          "supplier-controller"
+        ],
+        "operationId": "getAllSuppliers",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SupplierResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "supplier-controller"
+        ],
+        "operationId": "createSupplier",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplierPOSTRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/persons": {
+      "get": {
+        "tags": [
+          "person-controller"
+        ],
+        "operationId": "getAllPersons",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PersonResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "person-controller"
+        ],
+        "operationId": "createPerson",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders": {
+      "get": {
+        "tags": [
+          "order-controller"
+        ],
+        "operationId": "getAllOrders",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "order-controller"
+        ],
+        "operationId": "createOrder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/customer_id": {
+      "get": {
+        "tags": [
+          "customer-id-controller"
+        ],
+        "operationId": "getAllCustomerIds",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerIdResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "customer-id-controller"
+        ],
+        "operationId": "createCustomerId",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerIdRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerIdResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cost_centers": {
+      "get": {
+        "tags": [
+          "cost-center-controller"
+        ],
+        "operationId": "getCostCenters",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CostCenterResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "cost-center-controller"
+        ],
+        "operationId": "createCostCenter",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CostCenterRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CostCenterResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/addresses": {
+      "get": {
+        "tags": [
+          "address-controller"
+        ],
+        "operationId": "getAddressTypes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AddressResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "address-controller"
+        ],
+        "operationId": "createAddress",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vats": {
+      "get": {
+        "tags": [
+          "vat-controller"
+        ],
+        "operationId": "getAllVats",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VatResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "getAllUsers",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/primary_cost_center": {
+      "get": {
+        "tags": [
+          "primary-cost-center-controller"
+        ],
+        "operationId": "getAll",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PrimaryCostCenterResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/preferred_lists": {
+      "get": {
+        "tags": [
+          "preferred-list-controller"
+        ],
+        "operationId": "getPreferredLists",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PreferredListResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/order_status": {
+      "get": {
+        "tags": [
+          "order-status-controller"
+        ],
+        "operationId": "getAllOrderStatuses",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderStatusResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/items": {
+      "get": {
+        "tags": [
+          "item-controller"
+        ],
+        "operationId": "getAllItems",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/faculties": {
+      "get": {
+        "tags": [
+          "faculty-controller"
+        ],
+        "operationId": "getFaculties",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FacultyResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/currencies": {
+      "get": {
+        "tags": [
+          "currency-controller"
+        ],
+        "operationId": "getAllCurrencies",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CurrencyResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/countries": {
+      "get": {
+        "tags": [
+          "country-controller"
+        ],
+        "operationId": "getAddressTypes_1",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CountryResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/address-types": {
+      "get": {
+        "tags": [
+          "address-type-controller"
+        ],
+        "operationId": "getAddressTypes_2",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AddressTypeResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{username}": {
+      "get": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "getUser",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "getUser_2",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "getUser_1",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "getUser_3",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "getUser_6",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "head": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "getUser_5",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "getUser_4",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quotations/{order-id}": {
+      "get": {
+        "tags": [
+          "quotation-controller"
+        ],
+        "operationId": "getQuotationsOfOrder",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuotationResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "quotation-controller"
+        ],
+        "operationId": "getQuotationsOfOrder_2",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuotationResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "quotation-controller"
+        ],
+        "operationId": "getQuotationsOfOrder_1",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuotationResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "quotation-controller"
+        ],
+        "operationId": "getQuotationsOfOrder_3",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuotationResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "tags": [
+          "quotation-controller"
+        ],
+        "operationId": "getQuotationsOfOrder_6",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuotationResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "head": {
+        "tags": [
+          "quotation-controller"
+        ],
+        "operationId": "getQuotationsOfOrder_5",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuotationResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "quotation-controller"
+        ],
+        "operationId": "getQuotationsOfOrder_4",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuotationResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "tags": [
+          "order-controller"
+        ],
+        "operationId": "patchOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "orderRequestDTO",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/OrderRequestDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "order-controller"
+        ],
+        "operationId": "patchOrder_2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "order-controller"
+        ],
+        "operationId": "patchOrder_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "order-controller"
+        ],
+        "operationId": "patchOrder_3",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "tags": [
+          "order-controller"
+        ],
+        "operationId": "patchOrder_6",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "head": {
+        "tags": [
+          "order-controller"
+        ],
+        "operationId": "patchOrder_5",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "order-controller"
+        ],
+        "operationId": "patchOrder_4",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/user/{owner-username}": {
+      "get": {
+        "tags": [
+          "order-controller"
+        ],
+        "operationId": "getUserOrders",
+        "parameters": [
+          {
+            "name": "owner-username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "order-controller"
+        ],
+        "operationId": "getUserOrders_2",
+        "parameters": [
+          {
+            "name": "owner-username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "order-controller"
+        ],
+        "operationId": "getUserOrders_1",
+        "parameters": [
+          {
+            "name": "owner-username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "order-controller"
+        ],
+        "operationId": "getUserOrders_3",
+        "parameters": [
+          {
+            "name": "owner-username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "tags": [
+          "order-controller"
+        ],
+        "operationId": "getUserOrders_6",
+        "parameters": [
+          {
+            "name": "owner-username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "head": {
+        "tags": [
+          "order-controller"
+        ],
+        "operationId": "getUserOrders_5",
+        "parameters": [
+          {
+            "name": "owner-username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "order-controller"
+        ],
+        "operationId": "getUserOrders_4",
+        "parameters": [
+          {
+            "name": "owner-username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/items/{order-id}": {
+      "get": {
+        "tags": [
+          "item-controller"
+        ],
+        "operationId": "getAllItemsOfOrder",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "item-controller"
+        ],
+        "operationId": "getAllItemsOfOrder_2",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "item-controller"
+        ],
+        "operationId": "getAllItemsOfOrder_1",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "item-controller"
+        ],
+        "operationId": "getAllItemsOfOrder_3",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "tags": [
+          "item-controller"
+        ],
+        "operationId": "getAllItemsOfOrder_6",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "head": {
+        "tags": [
+          "item-controller"
+        ],
+        "operationId": "getAllItemsOfOrder_5",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "item-controller"
+        ],
+        "operationId": "getAllItemsOfOrder_4",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemResponseDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invoices/order/{order-id}": {
+      "get": {
+        "tags": [
+          "invoice-controller"
+        ],
+        "operationId": "getInvoiceOfOrder",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "invoice-controller"
+        ],
+        "operationId": "getInvoiceOfOrder_2",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "invoice-controller"
+        ],
+        "operationId": "getInvoiceOfOrder_1",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "invoice-controller"
+        ],
+        "operationId": "getInvoiceOfOrder_3",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "tags": [
+          "invoice-controller"
+        ],
+        "operationId": "getInvoiceOfOrder_6",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "head": {
+        "tags": [
+          "invoice-controller"
+        ],
+        "operationId": "getInvoiceOfOrder_5",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "invoice-controller"
+        ],
+        "operationId": "getInvoiceOfOrder_4",
+        "parameters": [
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/addresses/{address-name}": {
+      "get": {
+        "tags": [
+          "address-controller"
+        ],
+        "operationId": "updateAddress",
+        "parameters": [
+          {
+            "name": "address-name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "addressDTO",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/AddressRequestDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "address-controller"
+        ],
+        "operationId": "updateAddress_2",
+        "parameters": [
+          {
+            "name": "address-name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "address-controller"
+        ],
+        "operationId": "updateAddress_1",
+        "parameters": [
+          {
+            "name": "address-name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "address-controller"
+        ],
+        "operationId": "updateAddress_3",
+        "parameters": [
+          {
+            "name": "address-name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "tags": [
+          "address-controller"
+        ],
+        "operationId": "updateAddress_6",
+        "parameters": [
+          {
+            "name": "address-name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "head": {
+        "tags": [
+          "address-controller"
+        ],
+        "operationId": "updateAddress_5",
+        "parameters": [
+          {
+            "name": "address-name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "address-controller"
+        ],
+        "operationId": "updateAddress_4",
+        "parameters": [
+          {
+            "name": "address-name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressRequestDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressResponseDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SupplierPUTRequestDTO": {
+        "type": "object",
+        "properties": {
+          "supplierName": {
+            "type": "string"
+          },
+          "supplierPhone": {
+            "type": "string"
+          },
+          "supplierFax": {
+            "type": "string"
+          },
+          "supplierComment": {
+            "type": "string"
+          },
+          "supplierWebsite": {
+            "type": "string"
+          },
+          "supplierVatId": {
+            "type": "string"
+          },
+          "supplierFlagPreferred": {
+            "type": "boolean"
+          },
+          "supplierCashbackPercentage": {
+            "type": "number"
+          },
+          "supplierCashbackDays": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "addressType": {
+            "type": "string"
+          },
+          "supplierBuildingName": {
+            "type": "string"
+          },
+          "supplierStreet": {
+            "type": "string"
+          },
+          "supplierBuildingNumber": {
+            "type": "string"
+          },
+          "supplierPostalCode": {
+            "type": "string"
+          },
+          "supplierTown": {
+            "type": "string"
+          },
+          "supplierCounty": {
+            "type": "string"
+          },
+          "countryName": {
+            "type": "string"
+          }
+        }
+      },
+      "SupplierResponseDTO": {
+        "type": "object",
+        "properties": {
+          "supplierName": {
+            "type": "string"
+          },
+          "supplierPhone": {
+            "type": "string"
+          },
+          "supplierFax": {
+            "type": "string"
+          },
+          "supplierComment": {
+            "type": "string"
+          },
+          "supplierWebsite": {
+            "type": "string"
+          },
+          "supplierVatId": {
+            "type": "string"
+          },
+          "supplierFlagPreferred": {
+            "type": "boolean"
+          },
+          "supplierBuildingName": {
+            "type": "string"
+          },
+          "supplierStreet": {
+            "type": "string"
+          },
+          "supplierBuildingNumber": {
+            "type": "string"
+          },
+          "supplierTown": {
+            "type": "string"
+          },
+          "supplierPostalCode": {
+            "type": "string"
+          },
+          "supplierCounty": {
+            "type": "string"
+          },
+          "countryName": {
+            "type": "string"
+          },
+          "addressType": {
+            "type": "string"
+          },
+          "supplierDeactivatedDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "supplierCashbackPercentage": {
+            "type": "number"
+          }
+        }
+      },
+      "PersonRequestDTO": {
+        "type": "object",
+        "properties": {
+          "personGivenName": {
+            "type": "string"
+          },
+          "personSurname": {
+            "type": "string"
+          },
+          "personEmail": {
+            "type": "string"
+          },
+          "personFax": {
+            "type": "string"
+          },
+          "personPhone": {
+            "type": "string"
+          },
+          "personTitle": {
+            "type": "string"
+          },
+          "personComment": {
+            "type": "string"
+          },
+          "addressName": {
+            "type": "string"
+          },
+          "addressNameAddressComment": {
+            "type": "string"
+          },
+          "facultyAbbr": {
+            "type": "string"
+          }
+        }
+      },
+      "PersonResponseDTO": {
+        "type": "object",
+        "properties": {
+          "personId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "personGivenName": {
+            "type": "string"
+          },
+          "personSurname": {
+            "type": "string"
+          },
+          "personEmail": {
+            "type": "string"
+          },
+          "personFax": {
+            "type": "string"
+          },
+          "personPhone": {
+            "type": "string"
+          },
+          "personTitle": {
+            "type": "string"
+          },
+          "personComment": {
+            "type": "string"
+          },
+          "addressName": {
+            "type": "string"
+          },
+          "facultyAbbr": {
+            "type": "string"
+          }
+        }
+      },
+      "SupplierPOSTRequestDTO": {
+        "type": "object",
+        "properties": {
+          "supplierName": {
+            "type": "string"
+          },
+          "supplierPhone": {
+            "type": "string"
+          },
+          "supplierFax": {
+            "type": "string"
+          },
+          "supplierComment": {
+            "type": "string"
+          },
+          "supplierWebsite": {
+            "type": "string"
+          },
+          "supplierVatId": {
+            "type": "string"
+          },
+          "supplierFlagPreferred": {
+            "type": "boolean"
+          },
+          "supplierCashbackPercentage": {
+            "type": "number"
+          },
+          "supplierCashbackDays": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "addressType": {
+            "type": "string"
+          },
+          "supplierBuildingName": {
+            "type": "string"
+          },
+          "supplierStreet": {
+            "type": "string"
+          },
+          "supplierBuildingNumber": {
+            "type": "string"
+          },
+          "supplierPostalCode": {
+            "type": "string"
+          },
+          "supplierTown": {
+            "type": "string"
+          },
+          "supplierCounty": {
+            "type": "string"
+          },
+          "countryName": {
+            "type": "string"
+          }
+        }
+      },
+      "OrderRequestDTO": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "primaryCostCenterId": {
+            "type": "string"
+          },
+          "primaryCostCenterFaculty": {
+            "type": "string"
+          },
+          "orderBookingYear": {
+            "type": "string"
+          },
+          "orderCreatedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "orderLegacyAlias": {
+            "type": "string"
+          },
+          "ownerUserName": {
+            "type": "string"
+          },
+          "orderContentDescription": {
+            "type": "string"
+          },
+          "orderStatus": {
+            "type": "string"
+          },
+          "currencyShort": {
+            "type": "string"
+          },
+          "orderComment": {
+            "type": "string"
+          },
+          "orderCommentForSupplier": {
+            "type": "string"
+          },
+          "orderQuoteNumber": {
+            "type": "string"
+          },
+          "orderQuoteSign": {
+            "type": "string"
+          },
+          "orderQuoteDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "orderQuotePrice": {
+            "type": "number"
+          },
+          "deliveryPersonId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "invoicePersonId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "queriesPersonId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "supplierName": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": "string"
+          },
+          "secondaryCostCenterId": {
+            "type": "string"
+          },
+          "orderFixedDiscount": {
+            "type": "number"
+          },
+          "orderPercentageDiscount": {
+            "type": "number"
+          },
+          "orderCashbackPercentage": {
+            "type": "number"
+          },
+          "orderCashbackDays": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderLastUpdatedTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "orderFlagDecisionCheapestOffer": {
+            "type": "boolean"
+          },
+          "orderFlagDecisionSoleSupplier": {
+            "type": "boolean"
+          },
+          "orderFlagDecisionContractPartner": {
+            "type": "boolean"
+          },
+          "orderFlagDecisionOtherReason": {
+            "type": "boolean"
+          },
+          "orderDecisionOtherReasonsDescription": {
+            "type": "string"
+          },
+          "orderFlagEdvPermission": {
+            "type": "boolean"
+          },
+          "orderFlagFurniturePermission": {
+            "type": "boolean"
+          },
+          "orderFlagFurnitureRoom": {
+            "type": "boolean"
+          },
+          "orderFlagInvestmentRoom": {
+            "type": "boolean"
+          },
+          "orderFlagInvestmentStructuralMeasures": {
+            "type": "boolean"
+          },
+          "orderFlagMediaPermission": {
+            "type": "boolean"
+          },
+          "orderDfgKey": {
+            "type": "string"
+          }
+        }
+      },
+      "OrderResponseDTO": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "primaryCostCenterId": {
+            "type": "string"
+          },
+          "primaryCostCenterFaculty": {
+            "type": "string"
+          },
+          "orderBookingYear": {
+            "type": "string"
+          },
+          "orderAutoIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderCreatedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "orderLegacyAlias": {
+            "type": "string"
+          },
+          "ownerUserName": {
+            "type": "string"
+          },
+          "orderContentDescription": {
+            "type": "string"
+          },
+          "orderStatus": {
+            "type": "string"
+          },
+          "currencyShort": {
+            "type": "string"
+          },
+          "orderComment": {
+            "type": "string"
+          },
+          "orderCommentForSupplier": {
+            "type": "string"
+          },
+          "orderQuoteNumber": {
+            "type": "string"
+          },
+          "orderQuoteSign": {
+            "type": "string"
+          },
+          "orderQuoteDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "orderQuotePrice": {
+            "type": "number"
+          },
+          "deliveryPersonId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "invoicePersonId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "queriesPersonId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "supplierName": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": "string"
+          },
+          "secondaryCostCenterId": {
+            "type": "string"
+          },
+          "orderFixedDiscount": {
+            "type": "number"
+          },
+          "orderPercentageDiscount": {
+            "type": "number"
+          },
+          "orderCashbackPercentage": {
+            "type": "number"
+          },
+          "orderCashbackDays": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderLastUpdatedTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "orderFlagDecisionCheapestOffer": {
+            "type": "boolean"
+          },
+          "orderFlagDecisionSoleSupplier": {
+            "type": "boolean"
+          },
+          "orderFlagDecisionContractPartner": {
+            "type": "boolean"
+          },
+          "orderFlagDecisionOtherReasons": {
+            "type": "boolean"
+          },
+          "orderDecisionOtherReasonsDescription": {
+            "type": "string"
+          },
+          "orderFlagEdvPermission": {
+            "type": "boolean"
+          },
+          "orderFlagFurniturePermission": {
+            "type": "boolean"
+          },
+          "orderFlagFurnitureRoom": {
+            "type": "boolean"
+          },
+          "orderFlagInvestmentRoom": {
+            "type": "boolean"
+          },
+          "orderFlagInvestmentStructuralMeasures": {
+            "type": "boolean"
+          },
+          "orderFlagMediaPermission": {
+            "type": "boolean"
+          },
+          "orderDfgKey": {
+            "type": "string"
+          }
+        }
+      },
+      "CustomerIdRequestDTO": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string"
+          },
+          "supplierName": {
+            "type": "string"
+          },
+          "customerIdComment": {
+            "type": "string"
+          }
+        }
+      },
+      "CustomerIdResponseDTO": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string"
+          },
+          "supplierName": {
+            "type": "string"
+          },
+          "customerIdComment": {
+            "type": "string"
+          }
+        }
+      },
+      "CostCenterRequestDTO": {
+        "type": "object",
+        "properties": {
+          "costCenterId": {
+            "type": "string"
+          },
+          "costCenterName": {
+            "type": "string"
+          },
+          "costCenterBeginDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "costCenterEndDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "costCenterComment": {
+            "type": "string"
+          }
+        }
+      },
+      "CostCenterResponseDTO": {
+        "type": "object",
+        "properties": {
+          "costCenterId": {
+            "type": "string"
+          },
+          "costCenterName": {
+            "type": "string"
+          },
+          "costCenterBeginDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "costCenterEndDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "costCenterComment": {
+            "type": "string"
+          }
+        }
+      },
+      "AddressRequestDTO": {
+        "type": "object",
+        "properties": {
+          "addressName": {
+            "type": "string"
+          },
+          "addressBuildingName": {
+            "type": "string"
+          },
+          "addressStreet": {
+            "type": "string"
+          },
+          "addressBuildingNumber": {
+            "type": "string"
+          },
+          "addressTown": {
+            "type": "string"
+          },
+          "addressPostalCode": {
+            "type": "string"
+          },
+          "addressCounty": {
+            "type": "string"
+          },
+          "countryName": {
+            "type": "string"
+          },
+          "addressType": {
+            "type": "string"
+          },
+          "addressComment": {
+            "type": "string"
+          }
+        }
+      },
+      "AddressResponseDTO": {
+        "type": "object",
+        "properties": {
+          "addressName": {
+            "type": "string"
+          },
+          "addressBuildingName": {
+            "type": "string"
+          },
+          "addressStreet": {
+            "type": "string"
+          },
+          "addressBuildingNumber": {
+            "type": "string"
+          },
+          "addressTown": {
+            "type": "string"
+          },
+          "addressPostalCode": {
+            "type": "string"
+          },
+          "addressCounty": {
+            "type": "string"
+          },
+          "countryName": {
+            "type": "string"
+          },
+          "addressType": {
+            "type": "string"
+          },
+          "addressComment": {
+            "type": "string"
+          }
+        }
+      },
+      "VatResponseDTO": {
+        "type": "object",
+        "properties": {
+          "vatValue": {
+            "type": "number"
+          },
+          "vatDescription": {
+            "type": "string"
+          }
+        }
+      },
+      "UserResponseDTO": {
+        "type": "object",
+        "properties": {
+          "userName": {
+            "type": "string"
+          },
+          "personId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "preferredCostCenterId": {
+            "type": "string"
+          }
+        }
+      },
+      "PrimaryCostCenterResponseDTO": {
+        "type": "object",
+        "properties": {
+          "costCenterId": {
+            "type": "string"
+          },
+          "facultyAbbr": {
+            "type": "string"
+          }
+        }
+      },
+      "PreferredListResponseDTO": {
+        "type": "object",
+        "properties": {
+          "preferredListAbbr": {
+            "type": "string"
+          },
+          "preferredListDescription": {
+            "type": "string"
+          }
+        }
+      },
+      "OrderStatusResponseDTO": {
+        "type": "object",
+        "properties": {
+          "orderStatus": {
+            "type": "string"
+          },
+          "orderStatusComment": {
+            "type": "string"
+          }
+        }
+      },
+      "ItemResponseDTO": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "itemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "itemName": {
+            "type": "string"
+          },
+          "itemPricePerUnit": {
+            "type": "number"
+          },
+          "itemQuantity": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "itemQuantityUnit": {
+            "type": "string"
+          },
+          "itemArticleId": {
+            "type": "string"
+          },
+          "itemComment": {
+            "type": "string"
+          },
+          "vatValue": {
+            "type": "number"
+          },
+          "preferredListAbbr": {
+            "type": "string"
+          },
+          "itemPreferredListNumber": {
+            "type": "string"
+          }
+        }
+      },
+      "FacultyResponseDTO": {
+        "type": "object",
+        "properties": {
+          "facultyAbbr": {
+            "type": "string"
+          },
+          "facultyLongName": {
+            "type": "string"
+          }
+        }
+      },
+      "CurrencyResponseDTO": {
+        "type": "object",
+        "properties": {
+          "currencyShort": {
+            "type": "string"
+          },
+          "currencyLong": {
+            "type": "string"
+          },
+          "currencyComment": {
+            "type": "string"
+          }
+        }
+      },
+      "CountryResponseDTO": {
+        "type": "object",
+        "properties": {
+          "countryName": {
+            "type": "string"
+          },
+          "countryGerman": {
+            "type": "string"
+          },
+          "countryCode": {
+            "type": "string"
+          }
+        }
+      },
+      "AddressTypeResponseDTO": {
+        "type": "object",
+        "properties": {
+          "addressType": {
+            "type": "string"
+          },
+          "addressTypeComment": {
+            "type": "string"
+          }
+        }
+      },
+      "QuotationResponseDTO": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "quotationQuoteDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "quotationPrice": {
+            "type": "number"
+          },
+          "quotationCompanyName": {
+            "type": "string"
+          },
+          "quotationCompanyCity": {
+            "type": "string"
+          }
+        }
+      },
+      "InvoiceResponseDTO": {
+        "type": "object",
+        "properties": {
+          "invoiceId": {
+            "type": "string"
+          },
+          "costCenterId": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "invoicePrice": {
+            "type": "number"
+          },
+          "invoiceDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "invoiceComment": {
+            "type": "string"
+          },
+          "invoiceCreatedDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}
