@@ -64,6 +64,6 @@ public class Item {
     @ColumnDefault("'netto'")
     @Column(name = "item_vat_type", nullable = false)
     @Enumerated(EnumType.STRING)
-    private VatType itemVatType;
+    private VatType vatType;
 
 }

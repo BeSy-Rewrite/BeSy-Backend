@@ -12,9 +12,8 @@ import java.time.LocalDate;
 @Value
 public class QuotationRequestDTO implements Serializable {
     Long orderId;
-    Short quotationIndex;
-    LocalDate quotationQuoteDate;
-    BigDecimal quotationPrice;
-    String quotationCompanyName;
-    String quotationCompanyCity;
+    Short index;
+    LocalDate quoteDate;
+    BigDecimal price;
+    Long supplierId;
 }

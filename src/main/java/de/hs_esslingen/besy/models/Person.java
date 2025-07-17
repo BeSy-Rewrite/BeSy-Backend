@@ -47,6 +47,6 @@ public class Person {
 
     @Column(name = "person_gender", nullable = false)
     @Enumerated(EnumType.STRING)
-    private Gender personGender;
+    private Gender gender;
 
 }

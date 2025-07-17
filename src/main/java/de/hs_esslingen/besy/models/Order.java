@@ -1,6 +1,5 @@
 package de.hs_esslingen.besy.models;
 
-import de.hs_esslingen.besy.enums.Gender;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -164,8 +163,8 @@ public class Order {
     private String decisionOtherReasonsDescription;
 
     @ColumnDefault("false")
-    @Column(name = "order_flag_edv_permission")
-    private Boolean orderFlagEdvPermission;
+    @Column(name = "flag_edv_permission")
+    private Boolean flagEdvPermission;
 
     @ColumnDefault("false")
     @Column(name = "flag_furniture_permission")

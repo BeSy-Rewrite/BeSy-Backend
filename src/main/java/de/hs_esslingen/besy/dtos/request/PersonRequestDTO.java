@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.dtos.request;
 
+import de.hs_esslingen.besy.enums.Gender;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -9,14 +10,13 @@ import java.io.Serializable;
  */
 @Value
 public class PersonRequestDTO implements Serializable {
-    String personGivenName;
-    String personSurname;
-    String personEmail;
-    String personFax;
-    String personPhone;
-    String personTitle;
-    String personComment;
-    String addressName;
-    String addressNameAddressComment;
-    String facultyAbbr;
+    String name;
+    String surname;
+    String email;
+    String fax;
+    String phone;
+    String title;
+    String comment;
+    String addressId;
+    Gender gender;
 }

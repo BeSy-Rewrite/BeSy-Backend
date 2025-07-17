@@ -33,6 +33,9 @@ public class Quotation {
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Column(name = "supplier_id", insertable = false, updatable = false)
+    private Long supplierId;
+
     @ManyToOne
     @JoinColumn(name = "supplier_id", referencedColumnName ="id", nullable = false)
     private Supplier supplier;
