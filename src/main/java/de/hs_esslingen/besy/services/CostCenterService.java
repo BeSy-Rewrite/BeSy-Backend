@@ -28,7 +28,7 @@ public class CostCenterService {
     }
 
     public ResponseEntity<CostCenterResponseDTO> createCostCenter(CostCenterRequestDTO requestDTO) {
-        if(costCenterRepository.existsById(requestDTO.getCostCenterId())) return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        if(costCenterRepository.existsById(requestDTO.getId())) return ResponseEntity.status(HttpStatus.CONFLICT).build();
         CostCenter costCenter = costCenterRequestMapper.toEntity(requestDTO);
         costCenterRepository.save(costCenter);
         return ResponseEntity.status(HttpStatus.CREATED).body(costCenterResponseMapper.toDto(costCenter));

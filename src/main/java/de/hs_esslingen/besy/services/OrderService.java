@@ -2,9 +2,11 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
+import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.mappers.request.ItemRequestMapper;
 import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
 import de.hs_esslingen.besy.mappers.request.QuotationRequestMapper;
+import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
 import de.hs_esslingen.besy.models.*;
 import de.hs_esslingen.besy.repositories.*;
 import lombok.AllArgsConstructor;
@@ -19,7 +21,6 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
-    private final OrderStatusRepository orderStatusRepository;
     private final CurrencyRepository currencyRepository;
     private final PersonRepository personRepository;
     private final CostCenterRepository costCenterRepository;
@@ -46,8 +47,7 @@ public class OrderService {
 
         // Create entity proxies without null checks, since they must exist
         // Otherwise the transaction needs to fail
-        User ownerRef = userRepository.getReferenceById(orderDTO.getOwnerUserName());
-        OrderStatus orderStatusRef = orderStatusRepository.getReferenceById(orderDTO.getOrderStatus());
+        User ownerRef = userRepository.getReferenceById(orderDTO.getOwnerId());
         Currency currencyRef = currencyRepository.getReferenceById(orderDTO.getCurrencyShort());
         Person deliveryPersonRef = personRepository.getReferenceById(orderDTO.getDeliveryPersonId());
         Person invoicePersonRef = personRepository.getReferenceById(orderDTO.getInvoicePersonId());
@@ -60,13 +60,14 @@ public class OrderService {
         CustomerId customerIdRef = customerIdRepository.getReferenceById(customerIdId);
 
         order.setOwner(ownerRef);
-        order.setOrderStatusRef(orderStatusRef);
         order.setCurrency(currencyRef);
         order.setDeliveryPerson(deliveryPersonRef);
         order.setInvoicePerson(invoicePersonRef);
         order.setQueriesPerson(queriesPersonRef);
         order.setSecondaryCostCenter(secondaryCostCenterRef);
         order.setCustomer(customerIdRef);
+
+        order.setStatus(orderDTO.getStatus());
 
         // TODO: Replace this.
         // Construct all items and manually map the composite primary key (ItemId)
@@ -84,7 +85,7 @@ public class OrderService {
         quotations.forEach(quotation -> {
             QuotationId quotationId = new QuotationId();
             quotationId.setOrderId(quotation.getOrderId());
-            quotationId.setQuotationIndex(quotation.getQuotationIndex());
+            quotationId.setQuotationIndex(quotation.getIndex());
             quotation.setId(quotationId);
             quotation.setOrder(order);
         });

@@ -1,11 +1,12 @@
 package de.hs_esslingen.besy.mappers.response;
 
+import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.mappers.EntityMapper;
-import de.hs_esslingen.besy.models.CustomerId;
+import de.hs_esslingen.besy.models.Order;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
-public interface CustomerIdResponseMapper extends EntityMapper<CustomerIdResponseDTO, CustomerId> {
+public interface OrderResponseMapper extends EntityMapper<OrderResponseDTO, Order> {
 }

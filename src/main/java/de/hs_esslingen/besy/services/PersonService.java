@@ -21,7 +21,6 @@ public class PersonService {
 
     private final PersonRepository personRepository;
     private final AddressRepository addressRepository;
-    private final FacultyRepository facultyRepository;
     private final PersonResponseMapper personResponseMapper;
     private final PersonRequestMapper personRequestMapper;
 
@@ -38,12 +37,10 @@ public class PersonService {
     }
 
     public ResponseEntity<PersonResponseDTO> createPerson(PersonRequestDTO personDTO) {
-        Address address = addressRepository.getReferenceById(personDTO.getAddressName());
-        Faculty faculty = facultyRepository.getReferenceById(personDTO.getFacultyAbbr());
+        Address address = addressRepository.getReferenceById(personDTO.getAddressId());
 
         Person person = personRequestMapper.toEntity(personDTO);
         person.setAddress(address);
-        person.setFaculty(faculty);
 
         Person savedPerson = personRepository.save(person);
         return ResponseEntity.ok(personResponseMapper.toDto(savedPerson));
@@ -52,12 +49,10 @@ public class PersonService {
     public ResponseEntity<PersonResponseDTO> updatePerson(Long id, PersonRequestDTO personDTO) {
         if(!personRepository.existsById(id)) return ResponseEntity.notFound().build();
 
-        Address address = addressRepository.getReferenceById(personDTO.getAddressName());
-        Faculty faculty = facultyRepository.getReferenceById(personDTO.getFacultyAbbr());
+        Address address = addressRepository.getReferenceById(personDTO.getAddressId());
         Person person = personRequestMapper.toEntity(personDTO);
-        person.setPersonId(id);
         person.setAddress(address);
-        person.setFaculty(faculty);
+        person.setId(id);
 
         Person savedPerson = personRepository.save(person);
         return ResponseEntity.ok(personResponseMapper.toDto(savedPerson));
