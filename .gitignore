@@ -35,3 +35,5 @@ build/
 .vscode/
 
 /.env.new
+/.mysql/dump_migrated_25-07-22.sql
+/.mysql/dump_old_25_07_22.sql
