@@ -18,7 +18,7 @@ public class QuotationService {
     private final QuotationResponseMapper quotationResponseMapper;
 
     public ResponseEntity<List<QuotationResponseDTO>> getQuotationsOfOrder(Long orderId) {
-        List<Quotation> quotations = quotationRepository.findByOrder_OrderId(orderId);
+        List<Quotation> quotations = quotationRepository.findByOrderId(orderId);
         List<QuotationResponseDTO> quotationResponseDTOS = quotationResponseMapper.toDto(quotations);
         return ResponseEntity.ok(quotationResponseDTOS);
     }

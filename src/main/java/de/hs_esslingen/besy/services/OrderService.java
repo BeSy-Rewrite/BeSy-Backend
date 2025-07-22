@@ -102,7 +102,7 @@ public class OrderService {
 
 
     public ResponseEntity<List<OrderResponseDTO>> getOrdersOfOwnerUser(String username) {
-        List<Order> orders = orderRepository.findByOwnerUserName(username);
+        List<Order> orders = orderRepository.findByOwnerId(username);
         List<OrderResponseDTO> orderResponseDTOS = orderResponseMapper.toDto(orders);
         return ResponseEntity.ok(orderResponseDTOS);
     }

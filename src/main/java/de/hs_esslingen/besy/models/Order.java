@@ -45,7 +45,7 @@ public class Order {
     private String ownerId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "owner_user_id",referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "owner_user_id",referencedColumnName = "keycloak_uuid", nullable = false)
     private de.hs_esslingen.besy.models.User owner;
 
     @Column(name = "content_description", nullable = false)

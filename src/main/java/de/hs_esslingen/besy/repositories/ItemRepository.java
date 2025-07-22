@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ItemRepository extends JpaRepository<Item, ItemId> {
-    List<Item> findByOrder_OrderId(Long orderOrderId);
+    List<Item> findByOrder_Id(Long orderOrderId);
 }
