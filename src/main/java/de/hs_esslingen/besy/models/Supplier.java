@@ -26,6 +26,9 @@ public class Supplier {
     @Column(name = "fax", length = 45)
     private String fax;
 
+    @Column(name = "email", length = 45)
+    private String email;
+
     @Column(name = "comment")
     private String comment;
 
@@ -40,7 +43,7 @@ public class Supplier {
     private Boolean flagPreferred = false;
 
     @Column(name = "building_name")
-    private String buildingname;
+    private String buildingName;
 
     @Column(name = "street", nullable = false)
     private String street;
@@ -60,8 +63,8 @@ public class Supplier {
     @Column(name = "country", nullable = false)
     private String country;
 
-    @Column(name = "supplier_deactivated_date")
-    private LocalDate supplierDeactivatedDate;
+    @Column(name = "deactivated_date")
+    private LocalDate deactivatedDate;
 
     @OneToOne
     @JoinColumn(name = "address_id", referencedColumnName = "id")

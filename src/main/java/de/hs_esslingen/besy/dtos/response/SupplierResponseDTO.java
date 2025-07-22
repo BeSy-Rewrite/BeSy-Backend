@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.dtos.response;
 
+import de.hs_esslingen.besy.dtos.request.AddressRequestDTO;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -11,21 +12,21 @@ import java.time.LocalDate;
  */
 @Value
 public class SupplierResponseDTO implements Serializable {
-    String supplierName;
-    String supplierPhone;
-    String supplierFax;
-    String supplierComment;
-    String supplierWebsite;
-    String supplierVatId;
-    Boolean supplierFlagPreferred;
-    String supplierBuildingName;
-    String supplierStreet;
-    String supplierBuildingNumber;
-    String supplierTown;
-    String supplierPostalCode;
-    String supplierCounty;
-    String countryName;
-    String addressType;
-    LocalDate supplierDeactivatedDate;
-    BigDecimal supplierCashbackPercentage;
+    String name;
+    String phone;
+    String fax;
+    String email;
+    String comment;
+    String website;
+    String vatId;
+    Boolean flagPreferred;
+    String buildingName;
+    String street;
+    String buildingNumber;
+    String town;
+    String postalCode;
+    String county;
+    String country;
+    LocalDate deactivatedDate;
+    AddressRequestDTO address;
 }

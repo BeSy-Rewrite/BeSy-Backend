@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.dtos.response;
 
+import de.hs_esslingen.besy.enums.PreferredList;
 import de.hs_esslingen.besy.enums.VatType;
 import de.hs_esslingen.besy.models.Item;
 import lombok.Value;
@@ -14,14 +15,14 @@ import java.math.BigDecimal;
 public class ItemResponseDTO implements Serializable {
     Long orderId;
     Integer itemId;
-    String itemName;
-    BigDecimal itemPricePerUnit;
-    Long itemQuantity;
-    String itemQuantityUnit;
-    String itemArticleId;
-    String itemComment;
-    BigDecimal vatValue;
-    String preferredListAbbr;
+    String name;
+    BigDecimal pricePerUnit;
+    Long quantity;
+    String quantityUnit;
+    String articleId;
+    String comment;
+    VatResponseDTO vat;
+    PreferredList preferredList;
     String itemPreferredListNumber;
-    VatType itemVatType;
+    VatType vatType;
 }

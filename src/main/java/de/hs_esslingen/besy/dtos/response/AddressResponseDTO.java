@@ -9,14 +9,13 @@ import java.io.Serializable;
  */
 @Value
 public class AddressResponseDTO implements Serializable {
-    String addressName;
-    String addressBuildingName;
-    String addressStreet;
-    String addressBuildingNumber;
-    String addressTown;
-    String addressPostalCode;
-    String addressCounty;
-    String countryName;
-    String addressType;
-    String addressComment;
+    String name;
+    String buildingName;
+    String street;
+    String buildingNumber;
+    String townName;
+    String postalCode;
+    String county;
+    String country;
+    String comment;
 }

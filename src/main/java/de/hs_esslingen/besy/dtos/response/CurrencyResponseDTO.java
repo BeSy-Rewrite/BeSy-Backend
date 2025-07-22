@@ -9,7 +9,6 @@ import java.io.Serializable;
  */
 @Value
 public class CurrencyResponseDTO implements Serializable {
-    String currencyShort;
-    String currencyLong;
-    String currencyComment;
+    String code;
+    String name;
 }
