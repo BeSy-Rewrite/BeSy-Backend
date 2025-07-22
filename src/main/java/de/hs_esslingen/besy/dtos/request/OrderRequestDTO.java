@@ -34,7 +34,7 @@ public class OrderRequestDTO implements Serializable {
     Long invoicePersonId;
     Long queriesPersonId;
     String customerId;
-    String supplierName;
+    Integer supplierId;
     String secondaryCostCenterId;
     BigDecimal fixedDiscount;
     BigDecimal percentageDiscount;

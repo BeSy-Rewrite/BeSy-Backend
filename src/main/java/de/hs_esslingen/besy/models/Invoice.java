@@ -26,7 +26,7 @@ public class Invoice {
     @Column(name = "order_id", nullable = false)
     private Long orderId;
 
-    @Column(name = "iprice", nullable = false, precision = 8, scale = 2)
+    @Column(name = "price", nullable = false, precision = 8, scale = 2)
     private BigDecimal price;
 
     @Column(name = "date", nullable = false)

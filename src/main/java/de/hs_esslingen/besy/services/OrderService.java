@@ -56,7 +56,7 @@ public class OrderService {
 
         CustomerIdId customerIdId = new CustomerIdId();
         customerIdId.setCustomerId(orderDTO.getCustomerId());
-        customerIdId.setSupplierName(orderDTO.getSupplierName());
+        customerIdId.setSupplierId(orderDTO.getSupplierId());
         CustomerId customerIdRef = customerIdRepository.getReferenceById(customerIdId);
 
         order.setOwner(ownerRef);

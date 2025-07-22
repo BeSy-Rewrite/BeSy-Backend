@@ -34,7 +34,7 @@ public class OrderResponseDTO implements Serializable {
     Long invoicePersonId;
     Long queriesPersonId;
     String customerId;
-    String supplierId;
+    Integer supplierId;
     String secondaryCostCenterId;
     BigDecimal fixedDiscount;
     BigDecimal percentageDiscount;

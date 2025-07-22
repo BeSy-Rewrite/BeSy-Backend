@@ -12,6 +12,7 @@ import java.time.LocalDate;
  */
 @Value
 public class SupplierResponseDTO implements Serializable {
+    Integer id;
     String name;
     String phone;
     String fax;

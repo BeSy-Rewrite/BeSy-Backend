@@ -109,13 +109,9 @@ public class Order {
     private String supplierId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "supplier_id", referencedColumnName = "id", nullable = false)
-    private Supplier supplier;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumns({
             @JoinColumn(name = "customer_id", referencedColumnName = "customer_id", nullable = false),
-            @JoinColumn(name = "supplier_name", referencedColumnName = "supplier_name", nullable = false)
+            @JoinColumn(name = "supplier_id", referencedColumnName = "supplier_id", nullable = false)
     })
     private CustomerId customer;
 

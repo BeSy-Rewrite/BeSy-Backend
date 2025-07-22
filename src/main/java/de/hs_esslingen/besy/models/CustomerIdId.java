@@ -16,21 +16,21 @@ public class CustomerIdId implements java.io.Serializable {
     @Column(name = "customer_id", nullable = false)
     private String customerId;
 
-    @Column(name = "supplier_name", nullable = false)
-    private String supplierName;
+    @Column(name = "supplier_id", nullable = false)
+    private Integer supplierId;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
         CustomerIdId entity = (CustomerIdId) o;
-        return Objects.equals(this.supplierName, entity.supplierName) &&
+        return Objects.equals(this.supplierId, entity.supplierId) &&
                 Objects.equals(this.customerId, entity.customerId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(supplierName, customerId);
+        return Objects.hash(supplierId, customerId);
     }
 
 }

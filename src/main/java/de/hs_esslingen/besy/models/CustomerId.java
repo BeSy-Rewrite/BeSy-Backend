@@ -16,12 +16,12 @@ public class CustomerId {
     @EmbeddedId
     private CustomerIdId id;
 
-    @Column(name = "supplier_name", insertable = false, updatable = false)
-    private String supplierName;
+    @Column(name = "supplier_id", insertable = false, updatable = false)
+    private Integer supplierId;
 
-    @MapsId("supplierName")
+    @MapsId("supplierId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "supplier_name", nullable = false)
+    @JoinColumn(name = "supplier_id", nullable = false, referencedColumnName = "id")
     private de.hs_esslingen.besy.models.Supplier supplier;
 
     @Column(name = "comment")
