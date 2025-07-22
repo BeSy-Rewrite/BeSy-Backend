@@ -11,7 +11,6 @@ import java.time.LocalDate;
  */
 @Value
 public class QuotationRequestDTO implements Serializable {
-    Long orderId;
     Short index;
     LocalDate quoteDate;
     BigDecimal price;

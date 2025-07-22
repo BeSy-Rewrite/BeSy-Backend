@@ -39,7 +39,7 @@ public class Person {
     private String comment;
 
     @Column(name = "address_id", insertable = false, updatable = false)
-    private String addressId;
+    private Integer addressId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "address_id", nullable = false)

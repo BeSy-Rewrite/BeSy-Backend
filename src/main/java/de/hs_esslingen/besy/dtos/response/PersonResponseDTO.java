@@ -18,6 +18,6 @@ public class PersonResponseDTO implements Serializable {
     String phone;
     String title;
     String comment;
-    String addressId;
+    Integer addressId;
     Gender gender;
 }
