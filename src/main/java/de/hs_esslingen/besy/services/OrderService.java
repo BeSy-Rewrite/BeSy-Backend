@@ -85,7 +85,7 @@ public class OrderService {
         quotations.forEach(quotation -> {
             QuotationId quotationId = new QuotationId();
             quotationId.setOrderId(quotation.getOrderId());
-            quotationId.setQuotationIndex(quotation.getIndex());
+            quotationId.setIndex(quotation.getIndex());
             quotation.setId(quotationId);
             quotation.setOrder(order);
         });

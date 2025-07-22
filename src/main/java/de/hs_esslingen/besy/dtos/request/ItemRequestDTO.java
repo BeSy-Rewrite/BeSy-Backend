@@ -20,5 +20,6 @@ public class ItemRequestDTO implements Serializable {
     String comment;
     String vatValue;
     PreferredList preferredList;
+    String preferredListNumber;
     VatType vatType;
 }

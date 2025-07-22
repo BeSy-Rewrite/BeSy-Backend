@@ -23,6 +23,6 @@ public class ItemResponseDTO implements Serializable {
     String comment;
     VatResponseDTO vat;
     PreferredList preferredList;
-    String itemPreferredListNumber;
+    String preferredListNumber;
     VatType vatType;
 }

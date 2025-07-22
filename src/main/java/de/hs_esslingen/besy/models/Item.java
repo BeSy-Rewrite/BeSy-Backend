@@ -1,6 +1,5 @@
 package de.hs_esslingen.besy.models;
 
-import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.enums.PreferredList;
 import de.hs_esslingen.besy.enums.VatType;
 import jakarta.persistence.*;
@@ -57,9 +56,12 @@ public class Item {
     @JoinColumn(name = "vat_value", nullable = false)
     private de.hs_esslingen.besy.models.Vat vat;
 
-    @Column(name = "preferred_list", nullable = false)
+    @Column(name = "preferred_list", nullable = true)
     @Enumerated(EnumType.STRING)
     private PreferredList preferredList;
+
+    @Column(name = "preferred_list_number")
+    private String preferredListNumber;
 
     @ColumnDefault("'netto'")
     @Column(name = "item_vat_type", nullable = false)
