@@ -15,10 +15,7 @@ import java.util.List;
 @Value
 public class OrderRequestDTO implements Serializable {
     String primaryCostCenterId;
-    String primaryCostCenterFaculty;
     String bookingYear;
-    Short autoIndex;
-    OffsetDateTime createdAt;
     String legacyAlias;
     String ownerId;
     String contentDescription;
@@ -53,6 +50,4 @@ public class OrderRequestDTO implements Serializable {
     Boolean flagInvestmentStructuralMeasures;
     Boolean flagMediaPermission;
     String dfgKey;
-    List<ItemRequestDTO> items;
-    List<QuotationRequestDTO> quotations;
 }
