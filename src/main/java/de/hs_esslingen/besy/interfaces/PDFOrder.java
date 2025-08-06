@@ -1,6 +1,5 @@
 package de.hs_esslingen.besy.interfaces;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
@@ -66,26 +65,28 @@ public class PDFOrder {
 
 
     public PDFOrder parseOrder(PDAcroForm acroForm) {
-        PDFOrder order = new PDFOrder();
         PDFieldTree fieldTree = acroForm.getFieldTree();
-
-        order.constructionAndAssemblyFlag = (PDCheckBox) acroForm.getField("Formular1[0].#subform[0].Header[0].Kontrollkästchen1[0]");
-        order.deliveryAndServiceFlag = (PDCheckBox) acroForm.getField("Formular1[0].#subform[0].Kontrollkästchen1[1]");
-        order.companyAddress = acroForm.getField("Formular1[0].#subform[0].Header[0].Textfeld1[0]");
-        order.orderId = acroForm.getField("Formular1[0].#subform[0].Header[0].Rechnungsnummer[0]");
-        order.date = acroForm.getField("Formular1[0].#subform[0].Header[0].Rechnungsdatum[0]");
-        order.orderer = acroForm.getField("Formular1[0].#subform[0].Header[0].Firma[1]");
-        order.phone = acroForm.getField("Formular1[0].#subform[0].Header[0].Telefon[1]");
-        order.mobilePhone = acroForm.getField("Formular1[0].#subform[0].Header[0].Fax[1]");
-        order.email = acroForm.getField("Formular1[0].#subform[0].Header[0].Postleitzahl[0]");
-        order.deliveryFaculty = acroForm.getField("Formular1[0].#subform[0].Header[0].Firma[0]");
-        order.deliveryOrderer = acroForm.getField("Formular1[0].#subform[0].Header[0].Telefon[3]");
-        order.deliveryStreet = acroForm.getField("Formular1[0].#subform[0].Header[0].Telefon[0]");
-        order.deliveryAddress = acroForm.getField("Formular1[0].#subform[0].Header[0].Fax[0]");
-        order.invoiceFaculty = acroForm.getField("Formular1[0].#subform[0].Header[0].Firma[2]");
-        order.invoiceOrderer = acroForm.getField("Formular1[0].#subform[0].Header[0].Telefon[4]");
-        order.invoiceStreet = acroForm.getField("Formular1[0].#subform[0].Header[0].Telefon[2]");
-        order.invoiceDeliveryAddress = acroForm.getField("Formular1[0].#subform[0].Header[0].Fax[2]");
+        fieldTree.iterator().forEachRemaining(field -> {
+            System.out.println(field.getFullyQualifiedName());
+            System.out.println(field.getValueAsString());
+        });
+        constructionAndAssemblyFlag = (PDCheckBox) acroForm.getField("Formular1[0].#subform[0].Header[0].Kontrollkästchen1[0]");
+        deliveryAndServiceFlag = (PDCheckBox) acroForm.getField("Formular1[0].#subform[0].Kontrollkästchen1[1]");
+        companyAddress = acroForm.getField("Formular1[0].#subform[0].Header[0].Textfeld1[0]");
+        orderId = acroForm.getField("Formular1[0].#subform[0].Header[0].Rechnungsnummer[0]");
+        date = acroForm.getField("Formular1[0].#subform[0].Header[0].Rechnungsdatum[0]");
+        orderer = acroForm.getField("Formular1[0].#subform[0].Header[0].Firma[1]");
+        phone = acroForm.getField("Formular1[0].#subform[0].Header[0].Telefon[1]");
+        mobilePhone = acroForm.getField("Formular1[0].#subform[0].Header[0].Fax[1]");
+        email = acroForm.getField("Formular1[0].#subform[0].Header[0].Postleitzahl[0]");
+        deliveryFaculty = acroForm.getField("Formular1[0].#subform[0].Header[0].Firma[0]");
+        deliveryOrderer = acroForm.getField("Formular1[0].#subform[0].Header[0].Telefon[3]");
+        deliveryStreet = acroForm.getField("Formular1[0].#subform[0].Header[0].Telefon[0]");
+        deliveryAddress = acroForm.getField("Formular1[0].#subform[0].Header[0].Fax[0]");
+        invoiceFaculty = acroForm.getField("Formular1[0].#subform[0].Header[0].Firma[2]");
+        invoiceOrderer = acroForm.getField("Formular1[0].#subform[0].Header[0].Telefon[4]");
+        invoiceStreet = acroForm.getField("Formular1[0].#subform[0].Header[0].Telefon[2]");
+        invoiceDeliveryAddress = acroForm.getField("Formular1[0].#subform[0].Header[0].Fax[2]");
 
         for(int i = 0; i < 14; i++){
             PDFItem article = new PDFItem();
@@ -93,44 +94,44 @@ public class PDFOrder {
             article.setDescription(acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Beschreibung[%d]", i)));
             article.setQuantity(acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Menge[%d]", i)));
             article.setPrice(acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Stückpreis[%d]", i)));
-            order.articles.add(article);
+            articles.add(article);
         }
 
-        order.percentageDiscount = acroForm.getField("Formular1[0].#subform[0].Body[0].RabattText[0]");
-        order.vat = acroForm.getField("Formular1[0].#subform[0].Body[0].MwStSatz[0]");
-        order.commentForSupplier = acroForm.getField("Formular1[0].#subform[0].Body[0].Textfeld1[1]");
-        order.costCenter = acroForm.getField("Formular1[0].#subform[1].Textfeld1[2]");
-        order.costCenterSecondary = acroForm.getField("Formular1[0].#subform[1].Textfeld1[4]");
-        order.dfgKey = acroForm.getField("Formular1[0].#subform[1].Textfeld1[3]");
+        percentageDiscount = acroForm.getField("Formular1[0].#subform[0].Body[0].RabattText[0]");
+        vat = acroForm.getField("Formular1[0].#subform[0].Body[0].MwStSatz[0]");
+        commentForSupplier = acroForm.getField("Formular1[0].#subform[0].Body[0].Textfeld1[1]");
+        costCenter = acroForm.getField("Formular1[0].#subform[1].Textfeld1[2]");
+        costCenterSecondary = acroForm.getField("Formular1[0].#subform[1].Textfeld1[4]");
+        dfgKey = acroForm.getField("Formular1[0].#subform[1].Textfeld1[3]");
 
         // ToDo: Vergleichsangebote
 
-        order.customerId = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Textfeld4[0]");
-        order.flagDecisionCheapestOffer = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[2]");
+        customerId = acroForm.getField("Formular1[0].#subform[1].Textfeld4[0]");
+        flagDecisionCheapestOffer = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[2]");
         // ToDo: wirtschaftlichstes Angebot
-        order.flagDecisionSoleSupplier = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[4]");
-        order.flagDecisionContractPartner = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[5]");
+        flagDecisionSoleSupplier = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[4]");
+        flagDecisionContractPartner = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[5]");
         // ToDo: in der Vorzugsliste RZ (EDV) oder FM (Möbel) enthalten ist.
-        order.flagDecisionOtherReasons = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[7]");
-        order.flagDecisionOtherReasonsDescription = acroForm.getField("Formular1[0].#subform[1].Textfeld5[0]");
+        flagDecisionOtherReasons = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[7]");
+        flagDecisionOtherReasonsDescription = acroForm.getField("Formular1[0].#subform[1].Textfeld5[0]");
 
         // 4. Zustimmung bei Bestellung von DV-Komponenten (Hardware/ Software)
-        order.orderFlagEdvPermission = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[8]");
+        orderFlagEdvPermission = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[8]");
 
         // 5. Zustimmung bei Bestellung von Möbeln
-        order.orderFlagFurniturePermission = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[9]");
+        orderFlagFurniturePermission = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[9]");
         // 2nd flag
-        order.orderFlagFurnitureRoom = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[10]");
+        orderFlagFurnitureRoom = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[10]");
 
         // 6. Zustimmung bei der Bestellung von Geräten (baulich-infrastrukturell relevant
-        order.orderFlagInvestmentRoom = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[11]");
+        orderFlagInvestmentRoom = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[11]");
         // 2nd flag
-        order.orderFlagInvestmentStructuralMeasures = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[12]");
+        orderFlagInvestmentStructuralMeasures = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[12]");
 
         // 7. Zustimmung bei Bestellung von medientechnischen Einrichtungen und Geräten:
-        order.orderFlagMediaPermission = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[13]");
+        orderFlagMediaPermission = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[13]");
 
-        return order;
+        return this;
     }
 
     public void setConstructionAndAssemblyFlag(boolean flag) throws IOException {
@@ -141,7 +142,7 @@ public class PDFOrder {
         }
     }
 
-    private void  setDeliveryAndServiceFlag(boolean flag) throws IOException {
+    public void  setDeliveryAndServiceFlag(boolean flag) throws IOException {
         if (flag) {
             this.deliveryAndServiceFlag.check();
         }else {
@@ -149,7 +150,7 @@ public class PDFOrder {
         }
     }
 
-    private void setCompanyAddress(String address) throws IOException {
+    public void setCompanyAddress(String address) throws IOException {
         this.companyAddress.setValue(address);
     }
 
