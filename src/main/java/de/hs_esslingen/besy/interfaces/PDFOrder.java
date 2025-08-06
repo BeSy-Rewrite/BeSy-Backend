@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.interfaces;
 
+import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
@@ -11,39 +12,102 @@ import java.util.List;
 
 public class PDFOrder {
 
+    // nach VOB (Bau-/Montageleistung)
     private PDCheckBox constructionAndAssemblyFlag;
+
+    // nach VOL/UVgO (Liefer-/Dienstleistung)
     private PDCheckBox deliveryAndServiceFlag;
+
+    // an Firma mit Anschrift:
     private PDField companyAddress;
-    private PDField orderId;
+
+    // Bestell-Nr.
+    private PDField invoiceId;
+
+    // Datum:
     private PDField date;
+
+    // Besteller:in
     private PDField orderer;
+
+    // Telefon:
     private PDField phone;
+
+    // Mobil-Nr.:
     private PDField mobilePhone;
+
+    // E-Mail:
     private PDField email;
+
+    // ToDo: Fax-Nr./E-Mail:
+    // ToDo: Angebots-Nr.:
+
+    // Lieferanschrift: Fakultät/Bereich:
     private PDField deliveryFaculty;
+
+    // Lieferanschrift: Besteller:in/Name:
     private PDField deliveryOrderer;
+
+    // Lieferanschrift: Straße:
     private PDField deliveryStreet;
+
+    // Lieferanschrift: PLZ und Ort:
     private PDField deliveryAddress;
+
+    // Rechnungsanschrift: Fakultät/Bereich:
     private PDField invoiceFaculty;
+
+    // Rechnungsanschrift: Besteller:in/Name:
     private PDField invoiceOrderer;
+
+    // Rechnungsanschrift: Straße:
     private PDField invoiceStreet;
+
+    // Rechnungsanschrift: PLZ und Ort:
     private PDField invoiceDeliveryAddress;
-    private List<PDFItem> articles = new ArrayList<>();
+
+    // Artikel
+    private List<PDFItem> items = new ArrayList<>();
+
+    // % Rabatt
     private PDField percentageDiscount;
+
+    // % MwSt
     private PDField vat;
+
+    // Bemerkung:
     private PDField commentForSupplier;
+
+    // Kostenstelle:
     private PDField costCenter;
+
+    // anteilig auch:
     private PDField costCenterSecondary;
+
+    // DFG-Schlüssel
     private PDField dfgKey;
 
     // ToDo: Vergleichsangebote
 
+    // Der Auftrag wird der oben unter der lfd.Nr. genannten Firma erteilt, da diese Firma...
     private PDField customerId;
+
+    // das preisgünstigste Angebot abgegeben hat
     private PDCheckBox flagDecisionCheapestOffer;
+
+    // das wirtschaftlichste Angebot abgegeben hat
     // ToDo: wirtschaftlichstes Angebot
+
+    // Einziger Anbieter am Markt ist.
     private PDCheckBox flagDecisionSoleSupplier;
+
+    // Rahmenvertragspartner ist. Der Rahmenvertrag liegt der FIN vor.
     private PDCheckBox flagDecisionContractPartner;
+
+    // in der Vorzugsliste RZ (EDV) oder FM (Möbel) enthalten ist.
     // ToDo: in der Vorzugsliste RZ (EDV) oder FM (Möbel) enthalten ist.
+
+    // aus folgendem Sachgrund ausgewählt wurde:
     private PDCheckBox flagDecisionOtherReasons;
     private PDField flagDecisionOtherReasonsDescription;
 
@@ -73,7 +137,7 @@ public class PDFOrder {
         constructionAndAssemblyFlag = (PDCheckBox) acroForm.getField("Formular1[0].#subform[0].Header[0].Kontrollkästchen1[0]");
         deliveryAndServiceFlag = (PDCheckBox) acroForm.getField("Formular1[0].#subform[0].Kontrollkästchen1[1]");
         companyAddress = acroForm.getField("Formular1[0].#subform[0].Header[0].Textfeld1[0]");
-        orderId = acroForm.getField("Formular1[0].#subform[0].Header[0].Rechnungsnummer[0]");
+        invoiceId = acroForm.getField("Formular1[0].#subform[0].Header[0].Rechnungsnummer[0]");
         date = acroForm.getField("Formular1[0].#subform[0].Header[0].Rechnungsdatum[0]");
         orderer = acroForm.getField("Formular1[0].#subform[0].Header[0].Firma[1]");
         phone = acroForm.getField("Formular1[0].#subform[0].Header[0].Telefon[1]");
@@ -89,12 +153,13 @@ public class PDFOrder {
         invoiceDeliveryAddress = acroForm.getField("Formular1[0].#subform[0].Header[0].Fax[2]");
 
         for(int i = 0; i < 14; i++){
-            PDFItem article = new PDFItem();
-            article.setPosition(acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Artikel[%d]", i)));
-            article.setDescription(acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Beschreibung[%d]", i)));
-            article.setQuantity(acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Menge[%d]", i)));
-            article.setPrice(acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Stückpreis[%d]", i)));
-            articles.add(article);
+            PDFItem article = new PDFItem(
+                    acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Artikel[%d]", i)),
+                    acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Beschreibung[%d]", i)),
+                    acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Menge[%d]", i)),
+                    acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Stückpreis[%d]", i))
+            );
+            items.add(article);
         }
 
         percentageDiscount = acroForm.getField("Formular1[0].#subform[0].Body[0].RabattText[0]");
@@ -154,8 +219,8 @@ public class PDFOrder {
         this.companyAddress.setValue(address);
     }
 
-    public void setOrderId(String orderId) throws IOException {
-        this.orderId.setValue(orderId);
+    public void setInvoiceId(String invoiceId) throws IOException {
+        this.invoiceId.setValue(invoiceId);
     }
 
     public void setDate(String date) throws IOException {
@@ -210,9 +275,16 @@ public class PDFOrder {
         this.invoiceDeliveryAddress.setValue(invoiceDeliveryAddress);
     }
 
-    public void setArticles(List<PDFItem> items) throws IOException {
+    public void setItems(List<ItemResponseDTO> items) throws IOException {
         if(items.size() < 14){
-            this.articles.addAll(items);
+                for(int i = 0; i < items.size(); i++){
+                    ItemResponseDTO itemDTO = items.get(i);
+                    PDFItem pdfItem = this.items.get(i);
+                    pdfItem.setPosition(String.valueOf(itemDTO.getItemId()));
+                    pdfItem.setDescription(itemDTO.getName());
+                    pdfItem.setQuantity(String.valueOf(itemDTO.getQuantity()));
+                    pdfItem.setPrice(String.valueOf(itemDTO.getPricePerUnit()));
+                }
     }else {
             throw new RuntimeException("Number of items must be less than 14.");
         }
