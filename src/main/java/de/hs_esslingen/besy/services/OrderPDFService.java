@@ -58,7 +58,8 @@ public class OrderPDFService {
         if (orderOpt.isEmpty()) throw new NotFoundException("Order with id " + orderId + " does not exist.");
 
         Order orderDAO = orderOpt.get();
-        Supplier supplierDAO = supplierRepository.findById(orderDAO.getSupplierId()).get();
+        Supplier supplierDAO = supplierRepository.findById(orderDAO.getSupplierId())
+                .orElseThrow(() -> new NotFoundException("Supplier with id " + orderDAO.getSupplierId() + " does not exist."));
         List<Item> itemsDAO = itemRepository.findByOrder_Id(orderDAO.getId());
         Optional<Invoice> invoiceOpt = invoiceRepository.findByOrderId(Long.valueOf(orderId));
         Optional<Person> deliveryPersonOpt = personRepository.findById(Long.valueOf(orderDAO.getDeliveryPersonId()));
