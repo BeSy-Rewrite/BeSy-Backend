@@ -17,6 +17,6 @@ public class PersonRequestDTO implements Serializable {
     String phone;
     String title;
     String comment;
-    String addressId;
+    Integer addressId;
     Gender gender;
 }

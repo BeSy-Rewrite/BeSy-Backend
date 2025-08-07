@@ -9,16 +9,14 @@ import lombok.ToString;
 @Setter
 @Entity
 @ToString
-@Table(name = "address")
+@Table(name = "address",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"building_name", "street", "building_number", "town", "postal_code", "county", "country"}))
 public class Address {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
-
-    @Column(name = "name", nullable = false, unique = true)
-    private String name;
 
     @Column(name = "building_name")
     private String buildingName;

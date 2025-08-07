@@ -5,21 +5,40 @@ INSERT INTO migrated_data.address (
     comment,
     country,
     county,
-    name,
     street,
     town
 )
-SELECT
+SELECT DISTINCT
     address_postal_code,
     address_building_name,
     address_building_number,
     address_comment,
     country_name,           -- FK dropped: now plain text
     address_county,
-    address_name,           -- renamed
     address_street,
     address_town
 FROM besy.address;
+
+INSERT INTO migrated_data.address (
+    building_name,
+    street,
+    building_number,
+    town,
+    postal_code,
+    county,
+    country
+)
+SELECT DISTINCT
+    s.supplier_building_name,
+    s.supplier_street,
+    s.supplier_building_number,
+    s.supplier_town,
+    s.supplier_postal_code,
+    s.supplier_county,
+    c.country_name
+FROM besy.supplier s
+LEFT JOIN besy.country c ON c.country_name = s.country_name
+ON CONFLICT(building_name, street, building_number, town, postal_code, county, country) DO NOTHING;
 
 INSERT INTO migrated_data.cost_center (
     id,
@@ -118,17 +137,10 @@ INSERT INTO migrated_data.supplier (
     email,
     fax,
     phone,
-    building_name,
-    building_number,
     comment,
-    country,
-    county,
-    name,
-    postal_code,
-    street,
-    town,
     website,
-    address_id
+    address_id,
+    name
 )
 SELECT
     supplier_deactivated_date,
@@ -137,23 +149,18 @@ SELECT
     NULL, -- `supplier_email` did not exist
     supplier_fax,
     supplier_phone,
-    supplier_building_name,
-    supplier_building_number,
     supplier_comment,
-    country_name,
-    supplier_county,
-    supplier_name,
-    supplier_postal_code,
-    supplier_street,
-    supplier_town,
     supplier_website,
-    a.id
+    a.id,
+    supplier_name
 FROM besy.supplier s
          LEFT JOIN migrated_data.address a
                    ON s.supplier_street = a.street
                        AND s.supplier_town = a.town
                        AND s.supplier_postal_code = a.postal_code
-                       AND s.supplier_name = a.name;
+                       AND s.supplier_building_name = a.building_name
+                        AND s.supplier_building_number = a.building_number
+                        AND s.supplier_county = a.county;
 
 INSERT INTO migrated_data."user" (
     keycloak_uuid,
@@ -298,18 +305,3 @@ SELECT
     vat_value,
     item_name
 FROM besy.item;
-
-
--- Add this
-/*INSERT INTO migrated_data.quotation (
-    index,
-    price,
-    quote_date,
-    order_id
-)
-SELECT
-    quotation_index,
-    quotation_price,
-    quotation_quote_date,
-    order_id
-FROM besy.quotation;*/

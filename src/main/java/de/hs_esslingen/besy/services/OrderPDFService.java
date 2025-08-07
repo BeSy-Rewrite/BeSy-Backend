@@ -10,7 +10,6 @@ import lombok.AllArgsConstructor;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDFieldTree;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -60,10 +59,12 @@ public class OrderPDFService {
         Order orderDAO = orderOpt.get();
         Supplier supplierDAO = supplierRepository.findById(orderDAO.getSupplierId())
                 .orElseThrow(() -> new NotFoundException("Supplier with id " + orderDAO.getSupplierId() + " does not exist."));
+
         List<Item> itemsDAO = itemRepository.findByOrder_Id(orderDAO.getId());
         Optional<Invoice> invoiceOpt = invoiceRepository.findByOrderId(Long.valueOf(orderId));
         Optional<Person> deliveryPersonOpt = personRepository.findById(Long.valueOf(orderDAO.getDeliveryPersonId()));
         Optional<Person> invoicePersonOpt = personRepository.findById(Long.valueOf(orderDAO.getInvoicePersonId()));
+        Address supplierAddress = supplierDAO.getAddress();
 
 
         // Write to PDF
@@ -80,8 +81,8 @@ public class OrderPDFService {
         %s %s
         """.formatted(
                 supplierDAO.getName(),
-                supplierDAO.getStreet(), supplierDAO.getBuildingNumber() != null ? supplierDAO.getBuildingNumber() : "",
-                supplierDAO.getPostalCode(), supplierDAO.getTown())
+                supplierAddress.getStreet(), supplierAddress.getBuildingNumber() != null ? supplierAddress.getBuildingNumber() : "",
+                supplierAddress.getPostalCode(), supplierAddress.getTown())
         );
 
         // Bestell-Nr.
