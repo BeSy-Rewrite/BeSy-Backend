@@ -41,27 +41,6 @@ public class Supplier {
     @Column(name = "flag_preferred", nullable = false)
     private Boolean flagPreferred = false;
 
-    @Column(name = "building_name")
-    private String buildingName;
-
-    @Column(name = "street", nullable = false)
-    private String street;
-
-    @Column(name = "building_number")
-    private String buildingNumber;
-
-    @Column(name = "town", nullable = false)
-    private String town;
-
-    @Column(name = "postal_code", nullable = false)
-    private String postalCode;
-
-    @Column(name = "county")
-    private String county;
-
-    @Column(name = "country", nullable = false)
-    private String country;
-
     @Column(name = "deactivated_date")
     private LocalDate deactivatedDate;
 

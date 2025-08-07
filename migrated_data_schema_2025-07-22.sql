@@ -19,6 +19,24 @@ SELECT
     address_town
 FROM besy.address;
 
+INSERT INTO migrated_data.address (
+    building_name,
+    street,
+    building_number,
+    town,
+    postal_code,
+    county,
+    country,
+    comment
+)
+SELECT DISTINCT
+    s.supplier_building_name,
+    s.supplier_town,
+    s.supplier_postal_code,
+    s.supplier_county,
+    s.supplier_deactivated_date
+FROM besy.supplier s;
+
 INSERT INTO migrated_data.cost_center (
     id,
     name,
@@ -119,12 +137,6 @@ INSERT INTO migrated_data.supplier (
     building_name,
     building_number,
     comment,
-    country,
-    county,
-    name,
-    postal_code,
-    street,
-    town,
     website,
     address_id
 )
@@ -139,11 +151,6 @@ SELECT
     supplier_building_number,
     supplier_comment,
     country_name,
-    supplier_county,
-    supplier_name,
-    supplier_postal_code,
-    supplier_street,
-    supplier_town,
     supplier_website,
     a.id
 FROM besy.supplier s
