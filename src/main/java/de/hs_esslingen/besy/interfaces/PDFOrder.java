@@ -4,7 +4,6 @@ import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
-import org.apache.pdfbox.pdmodel.interactive.form.PDFieldTree;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,8 +20,8 @@ public class PDFOrder {
     // an Firma mit Anschrift:
     private PDField companyAddress;
 
-    // Bestell-Nr.
-    private PDField invoiceId;
+    // Bestell-Nr
+    private PDField orderNumber;
 
     // Datum:
     private PDField date;
@@ -39,8 +38,11 @@ public class PDFOrder {
     // E-Mail:
     private PDField email;
 
-    // ToDo: Fax-Nr./E-Mail:
-    // ToDo: Angebots-Nr.:
+    // Fax-Nr./E-Mail:
+    private PDField supplierEmail;
+
+    // Angebots-Nr.:
+    private PDField invoiceId;
 
     // Lieferanschrift: Fakultät/Bereich:
     private PDField deliveryFaculty;
@@ -90,7 +92,7 @@ public class PDFOrder {
     // ToDo: Vergleichsangebote
 
     // Der Auftrag wird der oben unter der lfd.Nr. genannten Firma erteilt, da diese Firma...
-    private PDField customerId;
+    private PDField lfdNr;
 
     // das preisgünstigste Angebot abgegeben hat
     private PDCheckBox flagDecisionCheapestOffer;
@@ -129,15 +131,12 @@ public class PDFOrder {
 
 
     public PDFOrder parseOrder(PDAcroForm acroForm) {
-        PDFieldTree fieldTree = acroForm.getFieldTree();
-        fieldTree.iterator().forEachRemaining(field -> {
-            System.out.println(field.getFullyQualifiedName());
-            System.out.println(field.getValueAsString());
-        });
         constructionAndAssemblyFlag = (PDCheckBox) acroForm.getField("Formular1[0].#subform[0].Header[0].Kontrollkästchen1[0]");
         deliveryAndServiceFlag = (PDCheckBox) acroForm.getField("Formular1[0].#subform[0].Kontrollkästchen1[1]");
+        orderNumber = acroForm.getField("Formular1[0].#subform[0].Header[0].Rechnungsnummer[0]");
         companyAddress = acroForm.getField("Formular1[0].#subform[0].Header[0].Textfeld1[0]");
-        invoiceId = acroForm.getField("Formular1[0].#subform[0].Header[0].Rechnungsnummer[0]");
+        supplierEmail = acroForm.getField("Formular1[0].#subform[0].Header[0].Fax[2]");
+        invoiceId = acroForm.getField("Formular1[0].#subform[0].Body[0].Zwischensumme[0]");
         date = acroForm.getField("Formular1[0].#subform[0].Header[0].Rechnungsdatum[0]");
         orderer = acroForm.getField("Formular1[0].#subform[0].Header[0].Firma[1]");
         phone = acroForm.getField("Formular1[0].#subform[0].Header[0].Telefon[1]");
@@ -171,7 +170,7 @@ public class PDFOrder {
 
         // ToDo: Vergleichsangebote
 
-        customerId = acroForm.getField("Formular1[0].#subform[1].Textfeld4[0]");
+        lfdNr = acroForm.getField("Formular1[0].#subform[1].Textfeld4[0]");
         flagDecisionCheapestOffer = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[2]");
         // ToDo: wirtschaftlichstes Angebot
         flagDecisionSoleSupplier = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[4]");
@@ -314,8 +313,16 @@ public class PDFOrder {
         this.dfgKey.setValue(dfgKey);
     }
 
-    public void setCustomerId(String customerId) throws IOException {
-        this.customerId.setValue(customerId);
+    public void setOrderNumber(String orderNumber) throws IOException {
+        this.orderNumber.setValue(orderNumber);
+    }
+
+    public void setSupplierEmail(String supplierEmail) throws IOException {
+        this.supplierEmail.setValue(supplierEmail);
+    }
+
+    public void setLfdNr(String lfdNr) throws IOException {
+        this.lfdNr.setValue(lfdNr);
     }
 
     public void setFlagDecisionCheapestOffer(boolean flag) throws IOException {
