@@ -106,7 +106,7 @@ public class Order {
     private String customerId;
 
     @Column(name = "supplier_id", insertable = false, updatable = false)
-    private String supplierId;
+    private Integer supplierId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumns({
