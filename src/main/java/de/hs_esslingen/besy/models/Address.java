@@ -17,9 +17,6 @@ public class Address {
     @Column(name = "id")
     private Integer id;
 
-    @Column(name = "name", nullable = false, unique = true)
-    private String name;
-
     @Column(name = "building_name")
     private String buildingName;
 

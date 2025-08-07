@@ -5,7 +5,6 @@ INSERT INTO migrated_data.address (
     comment,
     country,
     county,
-    name,
     street,
     town
 )
@@ -16,7 +15,6 @@ SELECT
     address_comment,
     country_name,           -- FK dropped: now plain text
     address_county,
-    address_name,           -- renamed
     address_street,
     address_town
 FROM besy.address;
@@ -298,18 +296,3 @@ SELECT
     vat_value,
     item_name
 FROM besy.item;
-
-
--- Add this
-/*INSERT INTO migrated_data.quotation (
-    index,
-    price,
-    quote_date,
-    order_id
-)
-SELECT
-    quotation_index,
-    quotation_price,
-    quotation_quote_date,
-    order_id
-FROM besy.quotation;*/
