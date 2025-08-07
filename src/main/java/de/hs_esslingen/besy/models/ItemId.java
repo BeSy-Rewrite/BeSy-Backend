@@ -2,6 +2,8 @@ package de.hs_esslingen.besy.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.Hibernate;
@@ -13,6 +15,7 @@ import java.util.Objects;
 @Embeddable
 public class ItemId implements java.io.Serializable {
     private static final long serialVersionUID = -3556085959428544686L;
+
     @Column(name = "order_id", nullable = false)
     private Long orderId;
 

@@ -19,24 +19,25 @@ public class Quotation {
     @Column(name = "order_id", insertable = false, updatable = false)
     private Long orderId;
 
-    @Column(name = "quotation_index", insertable = false, updatable = false)
-    private Short quotationIndex;
+    @Column(name = "index", insertable = false, updatable = false)
+    private Short index;
 
     @MapsId("orderId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @Column(name = "quotation_quote_date", nullable = false)
-    private LocalDate quotationQuoteDate;
+    @Column(name = "quote_date", nullable = false)
+    private LocalDate quoteDate;
 
-    @Column(name = "quotation_price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal quotationPrice;
+    @Column(name = "price", nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
 
-    @Column(name = "quotation_company_name", nullable = false)
-    private String quotationCompanyName;
+    @Column(name = "supplier_id", insertable = false, updatable = false)
+    private Long supplierId;
 
-    @Column(name = "quotation_company_city")
-    private String quotationCompanyCity;
+    @ManyToOne
+    @JoinColumn(name = "supplier_id", referencedColumnName ="id", nullable = false)
+    private Supplier supplier;
 
 }

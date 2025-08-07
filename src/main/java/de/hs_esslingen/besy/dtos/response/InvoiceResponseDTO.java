@@ -12,11 +12,12 @@ import java.time.OffsetDateTime;
  */
 @Value
 public class InvoiceResponseDTO implements Serializable {
-    String invoiceId;
+    String id;
     String costCenterId;
     Long orderId;
-    BigDecimal invoicePrice;
-    LocalDate invoiceDate;
-    String invoiceComment;
-    OffsetDateTime invoiceCreatedDate;
+    BigDecimal price;
+    LocalDate date;
+    String comment;
+    OffsetDateTime createdDate;
+
 }

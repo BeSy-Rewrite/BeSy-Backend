@@ -24,7 +24,7 @@ public class ItemService {
     }
 
     public ResponseEntity<List<ItemResponseDTO>> getItemsOfOrder(Long orderId) {
-        List<Item> items = itemRepository.findByOrder_OrderId(orderId);
+        List<Item> items = itemRepository.findByOrder_Id(orderId);
         List<ItemResponseDTO> itemResponseDTOS = itemResponseMapper.toDto(items);
         return ResponseEntity.ok(itemResponseDTOS);
     }

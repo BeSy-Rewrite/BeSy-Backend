@@ -11,45 +11,37 @@ import lombok.ToString;
 @ToString
 @Table(name = "address")
 public class Address {
+
     @Id
-    @Column(name = "address_name", nullable = false)
-    private String addressName;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
 
-    @Column(name = "address_building_name")
-    private String addressBuildingName;
+    @Column(name = "name", nullable = false, unique = true)
+    private String name;
 
-    @Column(name = "address_street", nullable = false)
-    private String addressStreet;
+    @Column(name = "building_name")
+    private String buildingName;
 
-    @Column(name = "address_building_number")
-    private String addressBuildingNumber;
+    @Column(name = "street", nullable = false)
+    private String street;
 
-    @Column(name = "address_town", nullable = false)
-    private String addressTown;
+    @Column(name = "building_number")
+    private String buildingNumber;
 
-    @Column(name = "address_postal_code", nullable = false, length = 20)
-    private String addressPostalCode;
+    @Column(name = "town", nullable = false)
+    private String town;
 
-    @Column(name = "address_county")
-    private String addressCounty;
+    @Column(name = "postal_code", nullable = false, length = 20)
+    private String postalCode;
 
-    @Column(name = "country_name", insertable = false, updatable = false)
-    private String countryName;
+    @Column(name = "county")
+    private String county;
 
-    @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "country_name")
-    private de.hs_esslingen.besy.models.Country country;
+    @Column(name = "country", insertable = false, updatable = false)
+    private String country;
 
-    @Column(name = "address_type", insertable = false, updatable = false)
-    private String addressType;
-
-    @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "address_type")
-    private de.hs_esslingen.besy.models.AddressType addressTypeRef;
-
-    @Column(name = "address_comment")
-    private String addressComment;
+    @Column(name = "comment")
+    private String comment;
 
 }

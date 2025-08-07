@@ -16,11 +16,11 @@ import java.math.BigDecimal;
 @Table(name = "vat")
 public class Vat {
     @Id
-    @Column(name = "vat_value", nullable = false, precision = 2)
-    private BigDecimal vatValue;
+    @Column(name = "value", nullable = false, precision = 2)
+    private BigDecimal value;
 
     @ColumnDefault("''")
-    @Column(name = "vat_description", nullable = false)
-    private String vatDescription;
+    @Column(name = "description", nullable = false)
+    private String description;
 
 }

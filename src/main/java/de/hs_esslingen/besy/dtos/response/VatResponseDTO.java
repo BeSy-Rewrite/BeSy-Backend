@@ -10,6 +10,6 @@ import java.math.BigDecimal;
  */
 @Value
 public class VatResponseDTO implements Serializable {
-    BigDecimal vatValue;
-    String vatDescription;
+    BigDecimal value;
+    String description;
 }

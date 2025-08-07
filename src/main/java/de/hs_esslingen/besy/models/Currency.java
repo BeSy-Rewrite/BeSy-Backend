@@ -13,13 +13,9 @@ import lombok.Setter;
 @Table(name = "currency")
 public class Currency {
     @Id
-    @Column(name = "currency_short", nullable = false, length = 3)
-    private String currencyShort;
+    @Column(name = "code", nullable = false, length = 3)
+    private String code;
 
-    @Column(name = "currency_long", nullable = false)
-    private String currencyLong;
-
-    @Column(name = "currency_comment")
-    private String currencyComment;
-
+    @Column(name = "name", nullable = false)
+    private String name;
 }

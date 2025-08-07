@@ -10,15 +10,14 @@ import java.io.Serializable;
  */
 @Value
 public class PersonResponseDTO implements Serializable {
-    Long personId;
-    String personGivenName;
-    String personSurname;
-    String personEmail;
-    String personFax;
-    String personPhone;
-    String personTitle;
-    String personComment;
-    String addressName;
-    String facultyAbbr;
-    Gender personGender;
+    Long id;
+    String name;
+    String surname;
+    String email;
+    String fax;
+    String phone;
+    String title;
+    String comment;
+    Integer addressId;
+    Gender gender;
 }

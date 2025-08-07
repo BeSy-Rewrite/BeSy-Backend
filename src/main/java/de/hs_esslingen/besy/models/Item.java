@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.models;
 
+import de.hs_esslingen.besy.enums.PreferredList;
 import de.hs_esslingen.besy.enums.VatType;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -25,28 +26,28 @@ public class Item {
 
     @MapsId("orderId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "order_id", nullable = false)
+    @JoinColumn(name = "order_id", referencedColumnName = "id", nullable = false)
     private de.hs_esslingen.besy.models.Order order;
 
-    @Column(name = "item_name", nullable = false, length = Integer.MAX_VALUE)
-    private String itemName;
+    @Column(name = "name", nullable = false, length = Integer.MAX_VALUE)
+    private String name;
 
-    @Column(name = "item_price_per_unit", nullable = false, precision = 10, scale = 2)
-    private BigDecimal itemPricePerUnit;
+    @Column(name = "price_per_unit", nullable = false, precision = 10, scale = 2)
+    private BigDecimal pricePerUnit;
 
     @ColumnDefault("1")
-    @Column(name = "item_quantity", nullable = false)
-    private Long itemQuantity;
+    @Column(name = "quantity", nullable = false)
+    private Long quantity;
 
-    @Column(name = "item_quantity_unit", length = 45)
-    private String itemQuantityUnit;
+    @Column(name = "quantity_unit", length = 45)
+    private String quantityUnit;
 
-    @Column(name = "item_article_id")
-    private String itemArticleId;
+    @Column(name = "article_id")
+    private String articleId;
 
     @ColumnDefault("''")
-    @Column(name = "item_comment")
-    private String itemComment;
+    @Column(name = "comment")
+    private String comment;
 
     @Column(name = "vat_value", insertable = false, updatable = false)
     private String vatValue;
@@ -55,19 +56,16 @@ public class Item {
     @JoinColumn(name = "vat_value", nullable = false)
     private de.hs_esslingen.besy.models.Vat vat;
 
-    @Column(name = "preferred_list_abbr", insertable = false, updatable = false)
-    private String preferredListAbbr;
+    @Column(name = "preferred_list", nullable = true)
+    @Enumerated(EnumType.STRING)
+    private PreferredList preferredList;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "preferred_list_abbr")
-    private de.hs_esslingen.besy.models.PreferredList prefferedList;
-
-    @Column(name = "item_preferred_list_number", length = 20)
-    private String itemPreferredListNumber;
+    @Column(name = "preferred_list_number")
+    private String preferredListNumber;
 
     @ColumnDefault("'netto'")
     @Column(name = "item_vat_type", nullable = false)
     @Enumerated(EnumType.STRING)
-    private VatType itemVatType;
+    private VatType vatType;
 
 }

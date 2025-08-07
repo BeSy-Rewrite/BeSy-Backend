@@ -16,21 +16,21 @@ public class QuotationId implements java.io.Serializable {
     @Column(name = "order_id", nullable = false)
     private Long orderId;
 
-    @Column(name = "quotation_index", nullable = false)
-    private Short quotationIndex;
+    @Column(name = "index", nullable = false)
+    private Short index;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
         QuotationId entity = (QuotationId) o;
-        return Objects.equals(this.quotationIndex, entity.quotationIndex) &&
+        return Objects.equals(this.index, entity.index) &&
                 Objects.equals(this.orderId, entity.orderId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(quotationIndex, orderId);
+        return Objects.hash(index, orderId);
     }
 
 }

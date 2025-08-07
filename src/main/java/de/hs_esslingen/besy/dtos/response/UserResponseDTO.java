@@ -9,7 +9,8 @@ import java.io.Serializable;
  */
 @Value
 public class UserResponseDTO implements Serializable {
-    String userName;
-    Long personId;
-    String preferredCostCenterId;
+    String id;
+    String surname;
+    String name;
+    String email;
 }
