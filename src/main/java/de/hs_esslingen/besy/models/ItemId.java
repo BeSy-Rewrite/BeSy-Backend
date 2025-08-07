@@ -19,7 +19,6 @@ public class ItemId implements java.io.Serializable {
     @Column(name = "order_id", nullable = false)
     private Long orderId;
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "item_id", nullable = false)
     private Integer itemId;
 
