@@ -44,7 +44,7 @@ public class Supplier {
     @Column(name = "deactivated_date")
     private LocalDate deactivatedDate;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "address_id", referencedColumnName = "id")
     private Address address;
 
