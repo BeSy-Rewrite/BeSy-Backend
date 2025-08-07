@@ -79,15 +79,22 @@ SELECT
     p.person_fax,
     p.person_phone,
     p.person_title,
-    a.id AS address_id, -- join old `address_name` to new `address.name`
+    a2.id AS address_id, -- join old `address_name` to new `address.name`
     p.person_comment,
     p.person_email,
     p.person_given_name,
     p.person_gender,
     p.person_surname
 FROM besy.person p
-         JOIN migrated_data.address a
-              ON p.address_name = a.name;
+JOIN besy.address a1 ON a1.address_name = p.address_name
+JOIN migrated_data.address a2
+    ON a2.building_name = a1.address_building_name
+    AND a2.street = a1.address_street
+    AND a2.building_number = a1.address_building_number
+    AND a2.town = a1.address_town
+    AND a2.postal_code = a1.address_postal_code
+    AND a2.county = a1.address_county;
+
 
 INSERT INTO migrated_data.vat (
     value,
