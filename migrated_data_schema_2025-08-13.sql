@@ -351,4 +351,35 @@ FROM besy."order" o
         JOIN migrated_data.supplier sp ON sp.name = o.supplier_name;
 
 
+INSERT INTO migrated_data.item(
+    item_id,
+   price_per_unit,
+   order_id,
+   quantity,
+   quantity_unit,
+   article_id,
+   comment,
+   item_vat_type,
+   preferred_list, -- enum
+   preferred_list_number,
+   vat_value,
+   name
+)
+SELECT
+        item_id,
+       item_price_per_unit,
+       order_id,
+       item_quantity,
+       item_quantity_unit,
+       item_article_id,
+       item_comment,
+       item_vat_type,
+       preferred_list_abbr,
+       item_preferred_list_number,
+       vat_value,
+       item_name
+
+FROM besy.item i;
+
+
 
