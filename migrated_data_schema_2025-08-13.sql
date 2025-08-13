@@ -19,6 +19,8 @@ SELECT DISTINCT
     address_town
 FROM besy.address;
 
+
+-- Map addresses of suppliers to address table. If they already exist, DO NOTHING.
 INSERT INTO migrated_data.address (
     building_name,
     street,
@@ -40,6 +42,7 @@ FROM besy.supplier s
 LEFT JOIN besy.country c ON c.country_name = s.country_name
 ON CONFLICT(building_name, street, building_number, town, postal_code, county, country) DO NOTHING;
 
+
 INSERT INTO migrated_data.cost_center (
     id,
     name,
@@ -55,6 +58,7 @@ SELECT
     cost_center_comment
 FROM besy.cost_center;
 
+
 INSERT INTO migrated_data.currency (
     code,
     name
@@ -64,7 +68,12 @@ SELECT
     currency_long
 FROM besy.currency;
 
+-- COALESCE() replaces NULL values with an empty string.
+-- This is necessary to prevent losing persons during the join,
+-- because if any join field is NULL, the comparison fails
+-- since NULL = NULL evaluates to unknown (not true).
 INSERT INTO migrated_data.person (
+    id,
     fax,
     phone,
     title,
@@ -76,6 +85,7 @@ INSERT INTO migrated_data.person (
     surname
 )
 SELECT
+    p.person_id,
     p.person_fax,
     p.person_phone,
     p.person_title,
@@ -88,12 +98,29 @@ SELECT
 FROM besy.person p
 JOIN besy.address a1 ON a1.address_name = p.address_name
 JOIN migrated_data.address a2
-    ON a2.building_name = a1.address_building_name
-    AND a2.street = a1.address_street
-    AND a2.building_number = a1.address_building_number
-    AND a2.town = a1.address_town
-    AND a2.postal_code = a1.address_postal_code
-    AND a2.county = a1.address_county;
+     ON COALESCE(a2.building_name, '') = COALESCE(a1.address_building_name, '')
+         AND COALESCE(a2.street, '') = COALESCE(a1.address_street, '')
+         AND COALESCE(a2.building_number, '') = COALESCE(a1.address_building_number, '')
+         AND COALESCE(a2.town, '') = COALESCE(a1.address_town, '')
+         AND COALESCE(a2.postal_code, '') = COALESCE(a1.address_postal_code, '')
+         AND COALESCE(a2.county, '') = COALESCE(a1.address_county, '')
+         AND COALESCE(a2.comment, '') = COALESCE(a1.address_comment, '');
+
+--- Check, if persons get lost in the process beforehand, if it returns 0 rows, everything is O.K.:
+/*
+SELECT p.person_id, p.address_name
+FROM besy.person p
+         JOIN besy.address a1 ON a1.address_name = p.address_name
+         LEFT JOIN migrated_data.address a2
+                   ON COALESCE(a2.building_name, '') = COALESCE(a1.address_building_name, '')
+                       AND COALESCE(a2.street, '') = COALESCE(a1.address_street, '')
+                       AND COALESCE(a2.building_number, '') = COALESCE(a1.address_building_number, '')
+                       AND COALESCE(a2.town, '') = COALESCE(a1.address_town, '')
+                       AND COALESCE(a2.postal_code, '') = COALESCE(a1.address_postal_code, '')
+                       AND COALESCE(a2.county, '') = COALESCE(a1.address_county, '')
+                       AND COALESCE(a2.comment, '') = COALESCE(a1.address_comment, '')
+WHERE a2.id IS NULL;
+*/
 
 
 INSERT INTO migrated_data.vat (
@@ -105,18 +132,6 @@ SELECT
     vat_description
 FROM besy.vat;
 
-INSERT INTO migrated_data.customer_id (
-    comment,
-    customer_id,
-    supplier_id
-)
-SELECT
-    b.customer_id_comment,
-    b.customer_id,
-    s.id
-FROM besy.customer_id b
-         JOIN migrated_data.supplier s
-              ON s.name = b.supplier_name;
 
 INSERT INTO migrated_data.invoice (
     id,
@@ -137,6 +152,11 @@ SELECT
     invoice_comment
 FROM besy.invoice;
 
+
+-- COALESCE() replaces NULL values with an empty string.
+-- This is necessary to prevent losing suppliers during the join,
+-- because if any join field is NULL, the comparison fails
+-- since NULL = NULL evaluates to unknown (not true).
 INSERT INTO migrated_data.supplier (
     deactivated_date,
     flag_preferred,
@@ -163,11 +183,39 @@ SELECT
 FROM besy.supplier s
          LEFT JOIN migrated_data.address a
                    ON s.supplier_street = a.street
-                       AND s.supplier_town = a.town
-                       AND s.supplier_postal_code = a.postal_code
-                       AND s.supplier_building_name = a.building_name
-                        AND s.supplier_building_number = a.building_number
-                        AND s.supplier_county = a.county;
+                       AND COALESCE(s.supplier_town, '') = COALESCE(a.town, '')
+                       AND COALESCE(s.supplier_postal_code, '') = COALESCE(a.postal_code, '')
+                       AND COALESCE(s.supplier_building_name, '') = COALESCE(a.building_name, '')
+                       AND COALESCE(s.supplier_building_number, '') = COALESCE(a.building_number, '')
+                       AND COALESCE(s.supplier_county, '') = COALESCE(a.county, '')
+                       AND COALESCE(s.supplier_comment, '') = COALESCE(a.comment, '');
+
+--- Check, if suppliers get lost in the process beforehand, if it returns 0 rows, everything is O.K.:
+/*
+ SELECT
+    supplier_deactivated_date,
+    supplier_flag_preferred,
+    supplier_vat_id,
+    NULL, -- `supplier_email` did not exist
+    supplier_fax,
+    supplier_phone,
+    supplier_comment,
+    supplier_website,
+    a.id,
+    supplier_name
+FROM besy.supplier s
+         LEFT JOIN migrated_data.address a
+                   ON s.supplier_street = a.street
+                       AND COALESCE(s.supplier_town, '') = COALESCE(a.town, '')
+                       AND COALESCE(s.supplier_postal_code, '') = COALESCE(a.postal_code, '')
+                       AND COALESCE(s.supplier_building_name, '') = COALESCE(a.building_name, '')
+                       AND COALESCE(s.supplier_building_number, '') = COALESCE(a.building_number, '')
+                       AND COALESCE(s.supplier_county, '') = COALESCE(a.county, '')
+                       AND COALESCE(s.supplier_comment, '') = COALESCE(a.comment, '')
+WHERE a.id IS NULL;
+
+ */
+
 
 INSERT INTO migrated_data."user" (
     keycloak_uuid,
@@ -183,7 +231,25 @@ SELECT
 FROM besy."user" u
          JOIN besy.person p ON u.person_id = p.person_id;
 
+
+-- This needs to go after suppliers
+INSERT INTO migrated_data.customer_id (
+    comment,
+    customer_id,
+    supplier_id
+)
+SELECT
+    b.customer_id_comment,
+    b.customer_id,
+    s.id
+FROM besy.customer_id b
+         JOIN migrated_data.supplier s
+              ON s.name = b.supplier_name;
+
+
+
 INSERT INTO migrated_data."order" (
+    id,
     auto_index,
     booking_year,
     cashback_days,
@@ -224,6 +290,7 @@ INSERT INTO migrated_data."order" (
     decision_other_reasons_description
 )
 SELECT
+    o.order_id,
     o.order_auto_index,
     o.order_booking_year,
     o.order_cashback_days,
@@ -275,40 +342,13 @@ SELECT
     o.order_decision_other_reasons_description
 
 FROM besy."order" o
-         LEFT JOIN besy.person dp_old ON o.delivery_person_id = dp_old.person_id
-         LEFT JOIN migrated_data.person dp ON dp_old.person_given_name = dp.name AND dp_old.person_surname = dp.surname
+        JOIN migrated_data.person dp ON dp.id = o.delivery_person_id
 
-         LEFT JOIN besy.person ip_old ON o.invoice_person_id = ip_old.person_id
-         LEFT JOIN migrated_data.person ip ON ip_old.person_given_name = ip.name AND ip_old.person_surname = ip.surname
+        JOIN migrated_data.person ip ON ip.id = o.invoice_person_id
 
-         LEFT JOIN besy.person qp_old ON o.queries_person_id = qp_old.person_id
-         LEFT JOIN migrated_data.person qp ON qp_old.person_given_name = qp.name AND qp_old.person_surname = qp.surname
+        JOIN migrated_data.person qp ON qp.id = o.queries_person_id
 
-         LEFT JOIN migrated_data.supplier sp ON sp.name = o.supplier_name;
+        JOIN migrated_data.supplier sp ON sp.name = o.supplier_name;
 
-INSERT INTO migrated_data.item (
-    price_per_unit,
-    order_id,
-    quantity,
-    quantity_unit,
-    article_id,
-    comment,
-    item_vat_type,
-    preferred_list,
-    preferred_list_number,
-    vat_value,
-    name
-)
-SELECT
-    item_price_per_unit,
-    order_id,
-    item_quantity,
-    item_quantity_unit,
-    item_article_id,
-    item_comment,
-    item_vat_type::text,
-    preferred_list_abbr, -- must match new ENUM: 'RZ' or 'TA'
-    item_preferred_list_number,
-    vat_value,
-    item_name
-FROM besy.item;
+
+
