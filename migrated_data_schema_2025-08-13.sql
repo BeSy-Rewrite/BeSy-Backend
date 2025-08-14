@@ -382,4 +382,35 @@ SELECT
 FROM besy.item i;
 
 
+-- Map quotations:
+-- 1. insert quotation company cities into address table
+-- 2. insert quotation company names into suppliers & get address_id
+-- 3. insert quotations into new quotation table & get company_id
+INSERT INTO migrated_data.address(
+                                  town
+)
+SELECT DISTINCT quotation_company_city
+FROM besy.quotation;
 
+
+-- Filters existing supplier names out and only inserts quotation_company_names into supplier table, that do not already exist
+INSERT INTO migrated_data.supplier(
+                                   name,
+                                   address_id
+)
+SELECT DISTINCT q.quotation_company_name, s.id
+FROM besy.quotation q
+LEFT JOIN migrated_data.supplier s ON s.name = q.quotation_company_name
+WHERE s.name IS NULL;
+
+
+INSERT INTO migrated_data.quotation(
+    index,
+    price,
+    quote_date,
+    order_id,
+    supplier_id
+)
+SELECT q.quotation_index, q.quotation_price, q.quotation_quote_date, q.order_id, s.id
+FROM besy.quotation q
+JOIN migrated_data.supplier s ON s.name = q.quotation_company_name;
