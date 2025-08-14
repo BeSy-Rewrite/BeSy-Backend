@@ -45,7 +45,7 @@ public class Person {
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
-    @Column(name = "person_gender", nullable = false)
+    @Column(name = "gender", nullable = false)
     @Enumerated(EnumType.STRING)
     private Gender gender;
 

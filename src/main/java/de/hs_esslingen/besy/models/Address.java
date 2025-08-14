@@ -21,7 +21,7 @@ public class Address {
     @Column(name = "building_name")
     private String buildingName;
 
-    @Column(name = "street", nullable = false)
+    @Column(name = "street", nullable = true)
     private String street;
 
     @Column(name = "building_number")
@@ -30,13 +30,13 @@ public class Address {
     @Column(name = "town", nullable = false)
     private String town;
 
-    @Column(name = "postal_code", nullable = false, length = 20)
+    @Column(name = "postal_code", nullable = true, length = 20)
     private String postalCode;
 
     @Column(name = "county")
     private String county;
 
-    @Column(name = "country", insertable = false, updatable = false)
+    @Column(name = "country")
     private String country;
 
     @Column(name = "comment")
