@@ -964,16 +964,8 @@ components:
       type: object
       required:
         - name
-        - country
-        - postal_code
-        - street
-        - town
         - flag_preferred
       properties:
-        address_id:
-          type: integer
-          format: int64
-          description: Optional linked address ID
         flag_preferred:
           type: boolean
         vat_id:
@@ -988,23 +980,7 @@ components:
         phone:
           type: string
           maxLength: 45
-        building_name:
-          type: string
-        building_number:
-          type: string
         comment:
-          type: string
-        country:
-          type: string
-        county:
-          type: string
-        name:
-          type: string
-        postal_code:
-          type: string
-        street:
-          type: string
-        town:
           type: string
         website:
           type: string
@@ -1012,9 +988,6 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int64
-        address_id:
           type: integer
           format: int64
         deactivated_date:
@@ -1034,23 +1007,7 @@ components:
         phone:
           type: string
           maxLength: 45
-        building_name:
-          type: string
-        building_number:
-          type: string
         comment:
-          type: string
-        country:
-          type: string
-        county:
-          type: string
-        name:
-          type: string
-        postal_code:
-          type: string
-        street:
-          type: string
-        town:
           type: string
         website:
           type: string
