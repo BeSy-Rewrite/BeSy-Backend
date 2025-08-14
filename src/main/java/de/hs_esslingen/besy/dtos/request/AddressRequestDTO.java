@@ -13,7 +13,7 @@ public class AddressRequestDTO implements Serializable {
     String street;
     String buildingNumber;
     String town;
-    String postcode;
+    String postalCode;
     String county;
     String country;
     String comment;

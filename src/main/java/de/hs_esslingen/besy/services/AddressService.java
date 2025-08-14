@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+
 
 @Service
 @AllArgsConstructor
@@ -32,6 +32,15 @@ public class AddressService {
         return addressRepository.findById(id)
                 .map(address -> ResponseEntity.ok(addressResponseMapper.toDto(address)))
                 .orElseThrow(() -> new NotFoundException("Adresse mit id " + id + " existiert nicht."));
+    }
+
+    public ResponseEntity<AddressResponseDTO> createAddress(
+            AddressRequestDTO dto
+    ) {
+        Address address = addressRequestMapper.toEntity(dto);
+        Address addressPersisted = addressRepository.save(address);
+        addressRepository.flush();
+        return ResponseEntity.ok(addressResponseMapper.toDto(addressPersisted));
     }
 
 }
