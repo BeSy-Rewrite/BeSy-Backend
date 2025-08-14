@@ -2,6 +2,7 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.request.AddressRequestDTO;
 import de.hs_esslingen.besy.dtos.response.AddressResponseDTO;
+import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.AddressRequestMapper;
 import de.hs_esslingen.besy.mappers.response.AddressResponseMapper;
 import de.hs_esslingen.besy.models.Address;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -25,4 +27,11 @@ public class AddressService {
         List<AddressResponseDTO> responseDTOS = addressResponseMapper.toDto(addresses);
         return ResponseEntity.ok(responseDTOS);
     }
+
+    public ResponseEntity<AddressResponseDTO> getAddressById(Integer id) {
+        return addressRepository.findById(id)
+                .map(address -> ResponseEntity.ok(addressResponseMapper.toDto(address)))
+                .orElseThrow(() -> new NotFoundException("Adresse mit id " + id + " existiert nicht."));
+    }
+
 }
