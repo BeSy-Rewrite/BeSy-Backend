@@ -81,7 +81,7 @@ INSERT INTO migrated_data.person (
     comment,
     email,
     name,
-    person_gender,
+    gender,
     surname
 )
 SELECT
@@ -359,7 +359,7 @@ INSERT INTO migrated_data.item(
    quantity_unit,
    article_id,
    comment,
-   item_vat_type,
+   vat_type,
    preferred_list, -- enum
    preferred_list_number,
    vat_value,

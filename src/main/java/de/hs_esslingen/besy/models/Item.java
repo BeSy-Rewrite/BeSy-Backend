@@ -50,7 +50,7 @@ public class Item {
     private String comment;
 
     @Column(name = "vat_value", insertable = false, updatable = false)
-    private String vatValue;
+    private BigDecimal vatValue;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "vat_value", nullable = false)
@@ -64,7 +64,7 @@ public class Item {
     private String preferredListNumber;
 
     @ColumnDefault("'netto'")
-    @Column(name = "item_vat_type", nullable = false)
+    @Column(name = "vat_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private VatType vatType;
 
