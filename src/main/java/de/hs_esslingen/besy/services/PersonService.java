@@ -31,9 +31,9 @@ public class PersonService {
     }
 
     public ResponseEntity<PersonResponseDTO> getPersonById(Long id) {
-        Person person = personRepository.findById(id).orElseThrow(() -> new NotFoundException("Person with id " + id + " not found"));
-        PersonResponseDTO personResponseDTO = personResponseMapper.toDto(person);
-        return ResponseEntity.ok(personResponseDTO);
+        return personRepository.findById(id)
+                .map(person -> ResponseEntity.ok(personResponseMapper.toDto(person)))
+                .orElseThrow(() -> new NotFoundException("Person mit id " + id + " nicht gefunden."));
     }
 
     public ResponseEntity<PersonResponseDTO> createPerson(PersonRequestDTO personDTO) {
@@ -46,15 +46,5 @@ public class PersonService {
         return ResponseEntity.ok(personResponseMapper.toDto(savedPerson));
     }
 
-    public ResponseEntity<PersonResponseDTO> updatePerson(Long id, PersonRequestDTO personDTO) {
-        if(!personRepository.existsById(id)) return ResponseEntity.notFound().build();
 
-        Address address = addressRepository.getReferenceById(personDTO.getAddressId());
-        Person person = personRequestMapper.toEntity(personDTO);
-        person.setAddress(address);
-        person.setId(id);
-
-        Person savedPerson = personRepository.save(person);
-        return ResponseEntity.ok(personResponseMapper.toDto(savedPerson));
-    }
 }
