@@ -9,11 +9,11 @@ import java.io.Serializable;
  */
 @Value
 public class AddressResponseDTO implements Serializable {
-    String name;
+    Integer id;
     String buildingName;
     String street;
     String buildingNumber;
-    String townName;
+    String town;
     String postalCode;
     String county;
     String country;

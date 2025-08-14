@@ -9,7 +9,6 @@ import java.io.Serializable;
  */
 @Value
 public class AddressRequestDTO implements Serializable {
-    String name;
     String buildingName;
     String street;
     String buildingNumber;
