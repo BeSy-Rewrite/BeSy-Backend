@@ -245,29 +245,6 @@ paths:
                 $ref: '#/components/schemas/OrderResponseDTO'
   /orders/{order_id}/items:
     get:
-        tags:
-        - Orders
-        operationId: getOrdersItems
-        parameters:
-        - in: path
-            name: order_id
-            required: true
-            schema:
-            type: string
-            description: ID of the order to retrieve items for.
-        responses:
-        '200':
-            description: Successfully retrieved quotations for the order.
-            content:
-            application/json:
-                schema:
-                type: array
-                items:
-                    $ref: '#/components/schemas/ItemResponseDTO'
-      '404':
-          description: Order not found.
-  /orders/{order_id}/items:
-    get:
       tags:
         - Orders
       operationId: getOrderItems
@@ -285,9 +262,11 @@ paths:
             application/json:
               schema:
                 type: array
+                items:
                   $ref: '#/components/schemas/ItemResponseDTO'
         '404':
           description: Order not found.
+
   /orders/{order_id}/quotations:
     get:
       tags:
@@ -311,6 +290,7 @@ paths:
                   $ref: '#/components/schemas/QuotationResponseDTO'
         '404':
           description: Order not found.
+
   /orders/{order_id}/export:
     get:
       tags:
@@ -322,14 +302,15 @@ paths:
           required: true
           schema:
             type: string
-          description: ID of the order to retrieve quotations for.
+          description: ID of the order to export to PDF.
       responses:
         '200':
-          description: Successfully retrieved pdf formula for the order.
+          description: Successfully retrieved PDF formula for the order.
           content:
-            application/pdf:
+            application/pdf: { }
         '404':
           description: Order not found.
+
   /cost_centers:
     get:
       tags:

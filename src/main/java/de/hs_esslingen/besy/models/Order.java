@@ -31,8 +31,7 @@ public class Order {
     @Column(name = "booking_year", nullable = false, length = 2)
     private String bookingYear;
 
-    // TODO: Set this back to nullable = false
-    @Column(name = "auto_index", nullable = true)
+    @Column(name = "auto_index", nullable = false)
     private Short autoIndex;
 
     @Column(name = "created_date", nullable = false)

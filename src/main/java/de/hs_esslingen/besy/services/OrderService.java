@@ -1,8 +1,7 @@
 package de.hs_esslingen.besy.services;
 
-import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
-import de.hs_esslingen.besy.enums.OrderStatus;
+import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.ItemRequestMapper;
 import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
 import de.hs_esslingen.besy.mappers.request.QuotationRequestMapper;
@@ -40,11 +39,12 @@ public class OrderService {
         return ResponseEntity.ok(orderResponseDTOS);
     }
 
-
-    public ResponseEntity<List<OrderResponseDTO>> getOrdersOfOwnerUser(String username) {
-        List<Order> orders = orderRepository.findByOwnerId(username);
-        List<OrderResponseDTO> orderResponseDTOS = orderResponseMapper.toDto(orders);
-        return ResponseEntity.ok(orderResponseDTOS);
+    public ResponseEntity<OrderResponseDTO> getOrderById(Long id) {
+        return orderRepository.findById(id)
+                .map(order -> {
+                    return ResponseEntity.ok(orderResponseMapper.toDto(order));
+                }).orElseThrow(() -> new NotFoundException("Bestellung mit id " + id + " nicht gefunden."));
     }
+
 
 }

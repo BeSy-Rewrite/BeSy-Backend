@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.List;
 
 /**
  * DTO for {@link de.hs_esslingen.besy.models.Order}

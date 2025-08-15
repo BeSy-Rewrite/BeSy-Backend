@@ -1,6 +1,5 @@
 package de.hs_esslingen.besy.dtos.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import lombok.Value;
 

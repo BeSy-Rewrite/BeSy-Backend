@@ -22,10 +22,9 @@ public class OrderController {
         return orderService.getAllOrders();
     }
 
-    @GetMapping
-    @RequestMapping("/user/{owner-username}")
-    public ResponseEntity<List<OrderResponseDTO>> getUserOrders(@PathVariable("owner-username") String ownerUsername) {
-        return orderService.getOrdersOfOwnerUser(ownerUsername);
+    @GetMapping("{id}")
+    public ResponseEntity<OrderResponseDTO> getOrder(@PathVariable("id") Long id) {
+        return orderService.getOrderById(id);
     }
 
     @GetMapping
@@ -33,4 +32,5 @@ public class OrderController {
     public ResponseEntity<byte[]> exportOrder(@PathVariable("order-id") Integer orderId) throws IOException {
         return this.orderPDFService.generateOrderPDF(orderId);
     }
+
 }
