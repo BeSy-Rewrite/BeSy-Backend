@@ -31,10 +31,4 @@ public class PersonController {
         return personService.createPerson(personRequestDTO);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<PersonResponseDTO> updatePerson(
-            @PathVariable Long id,
-            @RequestBody PersonRequestDTO personRequestDTO) {
-        return personService.updatePerson(id, personRequestDTO);
-    }
 }

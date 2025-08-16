@@ -68,6 +68,7 @@ SELECT
     currency_long
 FROM besy.currency;
 
+
 -- COALESCE() replaces NULL values with an empty string.
 -- This is necessary to prevent losing persons during the join,
 -- because if any join field is NULL, the comparison fails
@@ -216,18 +217,17 @@ WHERE a.id IS NULL;
 
  */
 
-
 INSERT INTO migrated_data."user" (
-    keycloak_uuid,
     email,
     name,
-    surname
+    surname,
+    legacy_user_name
 )
 SELECT
-    u.user_name,
     p.person_email,
     p.person_given_name,
-    p.person_surname
+    p.person_surname,
+    u.user_name
 FROM besy."user" u
          JOIN besy.person p ON u.person_id = p.person_id;
 
@@ -322,7 +322,7 @@ SELECT
     o.order_content_description,
     o.currency_short,
     o.customer_id,
-    o.owner_user_name,
+    u.id,
     o.primary_cost_center_id,
     o.order_quote_number,
     o.order_quote_sign,
@@ -348,7 +348,9 @@ FROM besy."order" o
 
         JOIN migrated_data.person qp ON qp.id = o.queries_person_id
 
-        JOIN migrated_data.supplier sp ON sp.name = o.supplier_name;
+        JOIN migrated_data.supplier sp ON sp.name = o.supplier_name
+
+        JOIN migrated_data."user" u ON u.legacy_user_name = o.owner_user_name;
 
 
 INSERT INTO migrated_data.item(
@@ -414,3 +416,7 @@ INSERT INTO migrated_data.quotation(
 SELECT q.quotation_index, q.quotation_price, q.quotation_quote_date, q.order_id, s.id
 FROM besy.quotation q
 JOIN migrated_data.supplier s ON s.name = q.quotation_company_name;
+
+SELECT setval('migrated_data.person_id_seq', (SELECT MAX(id) FROM migrated_data.person));
+SELECT setval('migrated_data.order_id_seq', (SELECT MAX(id) FROM migrated_data."order"));
+

@@ -10,7 +10,7 @@ import java.time.LocalDate;
  */
 @Value
 public class CostCenterRequestDTO implements Serializable {
-    String id;
+    String id; // Gets assigned by user
     String name;
     LocalDate beginDate;
     LocalDate endDate;

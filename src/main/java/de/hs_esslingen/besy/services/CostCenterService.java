@@ -27,11 +27,12 @@ public class CostCenterService {
         return ResponseEntity.ok(costCenterResponseDTOS);
     }
 
-    public ResponseEntity<CostCenterResponseDTO> createCostCenter(CostCenterRequestDTO requestDTO) {
-        if(costCenterRepository.existsById(requestDTO.getId())) return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        CostCenter costCenter = costCenterRequestMapper.toEntity(requestDTO);
-        costCenterRepository.save(costCenter);
-        return ResponseEntity.status(HttpStatus.CREATED).body(costCenterResponseMapper.toDto(costCenter));
+    public ResponseEntity<CostCenterResponseDTO> createCostCenter(CostCenterRequestDTO dto) {
+        if(costCenterRepository.existsById(dto.getId())) return ResponseEntity.status(HttpStatus.CONFLICT).build();
+
+        CostCenter costCenter = costCenterRequestMapper.toEntity(dto);
+        CostCenter costCenterPersisted = costCenterRepository.save(costCenter);
+        return ResponseEntity.status(HttpStatus.CREATED).body(costCenterResponseMapper.toDto(costCenterPersisted));
     }
 
 }

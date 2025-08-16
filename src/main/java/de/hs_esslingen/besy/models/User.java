@@ -10,8 +10,12 @@ import lombok.Setter;
 @Table(name = "\"user\"")
 public class User {
     @Id
-    @Column(name = "keycloak_uuid")
-    private String id;
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(name = "keycloak_uuid", nullable = true, unique = true)
+    private String keycloakUUID;
 
     @Column(name = "surname", nullable = false)
     private String surname;
@@ -21,5 +25,8 @@ public class User {
 
     @Column(name = "email", nullable = false)
     private String email;
+
+    @Column(name = "legacy_user_name", nullable = true)
+    private String legacyUserName;
 
 }

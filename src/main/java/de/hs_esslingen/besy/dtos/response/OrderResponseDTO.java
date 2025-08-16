@@ -1,6 +1,5 @@
 package de.hs_esslingen.besy.dtos.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import lombok.Value;
 
@@ -23,7 +22,7 @@ public class OrderResponseDTO implements Serializable {
     String ownerId;
     String contentDescription;
     OrderStatus status;
-    String currencyShort;
+    CurrencyResponseDTO currency;
     String comment;
     String commentForSupplier;
     String quoteNumber;

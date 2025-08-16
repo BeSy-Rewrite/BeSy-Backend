@@ -17,12 +17,6 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final ItemResponseMapper itemResponseMapper;
 
-    public ResponseEntity<List<ItemResponseDTO>> getAllItems() {
-        List<Item> items = itemRepository.findAll();
-        List<ItemResponseDTO> itemResponseDTOS = itemResponseMapper.toDto(items);
-        return ResponseEntity.ok(itemResponseDTOS);
-    }
-
     public ResponseEntity<List<ItemResponseDTO>> getItemsOfOrder(Long orderId) {
         List<Item> items = itemRepository.findByOrder_Id(orderId);
         List<ItemResponseDTO> itemResponseDTOS = itemResponseMapper.toDto(items);
