@@ -321,12 +321,14 @@ paths:
               $ref: '#/components/schemas/CostCenterRequestDTO'
         required: true
       responses:
-        '200':
+        '201':
           description: OK
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/CostCenterResponseDTO'
+        '409':
+          description: Kostenstelle mit diesem Namen existiert bereits.
   /vats:
     get:
       tags:
@@ -767,8 +769,6 @@ components:
     CostCenterRequestDTO:
       type: object
       properties:
-        id:
-          type: string
         name:
           type: string
         begin_date:
@@ -960,6 +960,8 @@ components:
         - name
         - flag_preferred
       properties:
+        name:
+          type: string
         flag_preferred:
           type: boolean
         vat_id:
@@ -984,6 +986,8 @@ components:
         id:
           type: integer
           format: int64
+        name:
+          type: string
         deactivated_date:
           type: string
           format: date
