@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Bestellsystem API
-  version: v0
+  version: v0.0.1
 servers:
   - url: http://localhost:3000/api/v1
     description: Generated server url
@@ -121,7 +121,6 @@ paths:
     get:
       tags:
         - Suppliers
-      
       operationId: getAllSuppliers
       responses:
         '200':
@@ -135,7 +134,6 @@ paths:
     post:
       tags:
         - Suppliers
-      
       operationId: createSupplier
       requestBody:
         required: true
@@ -145,60 +143,56 @@ paths:
               $ref: '#/components/schemas/SupplierRequestDTO'
       responses:
         '201':
-          description: Supplier successfully created
+          description: Lieferant erfolgreich erstellt.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SupplierResponseDTO'
         '400':
-          description: Invalid input
-  /suppliers/{id}:
+          description: Ungültige Eingabe(n).
+  /suppliers/{supplier-id}:
     get:
       tags:
         - Suppliers
-      
       operationId: getSupplierById
       parameters:
         - name: id
           in: path
           required: true
-          description: ID of the supplier to retrieve
+          description: Die eindeutige ID des Lieferanten, welcher abgerufen werden soll.
           schema:
             type: integer
             format: int64
       responses:
         '200':
-          description: Supplier found
+          description: Lieferant gefunden.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SupplierResponseDTO'
         '404':
-          description: Supplier not found
+          description: Lieferant nicht gefunden.
+  /suppliers/{supplier-id}/customer_ids:
+    get:
+      tags:
+        - Suppliers
+      operationId: getCustomerIdsOfOrder
+      responses:
+        '200':
+          description: Liste der Kundennummern eines Lieferanten.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerIdResponseDTO'
+        '404':
+          description: Lieferant nicht gefunden.
   /orders:
     get:
       tags:
         - Orders
       operationId: getAllOrders
-      parameters:
-        - in: query
-          name: owner_id
-          schema:
-            type: string
-          required: false
-          description: Filter orders by the owner's ID.
-        - in: query
-          name: page
-          schema:
-            type: integer
-          required: false
-          description: Page number of the results to retrieve.
-        - in: query
-          name: size
-          schema:
-            type: integer
-          required: false
-          description: Number of orders to return per page.
       responses:
         '200':
           description: OK
@@ -228,21 +222,43 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/OrderResponseDTO'
-  /orders/{order_id}/items:
+  /orders/{order-id}:
+    get:
+      tags:
+        - Orders
+      operationId: getOrderById
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          description: Die eindeutige ID der Bestellung, die abgerufen werden soll.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                  $ref: '#/components/schemas/OrderResponseDTO'
+        '404':
+          description: Bestellung nicht gefunden.
+  /orders/{order-id}/items:
     get:
       tags:
         - Orders
       operationId: getOrderItems
       parameters:
         - in: path
-          name: order_id
+          name: order-id
           required: true
           schema:
             type: string
-          description: ID of the order to retrieve items for.
+          description: Die eindeutige ID der Bestellung, für welche die Artikel abgerufen werden sollen.
       responses:
         '200':
-          description: Successfully retrieved items for the order.
+          description: Erfolgreich abgerufene Artikel einer Bestellung.
           content:
             application/json:
               schema:
@@ -251,22 +267,52 @@ paths:
                   $ref: '#/components/schemas/ItemResponseDTO'
         '404':
           description: Bestellung nicht gefunden.
-
-  /orders/{order_id}/quotations:
+    post:
+      tags:
+        - Orders
+      operationId: createOrderItems
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          description: Die eindeutige ID der Bestellung, für welche neue Artikel angelegt werden sollen.
+          schema:
+            type: integer
+            format: int64
+      description: >
+        Erstellt neue Artikel einer Bestellung.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/ItemRequestDTO'
+        required: true
+      responses:
+        '201':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/ItemResponseDTO'
+        '404':
+          description: Bestellung nicht gefunden.
+  /orders/{order-id}/quotations:
     get:
       tags:
         - Orders
       operationId: getOrderQuotations
       parameters:
         - in: path
-          name: order_id
+          name: order-id
           required: true
           schema:
             type: string
-          description: ID of the order to retrieve quotations for.
+          description: Die eindeutige ID der Bestellung, für welche die Vergleichsangebote abgerufen werden sollen.
       responses:
         '200':
-          description: Successfully retrieved quotations for the order.
+          description: Erfolgreich abgerufene Vergleichsangebote einer Bestellung.
           content:
             application/json:
               schema:
@@ -275,19 +321,49 @@ paths:
                   $ref: '#/components/schemas/QuotationResponseDTO'
         '404':
           description: Bestellung nicht gefunden.
-
-  /orders/{order_id}/export:
+    post:
+      tags:
+        - Orders
+      operationId: createOrderQuotations
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          description: Die eindeutige ID der Bestellung, für welche neue Vergleichsangebote angelegt werden sollen.
+          schema:
+            type: integer
+            format: int64
+      description: >
+        Erstellt neue Vergleichsangebote einer Bestellung.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/QuotationRequestDTO'
+        required: true
+      responses:
+        '201':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/QuotationResponseDTO'
+        '404':
+          description: Bestellung nicht gefunden.
+  /orders/{order-id}/export:
     get:
       tags:
         - Orders
       operationId: exportOrderToFormula
       parameters:
         - in: path
-          name: order_id
+          name: order-id
           required: true
           schema:
             type: string
-          description: ID of the order to export to PDF.
+          description: Die eindeutige ID der Bestellung, für welche die Bestellung als PDF ins Bestellformular exportiert wird.
       responses:
         '200':
           description: Successfully retrieved PDF formula for the order.
@@ -295,7 +371,6 @@ paths:
             application/pdf: { }
         '404':
           description: Bestellung nicht gefunden.
-
   /cost_centers:
     get:
       tags:
