@@ -228,24 +228,6 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/OrderResponseDTO'
-    patch:
-      tags:
-        - Orders
-      operationId: updateMultipleOrders
-      summary: Partially update an order.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OrderPatchRequestDTO'
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/OrderResponseDTO'
   /orders/{order_id}/items:
     get:
       tags:
