@@ -27,6 +27,6 @@ public class UserService {
     public ResponseEntity<UserResponseDTO> getUserById(String id) {
         return userRepository.findById(id)
                 .map(user -> ResponseEntity.ok(userResponseMapper.toDto(user)))
-                .orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException("Benutzer mit id " + id + " nicht gefunden."));
     }
 }

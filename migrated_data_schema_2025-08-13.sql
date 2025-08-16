@@ -216,15 +216,12 @@ WHERE a.id IS NULL;
 
  */
 
-
 INSERT INTO migrated_data."user" (
-    keycloak_uuid,
     email,
     name,
     surname
 )
 SELECT
-    u.user_name,
     p.person_email,
     p.person_given_name,
     p.person_surname

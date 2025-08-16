@@ -371,13 +371,13 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CurrencyResponseDTO'
-  /users/{username}:
+  /users/{id}:
     get:
       tags:
         - Users
       operationId: getUser
       parameters:
-        - name: username
+        - name: id
           in: path
           required: true
           schema:
