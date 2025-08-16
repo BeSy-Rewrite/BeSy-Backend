@@ -2,10 +2,12 @@ package de.hs_esslingen.besy.controllers;
 
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
+import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.services.ItemService;
 import de.hs_esslingen.besy.services.OrderPDFService;
 import de.hs_esslingen.besy.services.OrderService;
+import de.hs_esslingen.besy.services.QuotationService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +21,7 @@ import java.util.List;
 public class OrderController {
     private final OrderService orderService;
     private final ItemService itemService;
+    private final QuotationService quotationService;
     private final OrderPDFService orderPDFService;
 
     @GetMapping
@@ -35,6 +38,12 @@ public class OrderController {
     public ResponseEntity<List<ItemResponseDTO>> getItemsOfOrder(@PathVariable("order-id") Long id) {
         if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
         return itemService.getItemsOfOrder(id);
+    }
+
+    @GetMapping("{order-id}/quotations")
+    public ResponseEntity<List<QuotationResponseDTO>> getQuotationsOfOrder(@PathVariable("order-id") Long id) {
+        if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        return quotationService.getQuotationsOfOrder(id);
     }
 
     @GetMapping
