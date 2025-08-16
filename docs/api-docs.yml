@@ -10,7 +10,7 @@ paths:
     get:
       tags:
         - Addresses
-      summary: Get all addresses
+      
       operationId: getAllAddresses
       responses:
         '200':
@@ -24,7 +24,7 @@ paths:
     post:
       tags:
         - Addresses
-      summary: Create a new address
+      
       operationId: createAddress
       requestBody:
         required: true
@@ -45,7 +45,7 @@ paths:
       get:
         tags:
           - Addresses
-        summary: Get a specific address by ID
+        
         operationId: getAddressById
         parameters:
           - name: id
@@ -68,7 +68,7 @@ paths:
     get:
       tags:
         - Persons
-      summary: Get a person by ID
+      
       operationId: getPersonById
       parameters:
         - name: id
@@ -88,7 +88,7 @@ paths:
     get:
       tags:
         - Persons
-      summary: Get all persons
+      
       operationId: getAllPersons
       responses:
         '200':
@@ -102,7 +102,7 @@ paths:
     post:
       tags:
         - Persons
-      summary: Create a new person
+      
       operationId: createPerson
       requestBody:
         content:
@@ -121,7 +121,7 @@ paths:
     get:
       tags:
         - Suppliers
-      summary: Get all suppliers
+      
       operationId: getAllSuppliers
       responses:
         '200':
@@ -135,7 +135,7 @@ paths:
     post:
       tags:
         - Suppliers
-      summary: Create a new supplier
+      
       operationId: createSupplier
       requestBody:
         required: true
@@ -156,7 +156,7 @@ paths:
     get:
       tags:
         - Suppliers
-      summary: Get a supplier by ID
+      
       operationId: getSupplierById
       parameters:
         - name: id
