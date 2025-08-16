@@ -39,4 +39,9 @@ public class SupplierService {
         Supplier supplierPersisted = supplierRepository.save(supplier);
         return ResponseEntity.ok(supplierResponseMapper.toDto(supplierPersisted));
     }
+
+    public boolean existsSupplierById(Integer id) {
+        return supplierRepository.existsById(id);
+    }
+
 }

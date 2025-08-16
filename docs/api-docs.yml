@@ -196,6 +196,33 @@ paths:
                   $ref: '#/components/schemas/CustomerIdResponseDTO'
         '404':
           description: Lieferant nicht gefunden.
+    post:
+      tags:
+        - Suppliers
+      operationId: createSupplierCustomerId
+      parameters:
+        - name: supplier-id
+          in: path
+          required: true
+          description: Die eindeutige ID des Lieferanten, für welchen die Kundennummern erstellt werden soll.
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerIdRequestDTO'
+      responses:
+        '201':
+          description: Kundennummer erfolgreich erstellt.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerIdResponseDTO'
+        '404':
+          description: Lieferant nicht gefunden.
   /orders:
     get:
       tags:
@@ -1098,10 +1125,6 @@ components:
         - supplier_id
         - customer_id
       properties:
-        supplier_id:
-          type: integer
-          format: int64
-          description: ID of the related supplier
         customer_id:
           type: string
           description: Customer identifier (external or internal)
@@ -1111,10 +1134,6 @@ components:
     CustomerIdResponseDTO:
       type: object
       properties:
-        supplier_id:
-          type: integer
-          format: int64
-          description: ID of the related supplier
         customer_id:
           type: string
           description: Customer identifier (external or internal)
