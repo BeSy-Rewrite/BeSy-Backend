@@ -416,3 +416,5 @@ FROM besy.quotation q
 JOIN migrated_data.supplier s ON s.name = q.quotation_company_name;
 
 SELECT setval('migrated_data.person_id_seq', (SELECT MAX(id) FROM migrated_data.person));
+SELECT setval('migrated_data.order_id_seq', (SELECT MAX(id) FROM migrated_data."order"));
+
