@@ -156,7 +156,7 @@ paths:
         - Suppliers
       operationId: getSupplierById
       parameters:
-        - name: id
+        - name: supplier-id
           in: path
           required: true
           description: Die eindeutige ID des Lieferanten, welcher abgerufen werden soll.
@@ -177,6 +177,14 @@ paths:
       tags:
         - Suppliers
       operationId: getCustomerIdsOfOrder
+      parameters:
+        - name: supplier-id
+          in: path
+          required: true
+          description: Die eindeutige ID des Lieferanten, für welchen die Kundennummern abgerufen werden sollen.
+          schema:
+            type: integer
+            format: int64
       responses:
         '200':
           description: Liste der Kundennummern eines Lieferanten.
