@@ -68,6 +68,7 @@ SELECT
     currency_long
 FROM besy.currency;
 
+
 -- COALESCE() replaces NULL values with an empty string.
 -- This is necessary to prevent losing persons during the join,
 -- because if any join field is NULL, the comparison fails
@@ -219,12 +220,14 @@ WHERE a.id IS NULL;
 INSERT INTO migrated_data."user" (
     email,
     name,
-    surname
+    surname,
+    legacy_user_name
 )
 SELECT
     p.person_email,
     p.person_given_name,
-    p.person_surname
+    p.person_surname,
+    u.user_name
 FROM besy."user" u
          JOIN besy.person p ON u.person_id = p.person_id;
 
@@ -319,7 +322,7 @@ SELECT
     o.order_content_description,
     o.currency_short,
     o.customer_id,
-    o.owner_user_name,
+    u.id,
     o.primary_cost_center_id,
     o.order_quote_number,
     o.order_quote_sign,
@@ -345,7 +348,9 @@ FROM besy."order" o
 
         JOIN migrated_data.person qp ON qp.id = o.queries_person_id
 
-        JOIN migrated_data.supplier sp ON sp.name = o.supplier_name;
+        JOIN migrated_data.supplier sp ON sp.name = o.supplier_name
+
+        JOIN migrated_data."user" u ON u.legacy_user_name = o.owner_user_name;
 
 
 INSERT INTO migrated_data.item(

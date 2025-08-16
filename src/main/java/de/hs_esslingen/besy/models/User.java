@@ -26,4 +26,7 @@ public class User {
     @Column(name = "email", nullable = false)
     private String email;
 
+    @Column(name = "legacy_user_name", nullable = true)
+    private String legacyUserName;
+
 }

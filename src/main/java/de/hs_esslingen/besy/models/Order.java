@@ -41,10 +41,10 @@ public class Order {
     private String legacyAlias;
 
     @Column(name = "owner_user_id", insertable = false, updatable = false)
-    private String ownerId;
+    private Integer ownerId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "owner_user_id",referencedColumnName = "keycloak_uuid", nullable = true)
+    @JoinColumn(name = "owner_user_id",referencedColumnName = "id", nullable = true)
     private de.hs_esslingen.besy.models.User owner;
 
     @Column(name = "content_description", nullable = true)
