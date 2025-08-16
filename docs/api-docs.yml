@@ -812,8 +812,6 @@ components:
           type: string
         email:
           type: string
-        legacy_user_name:
-          type: string
     ItemResponseDTO:
       type: object
       properties:
