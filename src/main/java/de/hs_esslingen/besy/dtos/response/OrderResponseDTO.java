@@ -22,7 +22,7 @@ public class OrderResponseDTO implements Serializable {
     String ownerId;
     String contentDescription;
     OrderStatus status;
-    String currencyShort;
+    CurrencyResponseDTO currency;
     String comment;
     String commentForSupplier;
     String quoteNumber;

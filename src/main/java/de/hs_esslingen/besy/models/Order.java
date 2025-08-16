@@ -57,7 +57,7 @@ public class Order {
     @Column(name = "currency_short", insertable = false, updatable = false)
     private String currencyShort;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "currency_short", nullable = false)
     private Currency currency;
 
