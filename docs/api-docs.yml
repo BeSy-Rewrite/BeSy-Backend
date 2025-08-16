@@ -575,14 +575,6 @@ components:
           type: boolean
         dfg_key:
           type: string
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/ItemRequestDTO'
-        quotations:
-          type: array
-          items:
-            $ref: '#/components/schemas/QuotationRequestDTO'
     OrderPatchRequestDTO:
       type: object
       properties:
@@ -725,8 +717,8 @@ components:
             - ARC
             - DEL
             - INB
-        currency_short:
-          type: string
+        currency:
+          $ref: '#/components/schemas/CurrencyResponseDTO'
         comment:
           type: string
         comment_for_supplier:
