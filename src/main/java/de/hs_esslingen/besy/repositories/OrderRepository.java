@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByOwnerId(String ownerId);
+
+    Order findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(String primaryCostCenterId, String bookingYear);
 }

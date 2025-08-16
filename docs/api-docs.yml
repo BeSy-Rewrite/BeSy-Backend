@@ -212,6 +212,9 @@ paths:
       tags:
         - Orders
       operationId: createOrder
+      description: >
+        Erstellt eine neue Bestellung und setzt den `status` auf "In Bearbeitung".
+        `booking_year` & `primary_cost_center_id` sind verpflichtend, um eine neue Bestellung anlegen zu können.
       requestBody:
         content:
           application/json:
@@ -487,6 +490,9 @@ components:
             - brutto
     OrderRequestDTO:
       type: object
+      required:
+        - booking_year
+        - primary_cost_center_id
       properties:
         primary_cost_center_id:
           type: string
@@ -500,14 +506,6 @@ components:
           type: string
         content_description:
           type: string
-        status:
-          type: string
-          enum:
-            - ABR
-            - ABS
-            - ARC
-            - DEL
-            - INB
         currency_short:
           type: string
         comment:

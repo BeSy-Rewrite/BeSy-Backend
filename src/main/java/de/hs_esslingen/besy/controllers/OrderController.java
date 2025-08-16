@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.controllers;
 
+import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
@@ -27,6 +28,11 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
         return orderService.getAllOrders();
+    }
+
+    @PostMapping
+    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO orderRequestDTO) {
+        return orderService.createOrder(orderRequestDTO);
     }
 
     @GetMapping("{order-id}")

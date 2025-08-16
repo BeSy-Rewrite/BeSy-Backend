@@ -35,7 +35,7 @@ public class Order {
     private Short autoIndex;
 
     @Column(name = "created_date", nullable = false)
-    private OffsetDateTime createdDate;
+    private OffsetDateTime createdDate = OffsetDateTime.now();
 
     @Column(name = "legacy_alias", length = 2)
     private String legacyAlias;
@@ -43,11 +43,11 @@ public class Order {
     @Column(name = "owner_user_id", insertable = false, updatable = false)
     private String ownerId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "owner_user_id",referencedColumnName = "keycloak_uuid", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "owner_user_id",referencedColumnName = "keycloak_uuid", nullable = true)
     private de.hs_esslingen.besy.models.User owner;
 
-    @Column(name = "content_description", nullable = false)
+    @Column(name = "content_description", nullable = true)
     private String contentDescription;
 
     @Column(name = "status", nullable = false)
@@ -57,8 +57,8 @@ public class Order {
     @Column(name = "currency_short", insertable = false, updatable = false)
     private String currencyShort;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "currency_short", nullable = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "currency_short", nullable = true)
     private Currency currency;
 
     @ColumnDefault("''")
@@ -83,22 +83,22 @@ public class Order {
     @Column(name = "delivery_person_id", insertable = false, updatable = false)
     private Long deliveryPersonId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "delivery_person_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "delivery_person_id", nullable = true)
     private de.hs_esslingen.besy.models.Person deliveryPerson;
 
     @Column(name = "invoice_person_id", insertable = false, updatable = false)
     private Long invoicePersonId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "invoice_person_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "invoice_person_id", nullable = true)
     private de.hs_esslingen.besy.models.Person invoicePerson;
 
     @Column(name = "queries_person_id", insertable = false, updatable = false)
     private Long queriesPersonId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "queries_person_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "queries_person_id", nullable = true)
     private de.hs_esslingen.besy.models.Person queriesPerson;
 
     @Column(name = "customer_id", insertable = false, updatable = false)
@@ -107,18 +107,20 @@ public class Order {
     @Column(name = "supplier_id", insertable = false, updatable = false)
     private Integer supplierId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumns({
-            @JoinColumn(name = "customer_id", referencedColumnName = "customer_id", nullable = false),
-            @JoinColumn(name = "supplier_id", referencedColumnName = "supplier_id", nullable = false)
+            @JoinColumn(name = "customer_id", referencedColumnName = "customer_id", nullable = true),
+            @JoinColumn(name = "supplier_id", referencedColumnName = "supplier_id", nullable = true
+
+            )
     })
     private CustomerId customer;
 
     @Column(name = "secondary_cost_center_id", insertable = false, updatable = false)
     private String secondaryCostCenterId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "secondary_cost_center_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "secondary_cost_center_id", nullable = true)
     private CostCenter secondaryCostCenter;
 
     @ColumnDefault("0.00")

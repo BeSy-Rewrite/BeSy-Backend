@@ -1,6 +1,5 @@
 package de.hs_esslingen.besy.dtos.request;
 
-import de.hs_esslingen.besy.enums.OrderStatus;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -18,7 +17,6 @@ public class OrderRequestDTO implements Serializable {
     String legacyAlias;
     String ownerId;
     String contentDescription;
-    OrderStatus status;
     String currencyShort;
     String comment;
     String commentForSupplier;
