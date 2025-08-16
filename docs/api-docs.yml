@@ -265,7 +265,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/ItemResponseDTO'
         '404':
-          description: Order not found.
+          description: Bestellung nicht gefunden.
 
   /orders/{order_id}/quotations:
     get:
@@ -289,7 +289,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/QuotationResponseDTO'
         '404':
-          description: Order not found.
+          description: Bestellung nicht gefunden.
 
   /orders/{order_id}/export:
     get:
@@ -309,7 +309,7 @@ paths:
           content:
             application/pdf: { }
         '404':
-          description: Order not found.
+          description: Bestellung nicht gefunden.
 
   /cost_centers:
     get:

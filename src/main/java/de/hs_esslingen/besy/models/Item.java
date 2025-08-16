@@ -52,7 +52,7 @@ public class Item {
     @Column(name = "vat_value", insertable = false, updatable = false)
     private BigDecimal vatValue;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "vat_value", nullable = false)
     private de.hs_esslingen.besy.models.Vat vat;
 

@@ -1,6 +1,9 @@
 package de.hs_esslingen.besy.controllers;
 
+import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
+import de.hs_esslingen.besy.exceptions.NotFoundException;
+import de.hs_esslingen.besy.services.ItemService;
 import de.hs_esslingen.besy.services.OrderPDFService;
 import de.hs_esslingen.besy.services.OrderService;
 import lombok.AllArgsConstructor;
@@ -15,6 +18,7 @@ import java.util.List;
 @RequestMapping("${api.prefix}/orders")
 public class OrderController {
     private final OrderService orderService;
+    private final ItemService itemService;
     private final OrderPDFService orderPDFService;
 
     @GetMapping
@@ -22,9 +26,15 @@ public class OrderController {
         return orderService.getAllOrders();
     }
 
-    @GetMapping("{id}")
-    public ResponseEntity<OrderResponseDTO> getOrder(@PathVariable("id") Long id) {
+    @GetMapping("{order-id}")
+    public ResponseEntity<OrderResponseDTO> getOrder(@PathVariable("order-id") Long id) {
         return orderService.getOrderById(id);
+    }
+
+    @GetMapping("{order-id}/items")
+    public ResponseEntity<List<ItemResponseDTO>> getItemsOfOrder(@PathVariable("order-id") Long id) {
+        if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        return itemService.getItemsOfOrder(id);
     }
 
     @GetMapping
@@ -32,5 +42,7 @@ public class OrderController {
     public ResponseEntity<byte[]> exportOrder(@PathVariable("order-id") Integer orderId) throws IOException {
         return this.orderPDFService.generateOrderPDF(orderId);
     }
+
+
 
 }

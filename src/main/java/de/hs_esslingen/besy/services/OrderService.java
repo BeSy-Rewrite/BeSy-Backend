@@ -46,5 +46,9 @@ public class OrderService {
                 }).orElseThrow(() -> new NotFoundException("Bestellung mit id " + id + " nicht gefunden."));
     }
 
+    public boolean existsOrderById(Long id) {
+        return orderRepository.existsById(id);
+    }
+
 
 }
