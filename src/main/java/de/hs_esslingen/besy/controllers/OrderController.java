@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.controllers;
 
+import de.hs_esslingen.besy.dtos.request.ItemRequestDTO;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
@@ -44,6 +45,14 @@ public class OrderController {
     public ResponseEntity<List<ItemResponseDTO>> getItemsOfOrder(@PathVariable("order-id") Long id) {
         if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
         return itemService.getItemsOfOrder(id);
+    }
+
+    @PostMapping("{order-id}/items")
+    public ResponseEntity<List<ItemResponseDTO>> createItemsOfOrder(
+            @PathVariable("order-id") Long id,
+            @RequestBody List<ItemRequestDTO> dtos) {
+        if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        return itemService.createItemsOfOrder(id, dtos);
     }
 
     @GetMapping("{order-id}/quotations")

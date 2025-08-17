@@ -223,6 +223,8 @@ paths:
                 $ref: '#/components/schemas/CustomerIdResponseDTO'
         '404':
           description: Lieferant nicht gefunden.
+        '409':
+          description: Lieferantennummer bereits vorhanden für diesen Lieferanten.
   /orders:
     get:
       tags:
@@ -333,6 +335,8 @@ paths:
                   $ref: '#/components/schemas/ItemResponseDTO'
         '404':
           description: Bestellung nicht gefunden.
+        '409':
+          description: Zugehöriger Artikel mit Artikelnummer `article_id` existiert bereits.
   /orders/{order-id}/quotations:
     get:
       tags:
@@ -554,7 +558,16 @@ components:
             - f
     ItemRequestDTO:
       type: object
+      required:
+        - item_id
+        - name
+        - price_per_unit
+        - quantity
+        - vat_value
+        - vat_type
       properties:
+        item_id:
+          type: number
         name:
           type: string
         price_per_unit:
@@ -1134,10 +1147,13 @@ components:
     CustomerIdResponseDTO:
       type: object
       properties:
+        supplier_id:
+          type: integer
+          format: int64
+          description: ID of the related supplier
         customer_id:
           type: string
           description: Customer identifier (external or internal)
         comment:
           type: string
           description: Optional comment about the customer ID
-

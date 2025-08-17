@@ -12,13 +12,14 @@ import java.math.BigDecimal;
  */
 @Value
 public class ItemRequestDTO implements Serializable {
+    Integer itemId;
     String name;
     BigDecimal pricePerUnit;
     Long quantity;
     String quantityUnit;
     String articleId;
     String comment;
-    String vatValue;
+    BigDecimal vatValue;
     PreferredList preferredList;
     String preferredListNumber;
     VatType vatType;
