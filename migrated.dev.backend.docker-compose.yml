@@ -1,0 +1,59 @@
+services:
+  besy_spring_boot_dev_migrated_backend:
+    container_name: besy-spring-boot-development-migrated-backend
+    image: kr1pt0n05/besy_backend:0.0.1
+    restart: unless-stopped
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://besy_postgres_dev_migrated_backend:5432/besy
+      - POSTGRES_USERNAME=besy
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DATABASE=besy
+    depends_on:
+      - besy_postgres_dev_migrated_backend
+    networks:
+      - postgres_migrated_backend
+    ports:
+      - "3000:3000"
+
+
+  besy_postgres_dev_migrated_backend:
+    container_name: "besy-postgres-development-migrated-backend"
+    image: postgres
+    restart: unless-stopped
+    # set shared memory limit when using docker-compose
+    shm_size: 128mb
+    # or set shared memory limit when deploy via swarm stack
+    #volumes:
+    #  - type: tmpfs
+    #    target: /dev/shm
+    #    tmpfs:
+    #      size: 134217728 # 128*2^20 bytes = 128Mb
+    environment:
+      - POSTGRES_USER=besy
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=besy
+    volumes:
+      - ./migrated-init-database.sh:/docker-entrypoint-initdb.d/init-user-db.sh
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres_migrated_backend
+
+
+  pgadmin_dev_migrated_backend:
+    container_name: pgadmin-dev-migrated-backend
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.de
+      - PGADMIN_DEFAULT_PASSWORD=123456
+    ports:
+      - "5050:80"
+    depends_on:
+      - besy_postgres_dev_migrated_backend
+    networks:
+      - postgres_migrated_backend
+
+networks:
+  postgres_migrated_backend:
+    driver: bridge
