@@ -1,19 +1,20 @@
 package de.hs_esslingen.besy.services;
 
+import de.hs_esslingen.besy.configurations.OrderSpecification;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
-import de.hs_esslingen.besy.mappers.request.ItemRequestMapper;
 import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
-import de.hs_esslingen.besy.mappers.request.QuotationRequestMapper;
 import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
 import de.hs_esslingen.besy.models.*;
 import de.hs_esslingen.besy.repositories.*;
 import lombok.AllArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -27,15 +28,48 @@ public class OrderService {
     private final PersonRepository personRepository;
     private final CostCenterRepository costCenterRepository;
     private final CustomerIdRepository customerIdRepository;
-    private final ItemRepository itemRepository;
-    private final QuotationRepository quotationRepository;
 
     private final OrderResponseMapper orderResponseMapper;
     private final OrderRequestMapper orderRequestMapper;
 
 
-    public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
-        List<Order> orders = orderRepository.findAll();
+    public ResponseEntity<List<OrderResponseDTO>> getAllOrders(
+            List<String> primaryCostCentersIds,
+            List<String> bookingYears,
+            OffsetDateTime createdAfter,
+            OffsetDateTime createdBefore,
+            List<Integer> ownerIds,
+            List<OrderStatus> statuses,
+            BigDecimal quotePriceMin,
+            BigDecimal quotePriceMax,
+            List<Long> deliveryPersonIds,
+            List<Long> invoicePersonIds,
+            List<Long> queriesPersonIds,
+            List<String> customerIds,
+            List<Integer> supplierIds,
+            List<String> secondaryCostCenterIds,
+            OffsetDateTime lastUpdatedTimeAfter,
+            OffsetDateTime lastUpdatedTimeBefore
+
+    ) {
+        Specification<Order> spec =
+                OrderSpecification
+                        .contains(primaryCostCentersIds, "primaryCostCenterId")
+                        .and(OrderSpecification.contains(bookingYears, "bookingYear")
+                        .and(OrderSpecification.isBetween(createdAfter, createdBefore, "createdDate"))
+                        .and(OrderSpecification.contains(ownerIds, "ownerId"))
+                        .and(OrderSpecification.contains(statuses, "status"))
+                        .and(OrderSpecification.isBetween(quotePriceMin, quotePriceMax, "quotePrice"))
+                        .and(OrderSpecification.contains(deliveryPersonIds, "deliveryPersonId"))
+                        .and(OrderSpecification.contains(invoicePersonIds, "invoicePersonId"))
+                        .and(OrderSpecification.contains(queriesPersonIds, "queriesPersonId"))
+                        .and(OrderSpecification.contains(customerIds, "customerId"))
+                        .and(OrderSpecification.contains(supplierIds, "supplierId"))
+                        .and(OrderSpecification.contains(secondaryCostCenterIds, "secondaryCostCenterId"))
+                        .and(OrderSpecification.isBetween(lastUpdatedTimeAfter, lastUpdatedTimeBefore, "lastUpdatedTime"))
+                                );
+
+        List<Order> orders = orderRepository.findAll(spec);
         List<OrderResponseDTO> orderResponseDTOS = orderResponseMapper.toDto(orders);
         return ResponseEntity.ok(orderResponseDTOS);
     }

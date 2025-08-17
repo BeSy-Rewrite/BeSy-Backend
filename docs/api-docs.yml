@@ -237,6 +237,154 @@ paths:
       tags:
         - Orders
       operationId: getAllOrders
+      parameters:
+        - name: primaryCostCenters
+          in: query
+          description: Filtert nach IDs der primären Kostenstellen.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          example: primaryCostCenters=1,2,3
+
+        - name: bookingYears
+          in: query
+          description: Filtert nach den letzten zwei Ziffern der Jahreszahl der Buchung. Achtung, diese muss ein String sein, z.B. "25".
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+
+        - name: createdAfter
+          in: query
+          description: Filtert nach Bestellungen, welche nach oder zu diesem Zeitpunkt erstellt wurden.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: 2022-09-26T15:22:01Z
+
+        - name: createdBefore
+          in: query
+          description: Filtert nach Bestellungen, welche vor oder zu diesem Zeitpunkt erstellt wurden.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: 2022-09-26T15:22:01Z
+
+        - name: ownerIds
+          in: query
+          description: Filtert nach IDs der Ersteller der Bestellung.
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+
+        - name: statuses
+          in: query
+          description: Filtert nach dem Bestellstatus.
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/OrderStatus'
+
+        - name: quotePriceMin
+          in: query
+          description: Filtert nach quotePriceMin.
+          required: false
+          schema:
+            type: number
+            format: decimal
+
+        - name: quotePriceMax
+          in: query
+          description: Filtert nach quotePriceMax.
+          required: false
+          schema:
+            type: number
+            format: decimal
+
+        - name: deliveryPersonIds
+          in: query
+          description: Filtert nach IDs der Besteller.
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+
+        - name: invoicePersonIds
+          in: query
+          description: Filtert nach IDs invoicePersonIds.
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+
+        - name: queriesPersonIds
+          in: query
+          description: Filtert nach IDs queriesPersonIds.
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+
+        - name: customerIds
+          in: query
+          description: Filter nach Kundennummern.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+
+        - name: supplierIds
+          in: query
+          description: Filtert nach IDs der Lieferanten.
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+
+        - name: secondaryCostCenters
+          in: query
+          description: Filtert nach IDs der sekundären Kostenstellen.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+
+        - name: lastUpdatedTimeAfter
+          in: query
+          description: Filtert nach Bestellungen, welche nach oder zu diesem Zeitpunkt bearbeitet wurden.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: 2022-09-26T15:22:01Z
+
+        - name: lastUpdatedTimeBefore
+          in: query
+          description: Filtert nach Bestellungen, welche vor oder zu diesem Zeitpunkt bearbeitet wurden.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: 2022-09-26T15:22:01Z
       responses:
         '200':
           description: OK
@@ -623,7 +771,7 @@ components:
         legacy_alias:
           type: string
         owner_id:
-          type: string
+          type: number
         content_description:
           type: string
         currency_short:
@@ -829,7 +977,7 @@ components:
         legacy_alias:
           type: string
         owner_id:
-          type: string
+          type: number
         content_description:
           type: string
         status:
@@ -1169,3 +1317,11 @@ components:
         comment:
           type: string
           description: Optional comment about the customer ID
+    OrderStatus:
+      type: string
+      enum:
+        - ABR
+        - ABS
+        - ARC
+        - DEL
+        - INB

@@ -6,6 +6,7 @@ import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
+import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.services.ItemService;
 import de.hs_esslingen.besy.services.OrderPDFService;
@@ -16,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @RestController
@@ -28,8 +31,42 @@ public class OrderController {
     private final OrderPDFService orderPDFService;
 
     @GetMapping
-    public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
-        return orderService.getAllOrders();
+    public ResponseEntity<List<OrderResponseDTO>> getAllOrders(
+            @RequestParam(name = "primaryCostCenters", required = false) List<String> primaryCostCenterIds,
+            @RequestParam(name = "bookingYears", required = false) List<String> bookingYears,
+            @RequestParam(name = "createdAfter", required = false) OffsetDateTime createdAfter,
+            @RequestParam(name = "createdBefore", required = false) OffsetDateTime createdBefore,
+            @RequestParam(name = "ownerIds", required = false) List<Integer> ownerIds,
+            @RequestParam(name = "statuses", required = false) List<OrderStatus> statuses,
+            @RequestParam(name = "quotePriceMin", required = false) BigDecimal quotePriceMin,
+            @RequestParam(name = "quotePriceMax", required = false) BigDecimal quotePriceMax,
+            @RequestParam(name = "deliveryPersonIds", required = false) List<Long> deliveryPersonIds,
+            @RequestParam(name = "invoicePersonIds", required = false) List<Long> invoicePersonIds,
+            @RequestParam(name = "queriesPersonIds", required = false) List<Long> queriesPersonIds,
+            @RequestParam(name = "customerIds", required = false) List<String> customerIds,
+            @RequestParam(name = "supplierIds", required = false) List<Integer> supplierIds,
+            @RequestParam(name = "secondaryCostCenters", required = false) List<String> secondaryCostCenterIds,
+            @RequestParam(name = "lastUpdatedTimeAfter", required = false) OffsetDateTime lastUpdatedTimeAfter,
+            @RequestParam(name = "lastUpdatedTimeBefore", required = false) OffsetDateTime lastUpdatedTimeBefore
+            ) {
+        return orderService.getAllOrders(
+                primaryCostCenterIds,
+                bookingYears,
+                createdAfter,
+                createdBefore,
+                ownerIds,
+                statuses,
+                quotePriceMin,
+                quotePriceMax,
+                deliveryPersonIds,
+                invoicePersonIds,
+                queriesPersonIds,
+                customerIds,
+                supplierIds,
+                secondaryCostCenterIds,
+                lastUpdatedTimeAfter,
+                lastUpdatedTimeBefore
+        );
     }
 
     @PostMapping
