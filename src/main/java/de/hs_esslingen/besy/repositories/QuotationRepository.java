@@ -8,4 +8,8 @@ import java.util.List;
 
 public interface QuotationRepository extends JpaRepository<Quotation, QuotationId> {
     List<Quotation> findByOrderId(Long orderId);
+
+    boolean existsByIdAndOrderId(QuotationId id, Long orderId);
+
+    boolean existsByIndexAndOrderId(Short index, Long orderId);
 }

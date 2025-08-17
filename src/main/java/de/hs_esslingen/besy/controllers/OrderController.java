@@ -2,6 +2,7 @@ package de.hs_esslingen.besy.controllers;
 
 import de.hs_esslingen.besy.dtos.request.ItemRequestDTO;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
+import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
@@ -61,12 +62,19 @@ public class OrderController {
         return quotationService.getQuotationsOfOrder(id);
     }
 
+    @PostMapping("{order-id}/quotations")
+    public ResponseEntity<List<QuotationResponseDTO>> createQuotationsOfOrder(
+            @PathVariable("order-id") Long id,
+            @RequestBody List<QuotationRequestDTO> dtos
+    ){
+        return quotationService.createQuotation(id, dtos);
+    }
+
     @GetMapping
     @RequestMapping("{order-id}/export")
     public ResponseEntity<byte[]> exportOrder(@PathVariable("order-id") Integer orderId) throws IOException {
         return this.orderPDFService.generateOrderPDF(orderId);
     }
-
 
 
 }

@@ -13,7 +13,6 @@ import java.math.BigDecimal;
  */
 @Value
 public class ItemResponseDTO implements Serializable {
-    Long orderId;
     Integer itemId;
     String name;
     BigDecimal pricePerUnit;

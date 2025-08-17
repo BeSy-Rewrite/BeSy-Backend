@@ -391,6 +391,8 @@ paths:
                   $ref: '#/components/schemas/QuotationResponseDTO'
         '404':
           description: Bestellung nicht gefunden.
+        '409':
+          description: Zugehöriges Vergleichsangebot mit dem Index `index` existiert bereits.
   /orders/{order-id}/export:
     get:
       tags:
@@ -780,6 +782,11 @@ components:
             $ref: '#/components/schemas/QuotationRequestDTO'
     QuotationRequestDTO:
       type: object
+      required:
+        - index
+        - quote_date
+        - price
+        - supplier_id
       properties:
         index:
           type: integer
@@ -938,9 +945,6 @@ components:
     ItemResponseDTO:
       type: object
       properties:
-        order_id:
-          type: integer
-          format: int64
         item_id:
           type: integer
           format: int32
@@ -981,9 +985,6 @@ components:
     QuotationResponseDTO:
       type: object
       properties:
-        order_id:
-          type: integer
-          format: int64
         index:
           type: integer
           format: int32

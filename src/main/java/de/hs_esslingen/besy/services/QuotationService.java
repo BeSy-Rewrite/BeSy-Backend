@@ -1,9 +1,16 @@
 package de.hs_esslingen.besy.services;
 
+import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
 import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
+import de.hs_esslingen.besy.mappers.request.QuotationRequestMapper;
 import de.hs_esslingen.besy.mappers.response.QuotationResponseMapper;
+import de.hs_esslingen.besy.models.Order;
 import de.hs_esslingen.besy.models.Quotation;
+import de.hs_esslingen.besy.models.QuotationId;
+import de.hs_esslingen.besy.models.Supplier;
+import de.hs_esslingen.besy.repositories.OrderRepository;
 import de.hs_esslingen.besy.repositories.QuotationRepository;
+import de.hs_esslingen.besy.repositories.SupplierRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -15,6 +22,9 @@ import java.util.List;
 public class QuotationService {
 
     private final QuotationRepository quotationRepository;
+    private final OrderRepository orderRepository;
+    private final SupplierRepository supplierRepository;
+    private final QuotationRequestMapper quotationRequestMapper;
     private final QuotationResponseMapper quotationResponseMapper;
 
     public ResponseEntity<List<QuotationResponseDTO>> getQuotationsOfOrder(Long orderId) {
@@ -22,4 +32,24 @@ public class QuotationService {
         List<QuotationResponseDTO> quotationResponseDTOS = quotationResponseMapper.toDto(quotations);
         return ResponseEntity.ok(quotationResponseDTOS);
     }
+
+    public ResponseEntity<List<QuotationResponseDTO>> createQuotation(Long orderId, List<QuotationRequestDTO> dtos) {
+        List<Quotation> quotations = quotationRequestMapper.toEntity(dtos);
+        Order order = orderRepository.getReferenceById(orderId);
+
+        quotations.forEach(quotation -> {
+            if(quotationRepository.existsByIndexAndOrderId(quotation.getIndex(), orderId)) throw new RuntimeException("Zugehöriges Vergleichsangebot mit dem Index " + quotation.getIndex() + " existiert bereits.");
+
+            QuotationId quotationId = new QuotationId(orderId, quotation.getIndex());
+            Supplier supplier = supplierRepository.getReferenceById(quotation.getSupplierId());
+
+            quotation.setId(quotationId);
+            quotation.setSupplier(supplier);
+            quotation.setOrder(order);
+        });
+        List<Quotation> quotationsPersisted = quotationRepository.saveAll(quotations);
+        List<QuotationResponseDTO> quotationResponseDTOS = quotationResponseMapper.toDto(quotationsPersisted);
+        return ResponseEntity.ok(quotationResponseDTOS);
+    }
 }
+
