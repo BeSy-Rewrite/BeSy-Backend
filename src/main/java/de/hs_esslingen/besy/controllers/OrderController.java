@@ -1,6 +1,8 @@
 package de.hs_esslingen.besy.controllers;
 
+import de.hs_esslingen.besy.dtos.request.ItemRequestDTO;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
+import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
@@ -46,10 +48,27 @@ public class OrderController {
         return itemService.getItemsOfOrder(id);
     }
 
+    @PostMapping("{order-id}/items")
+    public ResponseEntity<List<ItemResponseDTO>> createItemsOfOrder(
+            @PathVariable("order-id") Long id,
+            @RequestBody List<ItemRequestDTO> dtos) {
+        if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        return itemService.createItemsOfOrder(id, dtos);
+    }
+
     @GetMapping("{order-id}/quotations")
     public ResponseEntity<List<QuotationResponseDTO>> getQuotationsOfOrder(@PathVariable("order-id") Long id) {
         if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
         return quotationService.getQuotationsOfOrder(id);
+    }
+
+    @PostMapping("{order-id}/quotations")
+    public ResponseEntity<List<QuotationResponseDTO>> createQuotationsOfOrder(
+            @PathVariable("order-id") Long id,
+            @RequestBody List<QuotationRequestDTO> dtos
+    ){
+        if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        return quotationService.createQuotation(id, dtos);
     }
 
     @GetMapping
@@ -57,7 +76,6 @@ public class OrderController {
     public ResponseEntity<byte[]> exportOrder(@PathVariable("order-id") Integer orderId) throws IOException {
         return this.orderPDFService.generateOrderPDF(orderId);
     }
-
 
 
 }
