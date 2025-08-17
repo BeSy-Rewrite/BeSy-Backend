@@ -2,6 +2,7 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
 import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
+import de.hs_esslingen.besy.exceptions.EntityAlreadyExistsException;
 import de.hs_esslingen.besy.mappers.request.QuotationRequestMapper;
 import de.hs_esslingen.besy.mappers.response.QuotationResponseMapper;
 import de.hs_esslingen.besy.models.Order;
@@ -38,7 +39,7 @@ public class QuotationService {
         Order order = orderRepository.getReferenceById(orderId);
 
         quotations.forEach(quotation -> {
-            if(quotationRepository.existsByIndexAndOrderId(quotation.getIndex(), orderId)) throw new RuntimeException("Zugehöriges Vergleichsangebot mit dem Index " + quotation.getIndex() + " existiert bereits.");
+            if(quotationRepository.existsByIndexAndOrderId(quotation.getIndex(), orderId)) throw new EntityAlreadyExistsException("Zugehöriges Vergleichsangebot mit dem Index " + quotation.getIndex() + " existiert bereits.");
 
             QuotationId quotationId = new QuotationId(orderId, quotation.getIndex());
             Supplier supplier = supplierRepository.getReferenceById(quotation.getSupplierId());

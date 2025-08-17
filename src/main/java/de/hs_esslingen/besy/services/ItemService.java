@@ -2,6 +2,7 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.request.ItemRequestDTO;
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
+import de.hs_esslingen.besy.exceptions.EntityAlreadyExistsException;
 import de.hs_esslingen.besy.mappers.request.ItemRequestMapper;
 import de.hs_esslingen.besy.mappers.response.ItemResponseMapper;
 import de.hs_esslingen.besy.models.Item;
@@ -38,7 +39,7 @@ public class ItemService {
         Order order = orderRepository.getReferenceById(orderId);
 
         items.forEach(item -> {
-            if(itemRepository.existsByItemIdAndOrderId(item.getItemId(), orderId)) throw new RuntimeException("Zugehöriger Artikel mit Artikelnummer " + item.getItemId() + " existiert bereits.");
+            if(itemRepository.existsByItemIdAndOrderId(item.getItemId(), orderId)) throw new EntityAlreadyExistsException("Zugehöriger Artikel mit Artikelnummer " + item.getItemId() + " existiert bereits.");
 
             ItemId itemId = new ItemId(orderId, item.getItemId());
             Vat vat = vatRepository.getReferenceById(item.getVatValue());

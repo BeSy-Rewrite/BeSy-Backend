@@ -2,6 +2,7 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.request.CustomerIdRequestDTO;
 import de.hs_esslingen.besy.dtos.response.CustomerIdResponseDTO;
+import de.hs_esslingen.besy.exceptions.EntityAlreadyExistsException;
 import de.hs_esslingen.besy.mappers.request.CustomerIdRequestMapper;
 import de.hs_esslingen.besy.mappers.response.CustomerIdResponseMapper;
 import de.hs_esslingen.besy.models.CustomerId;
@@ -32,7 +33,7 @@ public class CustomerIdService {
 
     public ResponseEntity<CustomerIdResponseDTO> createCustomerId(Integer supplierId, CustomerIdRequestDTO dto) {
         CustomerIdId customerIdId = new CustomerIdId(dto.getCustomerId(), supplierId);
-        if(customerIdRepository.existsById(customerIdId)) throw new RuntimeException("Lieferanten-ID existiert bereits.");
+        if(customerIdRepository.existsById(customerIdId)) throw new EntityAlreadyExistsException("Lieferanten-ID existiert bereits.");
 
         Supplier supplier = supplierRepository.getReferenceById(supplierId);
         CustomerId customerId = customerIdRequestMapper.toEntity(dto);
