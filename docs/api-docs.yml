@@ -478,14 +478,14 @@ paths:
         - Orders
       operationId: deleteOrder
       description: >
-        Löscht eine bestehende Bestellung anhand der `order-id` (Soft delete). Setzt den Status der Bestellung auf `DEL` (gelöscht). Es sind nur Bestellungen löschbar, deren status != `DEL` ist.
+        Löscht eine bestehende Bestellung anhand der `order-id` (Soft Delete). Setzt den Status der Bestellung auf `DEL` (gelöscht). Es sind nur Bestellungen löschbar, deren status != `DEL` ist.
       parameters:
         - name: orderId
           in: path
           description: ID der zu löschenden Bestellung.
           required: true
           schema:
-            type: string
+            type: number
       responses:
         '204':
           description: Bestellung erfolgreich gelöscht (No Content).
@@ -549,6 +549,32 @@ paths:
           description: Bestellung nicht gefunden.
         '409':
           description: Zugehöriger Artikel mit Artikelnummer `article_id` existiert bereits.
+    delete:
+      tags:
+        - Orders
+      operationId: deleteItemOfOrder
+      description: >
+        Löscht einen Artikel einer bestehenden Bestellung (`order-id`) anhand der `item-id` (Hard Delete).
+      parameters:
+        - name: orderId
+          in: path
+          description: ID der Bestellung, deren Artikel gelöscht werden soll.
+          required: true
+          schema:
+            type: number
+        - name: itemId
+          in: path
+          description: ID des Artikels, der gelöscht werden soll.
+          required: true
+          schema:
+            type: number
+      responses:
+        '204':
+          description: Bestellung erfolgreich gelöscht (No Content).
+        '404':
+          description: Bestellung nicht gefunden. Artikel nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
   /orders/{order-id}/quotations:
     get:
       tags:
