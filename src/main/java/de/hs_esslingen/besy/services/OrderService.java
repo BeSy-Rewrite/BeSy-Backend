@@ -10,6 +10,8 @@ import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
 import de.hs_esslingen.besy.models.*;
 import de.hs_esslingen.besy.repositories.*;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,7 @@ import java.util.List;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderPageableRepository orderPageableRepository;
     private final UserRepository userRepository;
     private final CurrencyRepository currencyRepository;
     private final PersonRepository personRepository;
@@ -32,7 +35,7 @@ public class OrderService {
     private final OrderRequestMapper orderRequestMapper;
 
 
-    public ResponseEntity<List<OrderResponseDTO>> getAllOrders(
+    public Page<OrderResponseDTO> getAllOrders(
             List<String> primaryCostCentersIds,
             List<String> bookingYears,
             OffsetDateTime createdAfter,
@@ -48,7 +51,8 @@ public class OrderService {
             List<Integer> supplierIds,
             List<String> secondaryCostCenterIds,
             OffsetDateTime lastUpdatedTimeAfter,
-            OffsetDateTime lastUpdatedTimeBefore
+            OffsetDateTime lastUpdatedTimeBefore,
+            Pageable pageable
 
     ) {
         org.springframework.data.jpa.domain.Specification<Order> spec =
@@ -68,9 +72,8 @@ public class OrderService {
                         .and(Specification.isBetween(lastUpdatedTimeAfter, lastUpdatedTimeBefore, "lastUpdatedTime"))
                                 );
 
-        List<Order> orders = orderRepository.findAll(spec);
-        List<OrderResponseDTO> orderResponseDTOS = orderResponseMapper.toDto(orders);
-        return ResponseEntity.ok(orderResponseDTOS);
+        Page<Order> orders = orderPageableRepository.findAll(spec, pageable);
+        return orders.map(orderResponseMapper::toDto);
     }
 
     public ResponseEntity<OrderResponseDTO> getOrderById(Long id) {

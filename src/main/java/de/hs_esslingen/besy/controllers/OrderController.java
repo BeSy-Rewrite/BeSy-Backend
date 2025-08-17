@@ -13,6 +13,10 @@ import de.hs_esslingen.besy.services.OrderPDFService;
 import de.hs_esslingen.besy.services.OrderService;
 import de.hs_esslingen.besy.services.QuotationService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +35,7 @@ public class OrderController {
     private final OrderPDFService orderPDFService;
 
     @GetMapping
-    public ResponseEntity<List<OrderResponseDTO>> getAllOrders(
+    public Page<OrderResponseDTO> getAllOrders(
             @RequestParam(name = "primaryCostCenters", required = false) List<String> primaryCostCenterIds,
             @RequestParam(name = "bookingYears", required = false) List<String> bookingYears,
             @RequestParam(name = "createdAfter", required = false) OffsetDateTime createdAfter,
@@ -47,7 +51,8 @@ public class OrderController {
             @RequestParam(name = "supplierIds", required = false) List<Integer> supplierIds,
             @RequestParam(name = "secondaryCostCenters", required = false) List<String> secondaryCostCenterIds,
             @RequestParam(name = "lastUpdatedTimeAfter", required = false) OffsetDateTime lastUpdatedTimeAfter,
-            @RequestParam(name = "lastUpdatedTimeBefore", required = false) OffsetDateTime lastUpdatedTimeBefore
+            @RequestParam(name = "lastUpdatedTimeBefore", required = false) OffsetDateTime lastUpdatedTimeBefore,
+            @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.ASC) Pageable pageable
             ) {
         return orderService.getAllOrders(
                 primaryCostCenterIds,
@@ -65,7 +70,8 @@ public class OrderController {
                 supplierIds,
                 secondaryCostCenterIds,
                 lastUpdatedTimeAfter,
-                lastUpdatedTimeBefore
+                lastUpdatedTimeBefore,
+                pageable
         );
     }
 
