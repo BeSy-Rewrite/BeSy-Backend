@@ -33,6 +33,7 @@ public class SecurityConfigDev {
                         .requestMatchers(HttpMethod.GET, "/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/**").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/**").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .oauth2ResourceServer((oauth2) -> oauth2
