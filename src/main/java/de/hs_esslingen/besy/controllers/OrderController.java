@@ -67,6 +67,7 @@ public class OrderController {
             @PathVariable("order-id") Long id,
             @RequestBody List<QuotationRequestDTO> dtos
     ){
+        if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
         return quotationService.createQuotation(id, dtos);
     }
 

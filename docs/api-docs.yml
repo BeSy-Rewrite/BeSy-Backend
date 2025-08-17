@@ -24,7 +24,6 @@ paths:
     post:
       tags:
         - Addresses
-      
       operationId: createAddress
       requestBody:
         required: true
@@ -41,11 +40,12 @@ paths:
                 $ref: '#/components/schemas/AddressResponseDTO'
         '400':
           description: Invalid input
+
+
   /addresses/{id}:
       get:
         tags:
           - Addresses
-        
         operationId: getAddressById
         parameters:
           - name: id
@@ -57,18 +57,17 @@ paths:
               format: int64
         responses:
           '200':
-            description: Address found
+            description: Adresse gefunden.
             content:
               application/json:
                 schema:
                   $ref: '#/components/schemas/AddressResponseDTO'
           '404':
-            description: Address not found
+            description: Adresse nicht gefunden.
   /persons/{id}:
     get:
       tags:
         - Persons
-      
       operationId: getPersonById
       parameters:
         - name: id
@@ -117,6 +116,8 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/PersonResponseDTO'
+        '500':
+          description: Interner Serverfehler.
   /suppliers:
     get:
       tags:
@@ -150,6 +151,8 @@ paths:
                 $ref: '#/components/schemas/SupplierResponseDTO'
         '400':
           description: Ungültige Eingabe(n).
+        '500':
+          description: Interner Serverfehler.
   /suppliers/{supplier-id}:
     get:
       tags:
@@ -224,7 +227,11 @@ paths:
         '404':
           description: Lieferant nicht gefunden.
         '409':
-          description: Lieferantennummer bereits vorhanden für diesen Lieferanten.
+          description: |
+            Lieferantennummer bereits vorhanden für diesen Lieferanten.
+            Verweis auf eine nicht existierende Entität.
+        '500':
+          description: Interner Serverfehler.
   /orders:
     get:
       tags:
@@ -259,6 +266,10 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/OrderResponseDTO'
+        '409':
+          description: Verweis auf eine nicht existierende Entität.
+        '500':
+          description: Interner Serverfehler.
   /orders/{order-id}:
     get:
       tags:
