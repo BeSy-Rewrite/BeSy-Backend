@@ -238,6 +238,35 @@ paths:
         - Orders
       operationId: getAllOrders
       parameters:
+        - name: page
+          in: query
+          description: Seitenzahl für die Paginierung (beginnend bei 0).
+          required: false
+          schema:
+            type: integer
+            default: 0
+
+        - name: size
+          in: query
+          description: Anzahl der Elemente pro Seite.
+          required: false
+          schema:
+            type: integer
+            default: 20
+
+        - name: sort
+          in: query
+          description: >
+            Sortierung der Ergebnisse. Mehrfache Sortierfelder möglich, z. B. 
+            `sort=bookingYear,desc&sort=id,asc` sortiert zuerst nach `bookingYear` (absteigend),
+            dann nach `id` (aufsteigend).
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              example: bookingYear,desc
+
         - name: primaryCostCenters
           in: query
           description: Filtert nach IDs der primären Kostenstellen.
