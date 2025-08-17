@@ -322,7 +322,11 @@ paths:
             type: array
             items:
               $ref: '#/components/schemas/OrderStatus'
-
+            default:
+              - ABR
+              - ABS
+              - ARC
+              - INB
         - name: quotePriceMin
           in: query
           description: Filtert nach quotePriceMin.
@@ -469,6 +473,26 @@ paths:
                   $ref: '#/components/schemas/OrderResponseDTO'
         '404':
           description: Bestellung nicht gefunden.
+    delete:
+      tags:
+        - Orders
+      operationId: deleteOrder
+      description: >
+        Löscht eine bestehende Bestellung anhand der `order-id` (Soft delete). Setzt den Status der Bestellung auf `DEL` (gelöscht).
+      parameters:
+        - name: orderId
+          in: path
+          description: ID der zu löschenden Bestellung.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Bestellung erfolgreich gelöscht (No Content).
+        '404':
+          description: Bestellung mit der angegebenen ID nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
   /orders/{order-id}/items:
     get:
       tags:
