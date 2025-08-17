@@ -1,6 +1,6 @@
 package de.hs_esslingen.besy.services;
 
-import de.hs_esslingen.besy.configurations.OrderSpecification;
+import de.hs_esslingen.besy.configurations.Specification;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.enums.OrderStatus;
@@ -10,7 +10,6 @@ import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
 import de.hs_esslingen.besy.models.*;
 import de.hs_esslingen.besy.repositories.*;
 import lombok.AllArgsConstructor;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -52,21 +51,21 @@ public class OrderService {
             OffsetDateTime lastUpdatedTimeBefore
 
     ) {
-        Specification<Order> spec =
-                OrderSpecification
+        org.springframework.data.jpa.domain.Specification<Order> spec =
+                Specification
                         .contains(primaryCostCentersIds, "primaryCostCenterId")
-                        .and(OrderSpecification.contains(bookingYears, "bookingYear")
-                        .and(OrderSpecification.isBetween(createdAfter, createdBefore, "createdDate"))
-                        .and(OrderSpecification.contains(ownerIds, "ownerId"))
-                        .and(OrderSpecification.contains(statuses, "status"))
-                        .and(OrderSpecification.isBetween(quotePriceMin, quotePriceMax, "quotePrice"))
-                        .and(OrderSpecification.contains(deliveryPersonIds, "deliveryPersonId"))
-                        .and(OrderSpecification.contains(invoicePersonIds, "invoicePersonId"))
-                        .and(OrderSpecification.contains(queriesPersonIds, "queriesPersonId"))
-                        .and(OrderSpecification.contains(customerIds, "customerId"))
-                        .and(OrderSpecification.contains(supplierIds, "supplierId"))
-                        .and(OrderSpecification.contains(secondaryCostCenterIds, "secondaryCostCenterId"))
-                        .and(OrderSpecification.isBetween(lastUpdatedTimeAfter, lastUpdatedTimeBefore, "lastUpdatedTime"))
+                        .and(Specification.contains(bookingYears, "bookingYear")
+                        .and(Specification.isBetween(createdAfter, createdBefore, "createdDate"))
+                        .and(Specification.contains(ownerIds, "ownerId"))
+                        .and(Specification.contains(statuses, "status"))
+                        .and(Specification.isBetween(quotePriceMin, quotePriceMax, "quotePrice"))
+                        .and(Specification.contains(deliveryPersonIds, "deliveryPersonId"))
+                        .and(Specification.contains(invoicePersonIds, "invoicePersonId"))
+                        .and(Specification.contains(queriesPersonIds, "queriesPersonId"))
+                        .and(Specification.contains(customerIds, "customerId"))
+                        .and(Specification.contains(supplierIds, "supplierId"))
+                        .and(Specification.contains(secondaryCostCenterIds, "secondaryCostCenterId"))
+                        .and(Specification.isBetween(lastUpdatedTimeAfter, lastUpdatedTimeBefore, "lastUpdatedTime"))
                                 );
 
         List<Order> orders = orderRepository.findAll(spec);

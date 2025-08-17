@@ -2,15 +2,14 @@ package de.hs_esslingen.besy.configurations;
 
 
 import de.hs_esslingen.besy.models.Order;
-import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 
-public class OrderSpecification {
+public class Specification {
 
-    private OrderSpecification() {}
+    private Specification() {}
 
-    public static <T> Specification<Order> contains(List<T> attributeList, String attributeName) {
+    public static <T> org.springframework.data.jpa.domain.Specification<Order> contains(List<T> attributeList, String attributeName) {
         return (root, query, criteriaBuilder) -> {
             if (attributeList == null || attributeList.isEmpty()) {
                 return criteriaBuilder.conjunction();
@@ -20,7 +19,7 @@ public class OrderSpecification {
     }
 
 
-    public static <T extends Comparable<? super T>> Specification<Order> isBetween(T min, T max, String attributeName) {
+    public static <T extends Comparable<? super T>> org.springframework.data.jpa.domain.Specification<Order> isBetween(T min, T max, String attributeName) {
         return (root, query, criteriaBuilder) -> {
             if (min == null && max == null) {
                 return criteriaBuilder.conjunction();
