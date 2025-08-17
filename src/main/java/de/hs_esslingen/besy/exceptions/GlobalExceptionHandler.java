@@ -2,6 +2,7 @@ package de.hs_esslingen.besy.exceptions;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -56,6 +57,18 @@ public class GlobalExceptionHandler {
         body.put("message", ex.getMessage() != null ? ex.getMessage() : "Entität existiert bereits.");
 
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+
+
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ResponseEntity<Map<String, Object>> handlePropertyReferenceException(PropertyReferenceException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", Instant.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Bad Request");
+        body.put("message", ex.getMessage() != null ? ex.getMessage() : "Ungültiges Sortier- oder Abfragefeld.");
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
 
