@@ -478,7 +478,7 @@ paths:
         - Orders
       operationId: deleteOrder
       description: >
-        Löscht eine bestehende Bestellung anhand der `order-id` (Soft delete). Setzt den Status der Bestellung auf `DEL` (gelöscht).
+        Löscht eine bestehende Bestellung anhand der `order-id` (Soft delete). Setzt den Status der Bestellung auf `DEL` (gelöscht). Es sind nur Bestellungen löschbar, deren status != `DEL` ist.
       parameters:
         - name: orderId
           in: path
