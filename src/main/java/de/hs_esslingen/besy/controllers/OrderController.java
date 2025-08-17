@@ -41,7 +41,7 @@ public class OrderController {
             @RequestParam(name = "createdAfter", required = false) OffsetDateTime createdAfter,
             @RequestParam(name = "createdBefore", required = false) OffsetDateTime createdBefore,
             @RequestParam(name = "ownerIds", required = false) List<Integer> ownerIds,
-            @RequestParam(name = "statuses", required = false) List<OrderStatus> statuses,
+            @RequestParam(name = "statuses", required = false, defaultValue = "ABR,ABS,ARC,INB") List<OrderStatus> statuses,
             @RequestParam(name = "quotePriceMin", required = false) BigDecimal quotePriceMin,
             @RequestParam(name = "quotePriceMax", required = false) BigDecimal quotePriceMax,
             @RequestParam(name = "deliveryPersonIds", required = false) List<Long> deliveryPersonIds,
@@ -82,7 +82,14 @@ public class OrderController {
 
     @GetMapping("{order-id}")
     public ResponseEntity<OrderResponseDTO> getOrder(@PathVariable("order-id") Long id) {
+        if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
         return orderService.getOrderById(id);
+    }
+
+    @DeleteMapping("{order-id}")
+    public ResponseEntity<String> deleteOrder(@PathVariable("order-id") Long id) {
+        if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        return orderService.deleteOrderById(id);
     }
 
     @GetMapping("{order-id}/items")

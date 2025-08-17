@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -126,14 +127,30 @@ public class OrderService {
         Short latestAutoIndex = latestAutoIndexOrder.getAutoIndex();
         order.setAutoIndex(++latestAutoIndex);
 
-        order.setLastUpdatedTime(OffsetDateTime.now());
         order.setStatus(OrderStatus.INB);
         return ResponseEntity.ok(orderResponseMapper.toDto(orderRepository.save(order)));
 
     }
 
+
+    public ResponseEntity<String> deleteOrderById(Long id) {
+        Optional<Order> orderOpt = orderRepository.findById(id);
+        if(orderOpt.isPresent()) {
+            Order order = orderOpt.get();
+            order.setStatus(OrderStatus.DEL);
+            orderRepository.save(order);
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Checks if an order with the given ID exists and its status is not 'DEL' (deleted).
+     *
+     * @param id the ID of the order to check
+     * @return true if such an order exists and is not marked as deleted, false otherwise
+     */
     public boolean existsOrderById(Long id) {
-        return orderRepository.existsById(id);
+        return orderRepository.existsByIdAndStatusNot(id, OrderStatus.DEL);
     }
 
 
