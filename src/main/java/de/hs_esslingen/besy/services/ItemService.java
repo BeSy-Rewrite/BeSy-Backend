@@ -12,6 +12,7 @@ import de.hs_esslingen.besy.models.Vat;
 import de.hs_esslingen.besy.repositories.ItemRepository;
 import de.hs_esslingen.besy.repositories.OrderRepository;
 import de.hs_esslingen.besy.repositories.VatRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -51,5 +52,15 @@ public class ItemService {
         List<Item> itemsPersisted = itemRepository.saveAll(items);
         List<ItemResponseDTO> itemResponseDTOS = itemResponseMapper.toDto(itemsPersisted);
         return ResponseEntity.ok(itemResponseDTOS);
+    }
+
+    @Transactional
+    public ResponseEntity<String> deleteItemsOfOrder(Long orderId, Integer itemId) {
+        itemRepository.deleteItemByOrderIdAndItemId(orderId, itemId);
+        return ResponseEntity.noContent().build();
+    }
+
+    public boolean existsItemOfOrder(Long orderId, Integer itemId) {
+        return itemRepository.existsByItemIdAndOrderId(itemId, orderId);
     }
 }

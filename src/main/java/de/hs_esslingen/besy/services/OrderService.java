@@ -140,7 +140,7 @@ public class OrderService {
             order.setStatus(OrderStatus.DEL);
             orderRepository.save(order);
         }
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     /**

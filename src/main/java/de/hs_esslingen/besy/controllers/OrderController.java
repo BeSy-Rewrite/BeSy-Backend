@@ -106,6 +106,16 @@ public class OrderController {
         return itemService.createItemsOfOrder(id, dtos);
     }
 
+    @DeleteMapping("{order-id}/items/{item-id}")
+    public ResponseEntity<String> deleteItemsOfOrder(
+            @PathVariable("order-id") Long orderId,
+            @PathVariable("item-id") Integer itemId
+    ){
+        if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(!itemService.existsItemOfOrder(orderId, itemId)) throw new NotFoundException("Artikel nicht gefunden.");
+        return itemService.deleteItemsOfOrder(orderId, itemId);
+    }
+
     @GetMapping("{order-id}/quotations")
     public ResponseEntity<List<QuotationResponseDTO>> getQuotationsOfOrder(@PathVariable("order-id") Long id) {
         if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");

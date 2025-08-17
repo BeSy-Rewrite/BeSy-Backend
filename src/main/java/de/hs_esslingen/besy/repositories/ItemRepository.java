@@ -10,4 +10,6 @@ public interface ItemRepository extends JpaRepository<Item, ItemId> {
     List<Item> findByOrder_Id(Long orderOrderId);
 
     boolean existsByItemIdAndOrderId(Integer itemId, Long orderId);
+
+    void deleteItemByOrderIdAndItemId(Long orderId, Integer itemId);
 }
