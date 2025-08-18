@@ -480,7 +480,7 @@ paths:
       description: >
         Löscht eine bestehende Bestellung anhand der `order-id` (Soft Delete). Setzt den Status der Bestellung auf `DEL` (gelöscht). Es sind nur Bestellungen löschbar, deren status != `DEL` ist.
       parameters:
-        - name: orderId
+        - name: order-id
           in: path
           description: ID der zu löschenden Bestellung.
           required: true
@@ -549,6 +549,7 @@ paths:
           description: Bestellung nicht gefunden.
         '409':
           description: Zugehöriger Artikel mit Artikelnummer `article_id` existiert bereits.
+  /orders/{order-id}/items/{item-id}:
     delete:
       tags:
         - Orders
@@ -556,13 +557,13 @@ paths:
       description: >
         Löscht einen Artikel einer bestehenden Bestellung (`order-id`) anhand der `item-id` (Hard Delete).
       parameters:
-        - name: orderId
+        - name: order-id
           in: path
           description: ID der Bestellung, deren Artikel gelöscht werden soll.
           required: true
           schema:
             type: number
-        - name: itemId
+        - name: item-id
           in: path
           description: ID des Artikels, der gelöscht werden soll.
           required: true
@@ -631,6 +632,33 @@ paths:
           description: Bestellung nicht gefunden.
         '409':
           description: Zugehöriges Vergleichsangebot mit dem Index `index` existiert bereits.
+  /orders/{order-id}/quotations/{quotation-id}:
+    delete:
+      tags:
+        - Orders
+      operationId: deleteQuotationOfOrder
+      description: >
+        Löscht ein Vergleichsangebot einer bestehenden Bestellung (`order-id`) anhand der `quotation-id` (Hard Delete).
+      parameters:
+        - name: order-id
+          in: path
+          description: ID der Bestellung, deren Vergleichsartikel gelöscht werden soll.
+          required: true
+          schema:
+            type: number
+        - name: quotation-id
+          in: path
+          description: ID des Vergleichsartikel, der gelöscht werden soll.
+          required: true
+          schema:
+            type: number
+      responses:
+        '204':
+          description: Vergleichsartikel erfolgreich gelöscht (No Content).
+        '404':
+          description: Bestellung nicht gefunden. Vergleichsartikel nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
   /orders/{order-id}/export:
     get:
       tags:
