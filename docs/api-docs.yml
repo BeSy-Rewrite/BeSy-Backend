@@ -8,6 +8,7 @@ servers:
 paths:
   /addresses:
     get:
+      deprecated: true
       tags:
         - Addresses
       
@@ -22,6 +23,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/AddressResponseDTO'
     post:
+      deprecated: true
       tags:
         - Addresses
       operationId: createAddress
@@ -44,6 +46,7 @@ paths:
 
   /addresses/{id}:
       get:
+        deprecated: true
         tags:
           - Addresses
         operationId: getAddressById
