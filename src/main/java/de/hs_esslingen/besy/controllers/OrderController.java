@@ -122,6 +122,16 @@ public class OrderController {
         return quotationService.getQuotationsOfOrder(id);
     }
 
+    @DeleteMapping("{order-id}/quotations/{quotation-id}")
+    public ResponseEntity<String> deleteQuotationsOfOrder(
+            @PathVariable("order-id") Long orderId,
+            @PathVariable("quotation-id") Short quotationId
+    ){
+        if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(!quotationService.existsQuotation(orderId, quotationId)) throw new NotFoundException("Vergleichsartikel nicht gefunden.");
+        return quotationService.deleteQuotation(orderId, quotationId);
+    }
+
     @PostMapping("{order-id}/quotations")
     public ResponseEntity<List<QuotationResponseDTO>> createQuotationsOfOrder(
             @PathVariable("order-id") Long id,
