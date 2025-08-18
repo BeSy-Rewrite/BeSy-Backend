@@ -778,6 +778,11 @@ components:
   schemas:
     PersonRequestDTO:
       type: object
+      required:
+        - name
+        - surname
+        - address_id
+        - gender
       properties:
         name:
           type: string
@@ -869,8 +874,8 @@ components:
     OrderRequestDTO:
       type: object
       required:
-        - booking_year
         - primary_cost_center_id
+        - booking_year
       properties:
         primary_cost_center_id:
           type: string
@@ -924,9 +929,6 @@ components:
         cashback_days:
           type: integer
           format: int32
-        last_updated_time:
-          type: string
-          format: date-time
         flag_decision_cheapest_offer:
           type: boolean
         flag_decision_sole_supplier:
@@ -951,104 +953,6 @@ components:
           type: boolean
         dfg_key:
           type: string
-    OrderPatchRequestDTO:
-      type: object
-      properties:
-        primary_cost_center_id:
-          type: string
-        booking_year:
-          type: string
-          minLength: 2
-          maxLength: 2
-        legacy_alias:
-          type: string
-        owner_id:
-          type: string
-        content_description:
-          type: string
-        status:
-          type: string
-          enum:
-            - ABR
-            - ABS
-            - ARC
-            - DEL
-            - INB
-        currency_short:
-          type: string
-        comment:
-          type: string
-        comment_for_supplier:
-          type: string
-        quote_number:
-          type: string
-        quote_sign:
-          type: string
-        quote_date:
-          type: string
-          format: date
-        quote_price:
-          type: number
-        delivery_person_id:
-          type: integer
-          format: int64
-        invoice_person_id:
-          type: integer
-          format: int64
-        queries_person_id:
-          type: integer
-          format: int64
-        customer_id:
-          type: string
-        supplier_id:
-          type: integer
-          format: int32
-        secondary_cost_center_id:
-          type: string
-        fixed_discount:
-          type: number
-        percentage_discount:
-          type: number
-        cashback_percentage:
-          type: number
-        cashback_days:
-          type: integer
-          format: int32
-        last_updated_time:
-          type: string
-          format: date-time
-        flag_decision_cheapest_offer:
-          type: boolean
-        flag_decision_sole_supplier:
-          type: boolean
-        flag_decision_contract_partner:
-          type: boolean
-        flag_decision_other_reasons:
-          type: boolean
-        decision_other_reasons_description:
-          type: string
-        flag_edv_permission:
-          type: boolean
-        flag_furniture_permission:
-          type: boolean
-        flag_furniture_room:
-          type: boolean
-        flag_investment_room:
-          type: boolean
-        flag_investment_structural_measures:
-          type: boolean
-        flag_media_permission:
-          type: boolean
-        dfg_key:
-          type: string
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/ItemRequestDTO'
-        quotations:
-          type: array
-          items:
-            $ref: '#/components/schemas/QuotationRequestDTO'
     QuotationRequestDTO:
       type: object
       required:
@@ -1167,9 +1071,16 @@ components:
           type: string
     CostCenterRequestDTO:
       type: object
+      required:
+        - id
+        - name
       properties:
+        id:
+          type: string
+          example: 018101
         name:
           type: string
+          example: Umweltmanagement
         begin_date:
           type: string
           format: date
@@ -1285,23 +1196,6 @@ components:
         created_date:
           type: string
           format: date-time
-    InvoiceRequestDTO:
-      type: object
-      properties:
-        id:
-          type: string
-        cost_center_id:
-          type: string
-        order_id:
-          type: integer
-          format: int64
-        price:
-          type: number
-        date:
-          type: string
-          format: date
-        comment:
-          type: string
     AddressRequestDTO:
       type: object
       required:
@@ -1405,28 +1299,27 @@ components:
     CustomerIdRequestDTO:
       type: object
       required:
-        - supplier_id
         - customer_id
       properties:
         customer_id:
           type: string
-          description: Customer identifier (external or internal)
+          description: Kundenkennung (extern oder intern)
         comment:
           type: string
-          description: Optional comment about the customer ID
+          description: Optionaler Kommentar zur Kundenkennung
     CustomerIdResponseDTO:
       type: object
       properties:
         supplier_id:
           type: integer
           format: int64
-          description: ID of the related supplier
+          description: ID des zugehörigen Lieferanten
         customer_id:
           type: string
-          description: Customer identifier (external or internal)
+          description: Kundenkennung (extern oder intern)
         comment:
           type: string
-          description: Optional comment about the customer ID
+          description: Optionaler Kommentar zur Kundenkennung
     OrderStatus:
       type: string
       enum:
