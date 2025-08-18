@@ -429,7 +429,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/OrderResponseDTO'
+                  $ref: '#/components/schemas/PagedOrderResponseDTO'
     post:
       tags:
         - Orders
@@ -1328,3 +1328,64 @@ components:
         - ARC
         - DEL
         - INB
+
+    PagedOrderResponseDTO:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderResponseDTO'
+        pageable:
+          type: object
+          properties:
+            page_number:
+              type: integer
+              format: int32
+              example: 0
+            page_size:
+              type: integer
+              format: int32
+              example: 1
+            sort:
+              $ref: '#/components/schemas/Sort'
+            offset:
+              type: integer
+              format: int32
+            paged:
+              type: boolean
+            unpaged:
+              type: boolean
+        last:
+          type: boolean
+        total_pages:
+          type: integer
+          format: int32
+        total_elements:
+          type: integer
+          format: int64
+        size:
+          type: integer
+          format: int32
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/Sort'
+        first:
+          type: boolean
+        number_of_elements:
+          type: integer
+          format: int32
+        empty:
+          type: boolean
+
+    Sort:
+      type: object
+      properties:
+        empty:
+          type: boolean
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
