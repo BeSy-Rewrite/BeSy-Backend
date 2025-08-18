@@ -186,4 +186,16 @@ public class Order {
     @Column(name = "dfg_key", length = 45)
     private String dfgKey;
 
+
+    @PrePersist
+    public void prePersist() {
+        this.lastUpdatedTime = OffsetDateTime.now();
+    }
+
+    // only called if the data is actually changed
+    @PreUpdate
+    public void preUpdate() {
+        this.lastUpdatedTime = OffsetDateTime.now();
+    }
+
 }

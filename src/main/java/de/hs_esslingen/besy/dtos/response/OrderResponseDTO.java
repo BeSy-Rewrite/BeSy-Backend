@@ -19,7 +19,7 @@ public class OrderResponseDTO implements Serializable {
     Short autoIndex;
     OffsetDateTime createdDate;
     String legacyAlias;
-    String ownerId;
+    Integer ownerId;
     String contentDescription;
     OrderStatus status;
     CurrencyResponseDTO currency;

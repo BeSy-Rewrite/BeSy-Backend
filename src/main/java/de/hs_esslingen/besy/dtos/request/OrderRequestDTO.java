@@ -15,7 +15,7 @@ public class OrderRequestDTO implements Serializable {
     String primaryCostCenterId;
     String bookingYear;
     String legacyAlias;
-    String ownerId;
+    Integer ownerId;
     String contentDescription;
     String currencyShort;
     String comment;

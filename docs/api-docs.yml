@@ -1,13 +1,14 @@
 openapi: 3.0.1
 info:
   title: Bestellsystem API
-  version: v0.0.1
+  version: v1.0.0
 servers:
   - url: http://localhost:3000/api/v1
     description: Generated server url
 paths:
   /addresses:
     get:
+      deprecated: true
       tags:
         - Addresses
       
@@ -22,6 +23,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/AddressResponseDTO'
     post:
+      deprecated: true
       tags:
         - Addresses
       operationId: createAddress
@@ -44,6 +46,7 @@ paths:
 
   /addresses/{id}:
       get:
+        deprecated: true
         tags:
           - Addresses
         operationId: getAddressById
@@ -237,6 +240,187 @@ paths:
       tags:
         - Orders
       operationId: getAllOrders
+      parameters:
+        - name: page
+          in: query
+          description: Seitenzahl für die Paginierung (beginnend bei 0).
+          required: false
+          schema:
+            type: integer
+            default: 0
+
+        - name: size
+          in: query
+          description: Anzahl der Elemente pro Seite.
+          required: false
+          schema:
+            type: integer
+            default: 20
+
+        - name: sort
+          in: query
+          description: >
+            Sortierung der Ergebnisse. Mehrfache Sortierfelder möglich, z. B. 
+            `sort=bookingYear,desc&sort=id,asc` sortiert zuerst nach `bookingYear` (absteigend),
+            dann nach `id` (aufsteigend).
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              example: bookingYear,desc
+
+        - name: primaryCostCenters
+          in: query
+          description: Filtert nach IDs der primären Kostenstellen.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          example: primaryCostCenters=1,2,3
+
+        - name: bookingYears
+          in: query
+          description: Filtert nach den letzten zwei Ziffern der Jahreszahl der Buchung. Achtung, diese muss ein String sein, z.B. "25".
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+
+        - name: createdAfter
+          in: query
+          description: Filtert nach Bestellungen, welche nach oder zu diesem Zeitpunkt erstellt wurden.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: 2022-09-26T15:22:01Z
+
+        - name: createdBefore
+          in: query
+          description: Filtert nach Bestellungen, welche vor oder zu diesem Zeitpunkt erstellt wurden.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: 2022-09-26T15:22:01Z
+
+        - name: ownerIds
+          in: query
+          description: Filtert nach IDs der Ersteller der Bestellung.
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+
+        - name: statuses
+          in: query
+          description: Filtert nach dem Bestellstatus.
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/OrderStatus'
+            default:
+              - ABR
+              - ABS
+              - ARC
+              - INB
+        - name: quotePriceMin
+          in: query
+          description: Filtert nach quotePriceMin.
+          required: false
+          schema:
+            type: number
+            format: decimal
+
+        - name: quotePriceMax
+          in: query
+          description: Filtert nach quotePriceMax.
+          required: false
+          schema:
+            type: number
+            format: decimal
+
+        - name: deliveryPersonIds
+          in: query
+          description: Filtert nach IDs der Besteller.
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+
+        - name: invoicePersonIds
+          in: query
+          description: Filtert nach IDs invoicePersonIds.
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+
+        - name: queriesPersonIds
+          in: query
+          description: Filtert nach IDs queriesPersonIds.
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+
+        - name: customerIds
+          in: query
+          description: Filter nach Kundennummern.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+
+        - name: supplierIds
+          in: query
+          description: Filtert nach IDs der Lieferanten.
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+
+        - name: secondaryCostCenters
+          in: query
+          description: Filtert nach IDs der sekundären Kostenstellen.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+
+        - name: lastUpdatedTimeAfter
+          in: query
+          description: Filtert nach Bestellungen, welche nach oder zu diesem Zeitpunkt bearbeitet wurden.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: 2022-09-26T15:22:01Z
+
+        - name: lastUpdatedTimeBefore
+          in: query
+          description: Filtert nach Bestellungen, welche vor oder zu diesem Zeitpunkt bearbeitet wurden.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: 2022-09-26T15:22:01Z
       responses:
         '200':
           description: OK
@@ -292,6 +476,26 @@ paths:
                   $ref: '#/components/schemas/OrderResponseDTO'
         '404':
           description: Bestellung nicht gefunden.
+    delete:
+      tags:
+        - Orders
+      operationId: deleteOrder
+      description: >
+        Löscht eine bestehende Bestellung anhand der `order-id` (Soft Delete). Setzt den Status der Bestellung auf `DEL` (gelöscht). Es sind nur Bestellungen löschbar, deren status != `DEL` ist.
+      parameters:
+        - name: order-id
+          in: path
+          description: ID der zu löschenden Bestellung.
+          required: true
+          schema:
+            type: number
+      responses:
+        '204':
+          description: Bestellung erfolgreich gelöscht (No Content).
+        '404':
+          description: Bestellung mit der angegebenen ID nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
   /orders/{order-id}/items:
     get:
       tags:
@@ -348,6 +552,33 @@ paths:
           description: Bestellung nicht gefunden.
         '409':
           description: Zugehöriger Artikel mit Artikelnummer `article_id` existiert bereits.
+  /orders/{order-id}/items/{item-id}:
+    delete:
+      tags:
+        - Orders
+      operationId: deleteItemOfOrder
+      description: >
+        Löscht einen Artikel einer bestehenden Bestellung (`order-id`) anhand der `item-id` (Hard Delete).
+      parameters:
+        - name: order-id
+          in: path
+          description: ID der Bestellung, deren Artikel gelöscht werden soll.
+          required: true
+          schema:
+            type: number
+        - name: item-id
+          in: path
+          description: ID des Artikels, der gelöscht werden soll.
+          required: true
+          schema:
+            type: number
+      responses:
+        '204':
+          description: Bestellung erfolgreich gelöscht (No Content).
+        '404':
+          description: Bestellung nicht gefunden. Artikel nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
   /orders/{order-id}/quotations:
     get:
       tags:
@@ -404,6 +635,33 @@ paths:
           description: Bestellung nicht gefunden.
         '409':
           description: Zugehöriges Vergleichsangebot mit dem Index `index` existiert bereits.
+  /orders/{order-id}/quotations/{quotation-id}:
+    delete:
+      tags:
+        - Orders
+      operationId: deleteQuotationOfOrder
+      description: >
+        Löscht ein Vergleichsangebot einer bestehenden Bestellung (`order-id`) anhand der `quotation-id` (Hard Delete).
+      parameters:
+        - name: order-id
+          in: path
+          description: ID der Bestellung, deren Vergleichsartikel gelöscht werden soll.
+          required: true
+          schema:
+            type: number
+        - name: quotation-id
+          in: path
+          description: ID des Vergleichsartikel, der gelöscht werden soll.
+          required: true
+          schema:
+            type: number
+      responses:
+        '204':
+          description: Vergleichsartikel erfolgreich gelöscht (No Content).
+        '404':
+          description: Bestellung nicht gefunden. Vergleichsartikel nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
   /orders/{order-id}/export:
     get:
       tags:
@@ -623,7 +881,7 @@ components:
         legacy_alias:
           type: string
         owner_id:
-          type: string
+          type: number
         content_description:
           type: string
         currency_short:
@@ -829,7 +1087,7 @@ components:
         legacy_alias:
           type: string
         owner_id:
-          type: string
+          type: number
         content_description:
           type: string
         status:
@@ -1169,3 +1427,11 @@ components:
         comment:
           type: string
           description: Optional comment about the customer ID
+    OrderStatus:
+      type: string
+      enum:
+        - ABR
+        - ABS
+        - ARC
+        - DEL
+        - INB

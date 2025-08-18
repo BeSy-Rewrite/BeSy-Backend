@@ -52,5 +52,14 @@ public class QuotationService {
         List<QuotationResponseDTO> quotationResponseDTOS = quotationResponseMapper.toDto(quotationsPersisted);
         return ResponseEntity.ok(quotationResponseDTOS);
     }
+
+    public ResponseEntity<String> deleteQuotation(Long orderId, Short index) {
+        quotationRepository.deleteById(new QuotationId(orderId, index));
+        return ResponseEntity.noContent().build();
+    }
+
+    public boolean existsQuotation(Long orderId, Short index) {
+        return quotationRepository.existsById(new QuotationId(orderId, index));
+    }
 }
 
