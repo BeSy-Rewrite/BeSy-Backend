@@ -1,4 +1,4 @@
-package de.hs_esslingen.besy.dtos.request;
+package de.hs_esslingen.besy.dtos.insy;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -18,7 +18,7 @@ import java.util.List;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class InsyOrderRequestDTO {
 
-    private Integer orderId;
+    private Long orderId;
 
     private LocalDateTime orderCreatedDate;
 
