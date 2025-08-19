@@ -42,19 +42,14 @@ public class PaperlessController {
 
     @PostMapping
     public String uploadPDF(@RequestParam("file") MultipartFile file) throws IOException, ParseException {
-        // Save MultipartFile contents to a temp file
-        File tempFile = File.createTempFile("upload-", ".pdf");
-        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-            fos.write(file.getBytes());
-        }
 
-        String paperlessUrl = "http://localhost:8000/api/documents/post_document/";
+        String paperlessUrl = paperlessBaseUrl + paperlessUploadUrl;
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpPost post = new HttpPost(paperlessUrl);
             post.addHeader("Authorization", "Token " + authToken);
 
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            builder.addBinaryBody("document", tempFile, ContentType.APPLICATION_PDF, file.getOriginalFilename());
+            builder.addBinaryBody("document", file.getBytes(), ContentType.APPLICATION_PDF, file.getOriginalFilename());
 
             post.setEntity(builder.build());
 
@@ -66,8 +61,6 @@ public class PaperlessController {
                     return "Upload failed: " + response.getCode() + " - " + responseString;
                 }
             }
-        } finally {
-            tempFile.delete(); // Clean up the temp file
         }
     }
 
