@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Bestellsystem API
-  version: v1.0.1
+  version: v1.1.0
 servers:
   - url: http://localhost:3000/api/v1
     description: Generierte Server-URL
@@ -774,6 +774,27 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/UserResponseDTO'
+  /insy/{order-id}:
+    post:
+      description: Sendet eine Bestellung anhand der Bestell-ID an das Insy-System.
+      operationId: postOrderToInsy
+      tags:
+      - Insy
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          description: ID der zu sendenden Bestellung.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Bestellung erfolgreich an Insy gesendet.
+        '404':
+          description: Bestellung nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
 components:
   schemas:
     PersonRequestDTO:
