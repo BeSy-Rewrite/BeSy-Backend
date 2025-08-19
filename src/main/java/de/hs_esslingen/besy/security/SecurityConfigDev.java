@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,6 +18,9 @@ import java.util.Arrays;
 @EnableWebSecurity
 public class SecurityConfigDev {
 
+    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+    private String issuerUri;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -28,6 +32,7 @@ public class SecurityConfigDev {
                     corsConfiguration.addAllowedHeader("*");
                     return corsConfiguration;
                 }))
+
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/**").permitAll()
@@ -35,14 +40,19 @@ public class SecurityConfigDev {
                         .requestMatchers(HttpMethod.PATCH, "/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/**").permitAll()
                         .anyRequest().authenticated())
+
                 .httpBasic(Customizer.withDefaults())
+
+                .oauth2Login(Customizer.withDefaults())
+
                 .oauth2ResourceServer((oauth2) -> oauth2
                         .jwt(Customizer.withDefaults()));
+
         return http.build();
     }
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        return JwtDecoders.fromIssuerLocation("https://auth.insy.hs-esslingen.com/realms/insy");
+        return JwtDecoders.fromIssuerLocation(issuerUri);
     }
 }
