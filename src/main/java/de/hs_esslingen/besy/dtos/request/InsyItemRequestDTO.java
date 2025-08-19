@@ -1,17 +1,22 @@
 package de.hs_esslingen.besy.dtos.request;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter @Setter @AllArgsConstructor @NoArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class InsyItemRequestDTO {
 
-    private int itemId;
+    private Integer itemId;
 
     private String itemName;
 
-    private double itemPricePerUnit;
+    private BigDecimal itemPricePerUnit;
 
 }

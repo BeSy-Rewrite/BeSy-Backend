@@ -1,10 +1,13 @@
 package de.hs_esslingen.besy.dtos.request;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -12,9 +15,10 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class InsyOrderRequestDTO {
 
-    private int orderId;
+    private Integer orderId;
 
     private LocalDateTime orderCreatedDate;
 
@@ -24,7 +28,7 @@ public class InsyOrderRequestDTO {
 
     private String userName;
 
-    private double orderQuotePrice;
+    private BigDecimal orderQuotePrice;
 
     private List<InsyItemRequestDTO> items;
 }
