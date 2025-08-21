@@ -14,5 +14,6 @@ public class QuotationResponseDTO implements Serializable {
     Short index;
     LocalDate quoteDate;
     BigDecimal price;
-    Long supplierId;
+    String companyName;
+    String companyCity;
 }

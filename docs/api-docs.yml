@@ -1,18 +1,18 @@
 openapi: 3.0.1
 info:
   title: Bestellsystem API
-  version: v1.1.0
+  version: v1.2.0
 servers:
   - url: http://localhost:3000/api/v1
     description: Generierte Server-URL
 paths:
   /addresses:
     get:
-      deprecated: true
       tags:
         - Addresses
       
       operationId: getAllAddresses
+      deprecated: true
       responses:
         '200':
           description: Eine Liste von Adressen
@@ -23,10 +23,10 @@ paths:
                 items:
                   $ref: '#/components/schemas/AddressResponseDTO'
     post:
-      deprecated: true
       tags:
         - Addresses
       operationId: createAddress
+      deprecated: true
       requestBody:
         required: true
         content:
@@ -46,10 +46,10 @@ paths:
 
   /addresses/{id}:
       get:
-        deprecated: true
         tags:
           - Addresses
         operationId: getAddressById
+        deprecated: true
         parameters:
           - name: id
             in: path
@@ -980,7 +980,8 @@ components:
         - index
         - quote_date
         - price
-        - supplier_id
+        - company_name
+        - company_city
       properties:
         index:
           type: integer
@@ -988,11 +989,16 @@ components:
         quote_date:
           type: string
           format: date
+          example: 2013-03-27
         price:
           type: number
-        supplier_id:
-          type: integer
-          format: int64
+          example: 494.99
+        company_name:
+          type: string
+          example: computeruniverse.net
+        company_city:
+          type: string
+          example: 71546 Aspach
     OrderResponseDTO:
       type: object
       properties:
@@ -1194,9 +1200,12 @@ components:
           format: date
         price:
           type: number
-        supplier_id:
-          type: integer
-          format: int64
+        company_name:
+          type: string
+          example: computeruniverse.net
+        company_city:
+          type: string
+          example: 71546 Aspach
     InvoiceResponseDTO:
       type: object
       properties:

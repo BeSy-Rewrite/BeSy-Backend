@@ -9,8 +9,7 @@ import lombok.ToString;
 @Setter
 @Entity
 @ToString
-@Table(name = "address",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"building_name", "street", "building_number", "town", "postal_code", "county", "country"}))
+@Table(name = "address")
 public class Address {
 
     @Id
@@ -42,4 +41,9 @@ public class Address {
     @Column(name = "comment")
     private String comment;
 
+    @Column(name = "legacy_address_name")
+    private String legacyAddressName;
+
+    @Column(name = "legacy_supplier_name")
+    private String legacySupplierName;
 }
