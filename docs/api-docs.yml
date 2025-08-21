@@ -988,11 +988,16 @@ components:
         quote_date:
           type: string
           format: date
+          example: 2013-03-27
         price:
           type: number
-        supplier_id:
-          type: integer
-          format: int64
+          example: 494.99
+        company_name:
+          type: string
+          example: computeruniverse.net
+        company_city:
+          type: string
+          example: 71546 Aspach
     OrderResponseDTO:
       type: object
       properties:
@@ -1194,9 +1199,12 @@ components:
           format: date
         price:
           type: number
-        supplier_id:
-          type: integer
-          format: int64
+        company_name:
+          type: string
+          example: computeruniverse.net
+        company_city:
+          type: string
+          example: 71546 Aspach
     InvoiceResponseDTO:
       type: object
       properties:
