@@ -41,7 +41,9 @@ public class Address {
     @Column(name = "comment")
     private String comment;
 
-    @Column(name = "legacyAddressName")
+    @Column(name = "legacy_address_name")
     private String legacyAddressName;
 
+    @Column(name = "legacy_supplier_name")
+    private String legacySupplierName;
 }

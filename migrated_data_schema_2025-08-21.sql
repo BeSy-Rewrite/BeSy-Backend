@@ -10,16 +10,17 @@ INSERT INTO migrated_data.address (
     legacy_address_name
 )
 SELECT DISTINCT
-    address_postal_code,
-    address_building_name,
-    address_building_number,
-    address_comment,
-    country_name,           -- FK dropped: now plain text
-    address_county,
-    address_street,
-    address_town,
-    address_name
-FROM besy.address;
+    a.address_postal_code,
+    a.address_building_name,
+    a.address_building_number,
+    a.address_comment,
+    c.country_german,           -- FK dropped: now plain text
+    a.address_county,
+    a.address_street,
+    a.address_town,
+    a.address_name
+FROM besy.address a
+JOIN besy.country c ON c.country_name = a.country_name;
 
 
 -- Map addresses of suppliers to address table.
@@ -30,16 +31,18 @@ INSERT INTO migrated_data.address (
     town,
     postal_code,
     county,
-    country
+    country,
+    legacy_supplier_name
 )
-SELECT DISTINCT
+SELECT
     s.supplier_building_name,
     s.supplier_street,
     s.supplier_building_number,
     s.supplier_town,
     s.supplier_postal_code,
     s.supplier_county,
-    c.country_german
+    c.country_german,
+    s.supplier_name
 FROM besy.supplier s
 LEFT JOIN besy.country c ON c.country_name = s.country_name;
 
@@ -70,10 +73,6 @@ SELECT
 FROM besy.currency;
 
 
--- COALESCE() replaces NULL values with an empty string.
--- This is necessary to prevent losing persons during the join,
--- because if any join field is NULL, the comparison fails
--- since NULL = NULL evaluates to unknown (not true).
 INSERT INTO migrated_data.person (
     id,
     fax,
@@ -91,38 +90,14 @@ SELECT
     p.person_fax,
     p.person_phone,
     p.person_title,
-    a2.id AS address_id, -- join old `address_name` to new `address.name`
+    a.id AS address_id, -- join old `address_name` to new `address.name`
     p.person_comment,
     p.person_email,
     p.person_given_name,
     p.person_gender,
     p.person_surname
 FROM besy.person p
-JOIN besy.address a1 ON a1.address_name = p.address_name
-JOIN migrated_data.address a2
-     ON COALESCE(a2.building_name, '') = COALESCE(a1.address_building_name, '')
-         AND COALESCE(a2.street, '') = COALESCE(a1.address_street, '')
-         AND COALESCE(a2.building_number, '') = COALESCE(a1.address_building_number, '')
-         AND COALESCE(a2.town, '') = COALESCE(a1.address_town, '')
-         AND COALESCE(a2.postal_code, '') = COALESCE(a1.address_postal_code, '')
-         AND COALESCE(a2.county, '') = COALESCE(a1.address_county, '')
-         AND COALESCE(a2.comment, '') = COALESCE(a1.address_comment, '');
-
---- Check, if persons get lost in the process beforehand, if it returns 0 rows, everything is O.K.:
-/*
-SELECT p.person_id, p.address_name
-FROM besy.person p
-         JOIN besy.address a1 ON a1.address_name = p.address_name
-         LEFT JOIN migrated_data.address a2
-                   ON COALESCE(a2.building_name, '') = COALESCE(a1.address_building_name, '')
-                       AND COALESCE(a2.street, '') = COALESCE(a1.address_street, '')
-                       AND COALESCE(a2.building_number, '') = COALESCE(a1.address_building_number, '')
-                       AND COALESCE(a2.town, '') = COALESCE(a1.address_town, '')
-                       AND COALESCE(a2.postal_code, '') = COALESCE(a1.address_postal_code, '')
-                       AND COALESCE(a2.county, '') = COALESCE(a1.address_county, '')
-                       AND COALESCE(a2.comment, '') = COALESCE(a1.address_comment, '')
-WHERE a2.id IS NULL;
-*/
+JOIN migrated_data.address a ON a.legacy_address_name = p.address_name;
 
 
 INSERT INTO migrated_data.vat (
@@ -155,10 +130,6 @@ SELECT
 FROM besy.invoice;
 
 
--- COALESCE() replaces NULL values with an empty string.
--- This is necessary to prevent losing suppliers during the join,
--- because if any join field is NULL, the comparison fails
--- since NULL = NULL evaluates to unknown (not true).
 INSERT INTO migrated_data.supplier (
     deactivated_date,
     flag_preferred,
@@ -183,40 +154,8 @@ SELECT
     a.id,
     supplier_name
 FROM besy.supplier s
-         LEFT JOIN migrated_data.address a
-                   ON s.supplier_street = a.street
-                       AND COALESCE(s.supplier_town, '') = COALESCE(a.town, '')
-                       AND COALESCE(s.supplier_postal_code, '') = COALESCE(a.postal_code, '')
-                       AND COALESCE(s.supplier_building_name, '') = COALESCE(a.building_name, '')
-                       AND COALESCE(s.supplier_building_number, '') = COALESCE(a.building_number, '')
-                       AND COALESCE(s.supplier_county, '') = COALESCE(a.county, '')
-                       AND COALESCE(s.supplier_comment, '') = COALESCE(a.comment, '');
+         JOIN migrated_data.address a ON a.legacy_supplier_name = s.supplier_name;
 
---- Check, if suppliers get lost in the process beforehand, if it returns 0 rows, everything is O.K.:
-/*
- SELECT
-    supplier_deactivated_date,
-    supplier_flag_preferred,
-    supplier_vat_id,
-    NULL, -- `supplier_email` did not exist
-    supplier_fax,
-    supplier_phone,
-    supplier_comment,
-    supplier_website,
-    a.id,
-    supplier_name
-FROM besy.supplier s
-         LEFT JOIN migrated_data.address a
-                   ON s.supplier_street = a.street
-                       AND COALESCE(s.supplier_town, '') = COALESCE(a.town, '')
-                       AND COALESCE(s.supplier_postal_code, '') = COALESCE(a.postal_code, '')
-                       AND COALESCE(s.supplier_building_name, '') = COALESCE(a.building_name, '')
-                       AND COALESCE(s.supplier_building_number, '') = COALESCE(a.building_number, '')
-                       AND COALESCE(s.supplier_county, '') = COALESCE(a.county, '')
-                       AND COALESCE(s.supplier_comment, '') = COALESCE(a.comment, '')
-WHERE a.id IS NULL;
-
- */
 
 INSERT INTO migrated_data."user" (
     email,

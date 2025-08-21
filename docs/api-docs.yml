@@ -1271,8 +1271,6 @@ components:
           type: string
         town:
           type: string
-        legacy_address_name:
-          type: string
     SupplierRequestDTO:
       type: object
       required:
