@@ -12,6 +12,7 @@ paths:
         - Addresses
       
       operationId: getAllAddresses
+      deprecated: true
       responses:
         '200':
           description: Eine Liste von Adressen
@@ -25,6 +26,7 @@ paths:
       tags:
         - Addresses
       operationId: createAddress
+      deprecated: true
       requestBody:
         required: true
         content:
@@ -47,6 +49,7 @@ paths:
         tags:
           - Addresses
         operationId: getAddressById
+        deprecated: true
         parameters:
           - name: id
             in: path
@@ -1267,6 +1270,8 @@ components:
         street:
           type: string
         town:
+          type: string
+        legacy_address_name:
           type: string
     SupplierRequestDTO:
       type: object

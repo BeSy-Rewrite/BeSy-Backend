@@ -6,7 +6,8 @@ INSERT INTO migrated_data.address (
     country,
     county,
     street,
-    town
+    town,
+    legacy_address_name
 )
 SELECT DISTINCT
     address_postal_code,
@@ -16,11 +17,12 @@ SELECT DISTINCT
     country_name,           -- FK dropped: now plain text
     address_county,
     address_street,
-    address_town
+    address_town,
+    address_name
 FROM besy.address;
 
 
--- Map addresses of suppliers to address table. If they already exist, DO NOTHING.
+-- Map addresses of suppliers to address table.
 INSERT INTO migrated_data.address (
     building_name,
     street,
@@ -37,10 +39,9 @@ SELECT DISTINCT
     s.supplier_town,
     s.supplier_postal_code,
     s.supplier_county,
-    c.country_name
+    c.country_german
 FROM besy.supplier s
-LEFT JOIN besy.country c ON c.country_name = s.country_name
-ON CONFLICT(building_name, street, building_number, town, postal_code, county, country) DO NOTHING;
+LEFT JOIN besy.country c ON c.country_name = s.country_name;
 
 
 INSERT INTO migrated_data.cost_center (
@@ -382,28 +383,6 @@ SELECT
        item_name
 
 FROM besy.item i;
-
-
--- Map quotations:
--- 1. insert quotation company cities into address table
--- 2. insert quotation company names into suppliers & get address_id
--- 3. insert quotations into new quotation table & get company_id
-INSERT INTO migrated_data.address(
-                                  town
-)
-SELECT DISTINCT quotation_company_city
-FROM besy.quotation;
-
-
--- Filters existing supplier names out and only inserts quotation_company_names into supplier table, that do not already exist
-INSERT INTO migrated_data.supplier(
-                                   name,
-                                   address_id
-)
-SELECT DISTINCT q.quotation_company_name, s.id
-FROM besy.quotation q
-LEFT JOIN migrated_data.supplier s ON s.name = q.quotation_company_name
-WHERE s.name IS NULL;
 
 
 INSERT INTO migrated_data.quotation(
