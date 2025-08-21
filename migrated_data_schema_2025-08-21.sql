@@ -411,11 +411,12 @@ INSERT INTO migrated_data.quotation(
     price,
     quote_date,
     order_id,
-    supplier_id
+    company_name,
+    company_city
 )
-SELECT q.quotation_index, q.quotation_price, q.quotation_quote_date, q.order_id, s.id
-FROM besy.quotation q
-JOIN migrated_data.supplier s ON s.name = q.quotation_company_name;
+SELECT q.quotation_index, q.quotation_price, q.quotation_quote_date, q.order_id, q.quotation_company_name, q.quotation_company_city
+FROM besy.quotation q;
+
 
 SELECT setval('migrated_data.person_id_seq', (SELECT MAX(id) FROM migrated_data.person));
 SELECT setval('migrated_data.order_id_seq', (SELECT MAX(id) FROM migrated_data."order"));

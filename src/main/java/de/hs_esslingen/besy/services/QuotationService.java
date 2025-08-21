@@ -42,10 +42,8 @@ public class QuotationService {
             if(quotationRepository.existsByIndexAndOrderId(quotation.getIndex(), orderId)) throw new EntityAlreadyExistsException("Zugehöriges Vergleichsangebot mit dem Index " + quotation.getIndex() + " existiert bereits.");
 
             QuotationId quotationId = new QuotationId(orderId, quotation.getIndex());
-            Supplier supplier = supplierRepository.getReferenceById(quotation.getSupplierId());
 
             quotation.setId(quotationId);
-            quotation.setSupplier(supplier);
             quotation.setOrder(order);
         });
         List<Quotation> quotationsPersisted = quotationRepository.saveAll(quotations);

@@ -980,7 +980,8 @@ components:
         - index
         - quote_date
         - price
-        - supplier_id
+        - company_name
+        - company_city
       properties:
         index:
           type: integer
