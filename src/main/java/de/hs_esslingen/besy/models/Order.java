@@ -177,12 +177,12 @@ public class Order {
     private Address invoiceAddress;
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Approvals approvals;
+    private Approval approvals;
 
     @PrePersist
     public void prePersist() {
         this.lastUpdatedTime = OffsetDateTime.now();
-        this.approvals = new Approvals();
+        this.approvals = new Approval();
         this.approvals.setOrder(this);
     }
 

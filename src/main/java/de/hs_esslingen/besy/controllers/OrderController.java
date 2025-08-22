@@ -3,15 +3,13 @@ package de.hs_esslingen.besy.controllers;
 import de.hs_esslingen.besy.dtos.request.ItemRequestDTO;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
 import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
+import de.hs_esslingen.besy.dtos.response.ApprovalResponseDTO;
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
-import de.hs_esslingen.besy.services.ItemService;
-import de.hs_esslingen.besy.services.OrderPDFService;
-import de.hs_esslingen.besy.services.OrderService;
-import de.hs_esslingen.besy.services.QuotationService;
+import de.hs_esslingen.besy.services.*;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +31,7 @@ public class OrderController {
     private final ItemService itemService;
     private final QuotationService quotationService;
     private final OrderPDFService orderPDFService;
+    private final ApprovalService approvalService;
 
     @GetMapping
     public Page<OrderResponseDTO> getAllOrders(
@@ -139,6 +138,12 @@ public class OrderController {
     ){
         if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
         return quotationService.createQuotation(id, dtos);
+    }
+
+    @GetMapping("{order-id}/approvals")
+    public ResponseEntity<ApprovalResponseDTO> getApprovalOfOrder(@PathVariable("order-id") Long orderId){
+        if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
+        return this.approvalService.getApprovalOfOrder(orderId);
     }
 
     @GetMapping
