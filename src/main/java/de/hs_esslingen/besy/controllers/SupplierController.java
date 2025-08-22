@@ -57,7 +57,7 @@ public class SupplierController {
 
     @GetMapping("/{supplier-id}/address")
     public ResponseEntity<AddressResponseDTO> getAddressOfSupplier(@PathVariable("supplier-id") Integer id) {
-        if(!supplierService.existsSupplierById(id)) throw new NotFoundException("Lieferant nicht gefunden.");
+        if(!supplierService.existsSupplierById(id)) throw new NotFoundException("Person nicht gefunden.");
         return addressService.getAddressOfSupplier(id);
     }
 

@@ -6,8 +6,10 @@ import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.AddressRequestMapper;
 import de.hs_esslingen.besy.mappers.response.AddressResponseMapper;
 import de.hs_esslingen.besy.models.Address;
+import de.hs_esslingen.besy.models.Person;
 import de.hs_esslingen.besy.models.Supplier;
 import de.hs_esslingen.besy.repositories.AddressRepository;
+import de.hs_esslingen.besy.repositories.PersonRepository;
 import de.hs_esslingen.besy.repositories.SupplierRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,8 @@ public class AddressService {
 
     private final AddressRepository addressRepository;
     private final SupplierRepository supplierRepository;
+    private final PersonRepository personRepository;
+
     private final AddressRequestMapper addressRequestMapper;
     private final AddressResponseMapper addressResponseMapper;
 
@@ -60,8 +64,21 @@ public class AddressService {
 
     public ResponseEntity<AddressResponseDTO> getAddressOfSupplier(Integer supplierId) {
         Supplier supplier = supplierRepository.findById(supplierId).get();
-        if(!existsById(supplier.getAddressId())) throw new NotFoundException("Dieser Lieferant besitzt keine Adresse.");
+        if(supplier.getAddressId() == null || !existsById(supplier.getAddressId())) throw new NotFoundException("Dieser Lieferant besitzt keine Adresse.");
         Address address = supplier.getAddress();
+        return ResponseEntity.ok(addressResponseMapper.toDto(address));
+    }
+
+    public ResponseEntity<List<AddressResponseDTO>> getPersonAddresses() {
+        List<Integer> addressIds = personRepository.findAllAddressId();
+        List<Address> addresses = addressRepository.findAllById(addressIds);
+        return ResponseEntity.ok(addressResponseMapper.toDto(addresses));
+    }
+
+    public ResponseEntity<AddressResponseDTO> getAddressOfPerson(Long personId) {
+        Person person = personRepository.findById(personId).get();
+        if(person.getAddressId() == null || !existsById(person.getAddressId())) throw new NotFoundException("Diese Person besitzt keine Adresse.");
+        Address address = person.getAddress();
         return ResponseEntity.ok(addressResponseMapper.toDto(address));
     }
 

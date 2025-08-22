@@ -121,6 +121,43 @@ paths:
                 $ref: '#/components/schemas/PersonResponseDTO'
         '500':
           description: Interner Serverfehler.
+  /persons/addresses:
+    get:
+      tags:
+        - Persons
+      description: Gibt eine Liste aller Adressen zurück, die Personen zugeordnet sind.
+      responses:
+        '200':
+          description: Erfolgreich – Liste der Personenadressen
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AddressResponseDTO'
+
+  /persons/{person-id}/address:
+    get:
+      tags:
+        - Persons
+      description: Gibt die Adresse der angegebenen Person zurück.
+      parameters:
+        - name: person-id
+          in: path
+          required: true
+          description: Die ID der Person, deren Adresse abgerufen werden soll
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Erfolgreich – Adresse der Person
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressResponseDTO'
+        '404':
+          description: Person nicht gefunden. Diese Person besitzt keine Adresse.
   /suppliers:
     get:
       tags:
@@ -835,7 +872,6 @@ components:
       required:
         - name
         - surname
-        - address_id
         - gender
       properties:
         name:
