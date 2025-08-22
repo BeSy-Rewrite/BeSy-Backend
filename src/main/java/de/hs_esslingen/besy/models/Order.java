@@ -4,6 +4,7 @@ import de.hs_esslingen.besy.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
@@ -145,12 +146,20 @@ public class Order {
     private Boolean flagDecisionCheapestOffer;
 
     @ColumnDefault("false")
+    @Column(name = "flag_decision_most_economical_offer")
+    private Boolean flagDecisionMostEconomicalOffer;
+
+    @ColumnDefault("false")
     @Column(name = "flag_decision_sole_supplier")
     private Boolean flagDecisionSoleSupplier;
 
     @ColumnDefault("false")
     @Column(name = "flag_decision_contract_partner")
     private Boolean flagDecisionContractPartner;
+
+    @ColumnDefault("false")
+    @Column(name = "flag_decision_preferred_supplier_list")
+    private Boolean flagDecisionPreferredSupplierList;
 
     @ColumnDefault("false")
     @Column(name = "flag_decision_other_reasons")

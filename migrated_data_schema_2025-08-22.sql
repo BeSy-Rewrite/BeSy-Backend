@@ -226,7 +226,9 @@ INSERT INTO migrated_data."order" (
     comment_for_supplier,
     decision_other_reasons_description,
     delivery_address_id,
-    invoice_address_id
+    invoice_address_id,
+    flag_decision_most_economical_offer,
+    flag_decision_preferred_supplier_list
 )
 SELECT
     o.order_id,
@@ -275,7 +277,10 @@ SELECT
     o.order_decision_other_reasons_description,
 
     del_add_new.id,
-    inv_add_new.id
+    inv_add_new.id,
+
+    false,
+    false
 
 
 FROM besy."order" o

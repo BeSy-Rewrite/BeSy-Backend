@@ -41,8 +41,10 @@ public class OrderResponseDTO implements Serializable {
     Short cashbackDays;
     OffsetDateTime lastUpdatedTime;
     Boolean flagDecisionCheapestOffer;
+    Boolean flagDecisionMostEconomicalOffer;
     Boolean flagDecisionSoleSupplier;
     Boolean flagDecisionContractPartner;
+    Boolean flagDecisionPreferredSupplierList;
     Boolean flagDecisionOtherReasons;
     String decisionOtherReasonsDescription;
     String dfgKey;

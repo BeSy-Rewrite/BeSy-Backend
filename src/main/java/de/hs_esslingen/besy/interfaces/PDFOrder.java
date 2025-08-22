@@ -1,7 +1,6 @@
 package de.hs_esslingen.besy.interfaces;
 
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
-import de.hs_esslingen.besy.exceptions.EntityAlreadyExistsException;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
@@ -99,7 +98,7 @@ public class PDFOrder {
     private PDCheckBox flagDecisionCheapestOffer;
 
     // das wirtschaftlichste Angebot abgegeben hat
-    // ToDo: wirtschaftlichstes Angebot
+    private PDCheckBox flagDecisionMostEconomicalOffer;
 
     // Einziger Anbieter am Markt ist.
     private PDCheckBox flagDecisionSoleSupplier;
@@ -108,7 +107,7 @@ public class PDFOrder {
     private PDCheckBox flagDecisionContractPartner;
 
     // in der Vorzugsliste RZ (EDV) oder FM (Möbel) enthalten ist.
-    // ToDo: in der Vorzugsliste RZ (EDV) oder FM (Möbel) enthalten ist.
+    private PDCheckBox flagDecisionPreferredSupplierList;
 
     // aus folgendem Sachgrund ausgewählt wurde:
     private PDCheckBox flagDecisionOtherReasons;
@@ -173,10 +172,10 @@ public class PDFOrder {
 
         lfdNr = acroForm.getField("Formular1[0].#subform[1].Textfeld4[0]");
         flagDecisionCheapestOffer = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[2]");
-        // ToDo: wirtschaftlichstes Angebot
+        flagDecisionMostEconomicalOffer = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[3]");
         flagDecisionSoleSupplier = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[4]");
         flagDecisionContractPartner = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[5]");
-        // ToDo: in der Vorzugsliste RZ (EDV) oder FM (Möbel) enthalten ist.
+        flagDecisionPreferredSupplierList = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[6]");
         flagDecisionOtherReasons = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[7]");
         flagDecisionOtherReasonsDescription = acroForm.getField("Formular1[0].#subform[1].Textfeld5[0]");
 
@@ -334,6 +333,14 @@ public class PDFOrder {
         }
     }
 
+    public void setFlagDecisionMostEconomicalOffer(boolean flag) throws IOException {
+        if (flag) {
+            this.flagDecisionMostEconomicalOffer.check();
+        } else {
+            this.flagDecisionMostEconomicalOffer.unCheck();
+        }
+    }
+
     public void setFlagDecisionSoleSupplier(boolean flag) throws IOException {
         if (flag) {
             this.flagDecisionSoleSupplier.check();
@@ -347,6 +354,14 @@ public class PDFOrder {
             this.flagDecisionContractPartner.check();
         } else {
             this.flagDecisionContractPartner.unCheck();
+        }
+    }
+
+    public void setFlagDecisionPreferredSupplierList(boolean flag) throws IOException {
+        if (flag) {
+            this.flagDecisionPreferredSupplierList.check();
+        } else {
+            this.flagDecisionPreferredSupplierList.unCheck();
         }
     }
 

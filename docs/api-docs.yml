@@ -1036,9 +1036,13 @@ components:
           format: int32
         flag_decision_cheapest_offer:
           type: boolean
+        flag_decision_most_economical_offer:
+          type: boolean
         flag_decision_sole_supplier:
           type: boolean
         flag_decision_contract_partner:
+          type: boolean
+        flag_decision_preferred_supplier_list:
           type: boolean
         flag_decision_other_reasons:
           type: boolean
@@ -1150,9 +1154,13 @@ components:
           format: date-time
         flag_decision_cheapest_offer:
           type: boolean
+        flag_decision_most_economical_offer:
+          type: boolean
         flag_decision_sole_supplier:
           type: boolean
         flag_decision_contract_partner:
+          type: boolean
+        flag_decision_preferred_supplier_list:
           type: boolean
         flag_decision_other_reasons:
           type: boolean

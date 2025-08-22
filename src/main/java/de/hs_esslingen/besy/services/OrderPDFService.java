@@ -129,10 +129,10 @@ public class OrderPDFService {
         order.setLfdNr(LAUFENDE_NUMMER_DEFAULT);
 
         order.setFlagDecisionCheapestOffer(orderDAO.getFlagDecisionCheapestOffer());
-        //ToDo wirtschaftlichstes Angebot
+        order.setFlagDecisionMostEconomicalOffer(orderDAO.getFlagDecisionMostEconomicalOffer());
         order.setFlagDecisionSoleSupplier(orderDAO.getFlagDecisionSoleSupplier());
         order.setFlagDecisionContractPartner(orderDAO.getFlagDecisionContractPartner());
-        //ToDo in der Vorzugsliste RZ (EDV) oder FM (Möbel) enthalten ist.
+        order.setFlagDecisionPreferredSupplierList(orderDAO.getFlagDecisionPreferredSupplierList());
         order.setFlagDecisionOtherReasons(orderDAO.getFlagDecisionOtherReasons());
         order.setFlagDecisionOtherReasonsDescription(orderDAO.getDecisionOtherReasonsDescription());
 
