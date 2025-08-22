@@ -1003,6 +1003,10 @@ components:
           type: boolean
         dfg_key:
           type: string
+        delivery_address_id:
+          type: number
+        invoice_address_id:
+          type: number
     QuotationRequestDTO:
       type: object
       required:
@@ -1125,6 +1129,10 @@ components:
           type: boolean
         dfg_key:
           type: string
+        delivery_address_id:
+          type: number
+        invoice_address_id:
+          type: number
     CostCenterRequestDTO:
       type: object
       required:

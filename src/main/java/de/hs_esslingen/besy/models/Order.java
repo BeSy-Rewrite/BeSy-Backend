@@ -186,6 +186,19 @@ public class Order {
     @Column(name = "dfg_key", length = 45)
     private String dfgKey;
 
+    @Column(name = "delivery_address_id", insertable = false, updatable = false)
+    private Integer deliveryAddressId;
+
+    @Column(name = "invoice_address_id", insertable = false, updatable = false)
+    private Integer invoiceAddressId;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "delivery_address_id", nullable = true)
+    private Address deliveryAddress;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "invoice_address_id", nullable = true)
+    private Address invoiceAddress;
 
     @PrePersist
     public void prePersist() {

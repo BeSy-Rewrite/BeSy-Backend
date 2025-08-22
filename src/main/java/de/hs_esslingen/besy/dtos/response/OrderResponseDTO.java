@@ -52,4 +52,6 @@ public class OrderResponseDTO implements Serializable {
     Boolean flagInvestmentStructuralMeasures;
     Boolean flagMediaPermission;
     String dfgKey;
+    Integer deliveryAddressId;
+    Integer invoiceAddressId;
 }
