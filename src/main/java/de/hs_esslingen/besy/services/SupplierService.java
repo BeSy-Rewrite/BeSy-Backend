@@ -3,6 +3,7 @@ package de.hs_esslingen.besy.services;
 import de.hs_esslingen.besy.dtos.request.SupplierRequestDTO;
 import de.hs_esslingen.besy.dtos.response.CreateSupplierResponseDTO;
 import de.hs_esslingen.besy.dtos.response.SupplierResponseDTO;
+import de.hs_esslingen.besy.enums.AddressOwnerType;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.SupplierRequestMapper;
 import de.hs_esslingen.besy.mappers.response.CreateSupplierResponseMapper;
@@ -39,6 +40,7 @@ public class SupplierService {
 
     public ResponseEntity<CreateSupplierResponseDTO> createSupplier(SupplierRequestDTO supplierRequestDTO) {
         Supplier supplier = supplierRequestMapper.toEntity(supplierRequestDTO);
+        supplier.getAddress().setOwnerType(AddressOwnerType.Supplier);
         Supplier supplierPersisted = supplierRepository.save(supplier);
         return ResponseEntity.ok(createSupplierResponseMapper.toDto(supplierPersisted));
     }

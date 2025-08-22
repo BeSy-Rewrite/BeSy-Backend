@@ -2,6 +2,7 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.request.AddressRequestDTO;
 import de.hs_esslingen.besy.dtos.response.AddressResponseDTO;
+import de.hs_esslingen.besy.enums.AddressOwnerType;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.AddressRequestMapper;
 import de.hs_esslingen.besy.mappers.response.AddressResponseMapper;
@@ -46,17 +47,17 @@ public class AddressService {
     }
 
     public ResponseEntity<AddressResponseDTO> createAddress(
-            AddressRequestDTO dto
+            AddressRequestDTO dto, AddressOwnerType addressOwnerType
     ) {
         Address address = addressRequestMapper.toEntity(dto);
+        address.setOwnerType(addressOwnerType);
         Address addressPersisted = addressRepository.save(address);
         return ResponseEntity.ok(addressResponseMapper.toDto(addressPersisted));
     }
 
 
     public ResponseEntity<List<AddressResponseDTO>> getSupplierAddresses() {
-        List<Integer> addressIds = supplierRepository.findAllAddressId();
-        List<Address> addresses = addressRepository.findAllById(addressIds);
+        List<Address> addresses = addressRepository.getAddressByOwnerType(AddressOwnerType.Supplier);
         return ResponseEntity.ok(addressResponseMapper.toDto(addresses));
     }
 
@@ -68,8 +69,7 @@ public class AddressService {
     }
 
     public ResponseEntity<List<AddressResponseDTO>> getPersonAddresses() {
-        List<Integer> addressIds = personRepository.findAllAddressId();
-        List<Address> addresses = addressRepository.findAllById(addressIds);
+        List<Address> addresses = addressRepository.getAddressByOwnerType(AddressOwnerType.Person);
         return ResponseEntity.ok(addressResponseMapper.toDto(addresses));
     }
 
