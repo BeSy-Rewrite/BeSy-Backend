@@ -60,7 +60,7 @@ public class OrderPDFService {
         Supplier supplierDAO = supplierRepository.findById(orderDAO.getSupplierId())
                 .orElseThrow(() -> new NotFoundException("Supplier with id " + orderDAO.getSupplierId() + " does not exist."));
 
-        Approval approvals = orderDAO.getApprovals();
+        Approval approvals = orderDAO.getApproval();
 
         List<Item> itemsDAO = itemRepository.findByOrder_Id(orderDAO.getId());
         Optional<Invoice> invoiceOpt = invoiceRepository.findByOrderId(Long.valueOf(orderId));

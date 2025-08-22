@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.controllers;
 
+import de.hs_esslingen.besy.dtos.request.ApprovalRequestDTO;
 import de.hs_esslingen.besy.dtos.request.ItemRequestDTO;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
 import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
@@ -144,6 +145,15 @@ public class OrderController {
     public ResponseEntity<ApprovalResponseDTO> getApprovalOfOrder(@PathVariable("order-id") Long orderId){
         if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
         return this.approvalService.getApprovalOfOrder(orderId);
+    }
+
+    @PatchMapping("{order-id}/approvals")
+    public ResponseEntity<ApprovalResponseDTO> updateApprovalOfOrder(
+            @PathVariable("order-id") Long orderId,
+            @RequestBody ApprovalRequestDTO dto
+    ){
+        if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
+        return this.approvalService.updateApprovalOfOrder(orderId, dto);
     }
 
     @GetMapping

@@ -692,6 +692,37 @@ paths:
           description: Bestellung nicht gefunden. Vergleichsartikel nicht gefunden.
         '500':
           description: Interner Serverfehler.
+
+  /orders/{order-id}/approval:
+    patch:
+      description: Aktualisiert Felder der Zustimmungen für die angegebene Bestellung. Nur nicht-leere Felder im Request-Body werden übernommen.
+      tags:
+        - Orders
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID der Bestellung, deren Zustimmungen aktualisiert wird.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalRequestDTO'
+      responses:
+        '200':
+          description: Approval successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalResponseDTO'
+        '404':
+          description: Bestellung nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
+
   /orders/{order-id}/export:
     get:
       tags:
@@ -711,6 +742,8 @@ paths:
             application/pdf: { }
         '404':
           description: Bestellung nicht gefunden.
+
+
   /cost_centers:
     get:
       tags:
@@ -1437,3 +1470,50 @@ components:
           type: boolean
         unsorted:
           type: boolean
+
+    ApprovalResponseDTO:
+      type: object
+      properties:
+        orderId:
+          type: integer
+          format: int64
+        flagEdvPermission:
+          type: boolean
+          default: false
+        flagFurniturePermission:
+          type: boolean
+          default: false
+        flagFurnitureRoom:
+          type: boolean
+          default: false
+        flagInvestmentRoom:
+          type: boolean
+          default: false
+        flagInvestmentStructuralMeasures:
+          type: boolean
+          default: false
+        flagMediaPermission:
+          type: boolean
+          default: false
+
+    ApprovalRequestDTO:
+      type: object
+      properties:
+        flagEdvPermission:
+          type: boolean
+          default: false
+        flagFurniturePermission:
+          type: boolean
+          default: false
+        flagFurnitureRoom:
+          type: boolean
+          default: false
+        flagInvestmentRoom:
+          type: boolean
+          default: false
+        flagInvestmentStructuralMeasures:
+          type: boolean
+          default: false
+        flagMediaPermission:
+          type: boolean
+          default: false

@@ -177,13 +177,13 @@ public class Order {
     private Address invoiceAddress;
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Approval approvals;
+    private Approval approval;
 
     @PrePersist
     public void prePersist() {
         this.lastUpdatedTime = OffsetDateTime.now();
-        this.approvals = new Approval();
-        this.approvals.setOrder(this);
+        this.approval = new Approval();
+        this.approval.setOrder(this);
     }
 
     // only called if the data is actually changed
