@@ -40,12 +40,6 @@ public class OrderRequestDTO implements Serializable {
     Boolean flagDecisionContractPartner;
     Boolean flagDecisionOtherReasons;
     String decisionOtherReasonsDescription;
-    Boolean flagEdvPermission;
-    Boolean flagFurniturePermission;
-    Boolean flagFurnitureRoom;
-    Boolean flagInvestmentRoom;
-    Boolean flagInvestmentStructuralMeasures;
-    Boolean flagMediaPermission;
     String dfgKey;
     Integer deliveryAddressId;
     Integer invoiceAddressId;

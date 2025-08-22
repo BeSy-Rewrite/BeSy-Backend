@@ -60,6 +60,8 @@ public class OrderPDFService {
         Supplier supplierDAO = supplierRepository.findById(orderDAO.getSupplierId())
                 .orElseThrow(() -> new NotFoundException("Supplier with id " + orderDAO.getSupplierId() + " does not exist."));
 
+        Approvals approvals = orderDAO.getApprovals();
+
         List<Item> itemsDAO = itemRepository.findByOrder_Id(orderDAO.getId());
         Optional<Invoice> invoiceOpt = invoiceRepository.findByOrderId(Long.valueOf(orderId));
         Optional<Person> deliveryPersonOpt = personRepository.findById(Long.valueOf(orderDAO.getDeliveryPersonId()));
@@ -134,12 +136,12 @@ public class OrderPDFService {
         order.setFlagDecisionOtherReasons(orderDAO.getFlagDecisionOtherReasons());
         order.setFlagDecisionOtherReasonsDescription(orderDAO.getDecisionOtherReasonsDescription());
 
-        order.setOrderFlagEdvPermission(orderDAO.getFlagEdvPermission());
-        order.setOrderFlagFurniturePermission(orderDAO.getFlagFurniturePermission());
-        order.setOrderFlagFurnitureRoom(orderDAO.getFlagFurnitureRoom());
-        order.setOrderFlagInvestmentRoom(orderDAO.getFlagInvestmentRoom());
-        order.setOrderFlagInvestmentStructuralMeasures(orderDAO.getFlagInvestmentStructuralMeasures());
-        order.setOrderFlagMediaPermission(orderDAO.getFlagMediaPermission());
+        order.setOrderFlagEdvPermission(approvals.getFlagEdvPermission());
+        order.setOrderFlagFurniturePermission(approvals.getFlagFurniturePermission());
+        order.setOrderFlagFurnitureRoom(approvals.getFlagFurnitureRoom());
+        order.setOrderFlagInvestmentRoom(approvals.getFlagInvestmentRoom());
+        order.setOrderFlagInvestmentStructuralMeasures(approvals.getFlagInvestmentStructuralMeasures());
+        order.setOrderFlagMediaPermission(approvals.getFlagMediaPermission());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         document.save(baos);

@@ -191,7 +191,6 @@ FROM besy.customer_id b
               ON s.name = b.supplier_name;
 
 
-
 INSERT INTO migrated_data."order" (
     id,
     auto_index,
@@ -203,12 +202,6 @@ INSERT INTO migrated_data."order" (
     flag_decision_contract_partner,
     flag_decision_other_reasons,
     flag_decision_sole_supplier,
-    flag_edv_permission,
-    flag_furniture_permission,
-    flag_furniture_room,
-    flag_investment_room,
-    flag_investment_structural_measures,
-    flag_media_permission,
     legacy_alias,
     percentage_discount,
     quote_date,
@@ -246,12 +239,6 @@ SELECT
     o.order_flag_decision_contract_partner,
     o.order_flag_decision_other_reasons,
     o.order_flag_decision_sole_supplier,
-    o.order_flag_edv_permission,
-    o.order_flag_furniture_permission,
-    o.order_flag_furniture_room,
-    o.order_flag_investment_room,
-    o.order_flag_investment_structural_measures,
-    o.order_flag_media_permission,
     o.order_legacy_alias,
     o.order_percentage_discount,
     o.order_quote_date,
@@ -311,6 +298,26 @@ FROM besy."order" o
         JOIN besy.person inv_add_p_old ON inv_add_p_old.person_id = o.invoice_person_id
         JOIN besy.address inv_add_old ON inv_add_old.address_name = inv_add_p_old.address_name
         JOIN migrated_data.address inv_add_new ON inv_add_new.legacy_address_name = inv_add_old.address_name;
+
+
+INSERT INTO migrated_data.approvals (
+    order_id,
+    flag_edv_permission,
+    flag_furniture_permission,
+    flag_furniture_room,
+    flag_investment_room,
+    flag_investment_structural_measures,
+    flag_media_permission
+)
+SELECT
+    o.order_id,
+    o.order_flag_edv_permission,
+    o.order_flag_furniture_permission,
+    o.order_flag_furniture_room,
+    o.order_flag_investment_room,
+    o.order_flag_investment_structural_measures,
+    o.order_flag_media_permission
+FROM besy."order" o;
 
 
 INSERT INTO migrated_data.item(

@@ -159,30 +159,6 @@ public class Order {
     @Column(name = "decision_other_reasons_description", length = Integer.MAX_VALUE)
     private String decisionOtherReasonsDescription;
 
-    @ColumnDefault("false")
-    @Column(name = "flag_edv_permission")
-    private Boolean flagEdvPermission;
-
-    @ColumnDefault("false")
-    @Column(name = "flag_furniture_permission")
-    private Boolean flagFurniturePermission;
-
-    @ColumnDefault("false")
-    @Column(name = "flag_furniture_room")
-    private Boolean flagFurnitureRoom;
-
-    @ColumnDefault("false")
-    @Column(name = "flag_investment_room")
-    private Boolean flagInvestmentRoom;
-
-    @ColumnDefault("false")
-    @Column(name = "flag_investment_structural_measures")
-    private Boolean flagInvestmentStructuralMeasures;
-
-    @ColumnDefault("false")
-    @Column(name = "flag_media_permission")
-    private Boolean flagMediaPermission;
-
     @Column(name = "dfg_key", length = 45)
     private String dfgKey;
 
@@ -200,9 +176,14 @@ public class Order {
     @JoinColumn(name = "invoice_address_id", nullable = true)
     private Address invoiceAddress;
 
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Approvals approvals;
+
     @PrePersist
     public void prePersist() {
         this.lastUpdatedTime = OffsetDateTime.now();
+        this.approvals = new Approvals();
+        this.approvals.setOrder(this);
     }
 
     // only called if the data is actually changed

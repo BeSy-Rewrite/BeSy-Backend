@@ -989,18 +989,6 @@ components:
           type: boolean
         decision_other_reasons_description:
           type: string
-        flag_edv_permission:
-          type: boolean
-        flag_furniture_permission:
-          type: boolean
-        flag_furniture_room:
-          type: boolean
-        flag_investment_room:
-          type: boolean
-        flag_investment_structural_measures:
-          type: boolean
-        flag_media_permission:
-          type: boolean
         dfg_key:
           type: string
         delivery_address_id:
@@ -1115,18 +1103,6 @@ components:
           type: boolean
         decision_other_reasons_description:
           type: string
-        flag_edv_permission:
-          type: boolean
-        flag_furniture_permission:
-          type: boolean
-        flag_furniture_room:
-          type: boolean
-        flag_investment_room:
-          type: boolean
-        flag_investment_structural_measures:
-          type: boolean
-        flag_media_permission:
-          type: boolean
         dfg_key:
           type: string
         delivery_address_id:
