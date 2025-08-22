@@ -45,13 +45,11 @@ public class AddressService {
                 .orElseThrow(() -> new NotFoundException("Adresse mit id " + id + " existiert nicht."));
     }
 
-    @Deprecated
     public ResponseEntity<AddressResponseDTO> createAddress(
             AddressRequestDTO dto
     ) {
         Address address = addressRequestMapper.toEntity(dto);
         Address addressPersisted = addressRepository.save(address);
-        addressRepository.flush();
         return ResponseEntity.ok(addressResponseMapper.toDto(addressPersisted));
     }
 

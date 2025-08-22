@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.controllers;
 
+import de.hs_esslingen.besy.dtos.request.AddressRequestDTO;
 import de.hs_esslingen.besy.dtos.request.PersonRequestDTO;
 import de.hs_esslingen.besy.dtos.response.AddressResponseDTO;
 import de.hs_esslingen.besy.dtos.response.PersonResponseDTO;
@@ -38,6 +39,11 @@ public class PersonController {
     @GetMapping("/addresses")
     public ResponseEntity<List<AddressResponseDTO>> getAddresses() {
         return addressService.getPersonAddresses();
+    }
+
+    @PostMapping("/addresses")
+    public ResponseEntity<AddressResponseDTO> createAddress(@RequestBody AddressRequestDTO addressRequestDTO) {
+        return addressService.createAddress(addressRequestDTO);
     }
 
     @GetMapping("/{person-id}/address")
