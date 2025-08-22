@@ -40,8 +40,8 @@ public class Person {
     @Column(name = "address_id", insertable = false, updatable = false)
     private Integer addressId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "address_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "address_id", nullable = true)
     private Address address;
 
     @Column(name = "gender", nullable = false)

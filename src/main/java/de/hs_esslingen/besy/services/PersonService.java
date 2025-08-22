@@ -37,13 +37,19 @@ public class PersonService {
     }
 
     public ResponseEntity<PersonResponseDTO> createPerson(PersonRequestDTO personDTO) {
-        Address address = addressRepository.getReferenceById(personDTO.getAddressId());
-
         Person person = personRequestMapper.toEntity(personDTO);
-        person.setAddress(address);
+
+        if(personDTO.getAddressId() != null){
+            Address address = addressRepository.getReferenceById(personDTO.getAddressId());
+            person.setAddress(address);
+        }
 
         Person savedPerson = personRepository.save(person);
         return ResponseEntity.ok(personResponseMapper.toDto(savedPerson));
+    }
+
+    public boolean existsById(Long id) {
+        return personRepository.existsById(id);
     }
 
 

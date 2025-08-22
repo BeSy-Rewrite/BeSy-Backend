@@ -1,91 +1,11 @@
 openapi: 3.0.1
 info:
   title: Bestellsystem API
-  version: v1.2.0
+  version: v1.3.0
 servers:
   - url: http://localhost:3000/api/v1
     description: Generierte Server-URL
 paths:
-  /addresses:
-    get:
-      tags:
-        - Addresses
-      
-      operationId: getAllAddresses
-      deprecated: true
-      responses:
-        '200':
-          description: Eine Liste von Adressen
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AddressResponseDTO'
-    post:
-      tags:
-        - Addresses
-      operationId: createAddress
-      deprecated: true
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddressRequestDTO'
-      responses:
-        '201':
-          description: Adresse erfolgreich erstellt
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AddressResponseDTO'
-        '400':
-          description: Ungültige Eingabe
-
-
-  /addresses/{id}:
-      get:
-        tags:
-          - Addresses
-        operationId: getAddressById
-        deprecated: true
-        parameters:
-          - name: id
-            in: path
-            required: true
-            description: Eindeutige ID der Adresse
-            schema:
-              type: integer
-              format: int64
-        responses:
-          '200':
-            description: Adresse gefunden.
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/AddressResponseDTO'
-          '404':
-            description: Adresse nicht gefunden.
-  /persons/{id}:
-    get:
-      tags:
-        - Persons
-      operationId: getPersonById
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/PersonResponseDTO'
   /persons:
     get:
       tags:
@@ -121,6 +41,83 @@ paths:
                 $ref: '#/components/schemas/PersonResponseDTO'
         '500':
           description: Interner Serverfehler.
+  /persons/{id}:
+    get:
+      tags:
+        - Persons
+      operationId: getPersonById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PersonResponseDTO'
+  /persons/addresses:
+    get:
+      tags:
+        - Persons
+      description: Gibt eine Liste aller Adressen zurück, die Personen zugeordnet sind.
+      responses:
+        '200':
+          description: Erfolgreich – Liste der Personenadressen
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AddressResponseDTO'
+    post:
+      tags:
+        - Persons
+      operationId: createPersonAddress
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressRequestDTO'
+      responses:
+        '201':
+          description: Adresse erfolgreich erstellt.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressResponseDTO'
+        '400':
+          description: Ungültige Eingabe(n).
+        '500':
+          description: Interner Serverfehler.
+
+  /persons/{person-id}/address:
+    get:
+      tags:
+        - Persons
+      description: Gibt die Adresse der angegebenen Person zurück.
+      parameters:
+        - name: person-id
+          in: path
+          required: true
+          description: Die ID der Person, deren Adresse abgerufen werden soll
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Erfolgreich – Adresse der Person
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressResponseDTO'
+        '404':
+          description: Person nicht gefunden. Diese Person besitzt keine Adresse.
   /suppliers:
     get:
       tags:
@@ -235,6 +232,39 @@ paths:
             Verweis auf eine nicht existierende Entität.
         '500':
           description: Interner Serverfehler.
+  /suppliers/addresses:
+    get:
+      tags:
+        - Suppliers
+      responses:
+        '200':
+          description: Liste aller Adressen.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AddressResponseDTO'
+
+  /suppliers/{supplier-id}/address:
+    get:
+      tags:
+        - Suppliers
+      parameters:
+        - name: supplier-id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Adresse des Lieferanten.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressResponseDTO'
+        '404':
+          description: Lieferant nicht gefunden. Dieser Lieferant besitzt keine Adresse.
   /orders:
     get:
       tags:
@@ -802,7 +832,6 @@ components:
       required:
         - name
         - surname
-        - address_id
         - gender
       properties:
         name:
@@ -1276,6 +1305,7 @@ components:
       required:
         - name
         - flag_preferred
+        - address
       properties:
         name:
           type: string
@@ -1297,6 +1327,8 @@ components:
           type: string
         website:
           type: string
+        address:
+          $ref: '#/components/schemas/AddressRequestDTO'
     SupplierResponseDTO:
       type: object
       properties:
@@ -1326,6 +1358,8 @@ components:
           type: string
         website:
           type: string
+        address:
+          $ref: '#/components/schemas/AddressResponseDTO'
     CustomerIdRequestDTO:
       type: object
       required:

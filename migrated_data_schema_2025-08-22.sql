@@ -7,7 +7,8 @@ INSERT INTO migrated_data.address (
     county,
     street,
     town,
-    legacy_address_name
+    legacy_address_name,
+    owner_type
 )
 SELECT DISTINCT
     a.address_postal_code,
@@ -18,7 +19,8 @@ SELECT DISTINCT
     a.address_county,
     a.address_street,
     a.address_town,
-    a.address_name
+    a.address_name,
+    'Person'
 FROM besy.address a
 JOIN besy.country c ON c.country_name = a.country_name;
 
@@ -32,7 +34,8 @@ INSERT INTO migrated_data.address (
     postal_code,
     county,
     country,
-    legacy_supplier_name
+    legacy_supplier_name,
+    owner_type
 )
 SELECT
     s.supplier_building_name,
@@ -42,7 +45,8 @@ SELECT
     s.supplier_postal_code,
     s.supplier_county,
     c.country_german,
-    s.supplier_name
+    s.supplier_name,
+    'Supplier'
 FROM besy.supplier s
 LEFT JOIN besy.country c ON c.country_name = s.country_name;
 

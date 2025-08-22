@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.models;
 
+import de.hs_esslingen.besy.enums.AddressOwnerType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -46,4 +47,9 @@ public class Address {
 
     @Column(name = "legacy_supplier_name")
     private String legacySupplierName;
+
+    @Column(name = "owner_type", nullable = false, updatable = false)
+    @Enumerated(EnumType.STRING)
+    private AddressOwnerType ownerType;
+
 }
