@@ -1,9 +1,11 @@
 package de.hs_esslingen.besy.interfaces;
 
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
+import de.hs_esslingen.besy.models.Quotation;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -89,7 +91,7 @@ public class PDFOrder {
     // DFG-Schlüssel
     private PDField dfgKey;
 
-    // ToDo: Vergleichsangebote
+    private List<PDFQuotation> quotations = new ArrayList<>();
 
     // Der Auftrag wird der oben unter der lfd.Nr. genannten Firma erteilt, da diese Firma...
     private PDField lfdNr;
@@ -168,7 +170,15 @@ public class PDFOrder {
         costCenterSecondary = acroForm.getField("Formular1[0].#subform[1].Textfeld1[4]");
         dfgKey = acroForm.getField("Formular1[0].#subform[1].Textfeld1[3]");
 
-        // ToDo: Vergleichsangebote
+        for(int i = 0; i < 3; i++){
+            PDFQuotation quotation = new PDFQuotation(
+                    i+1, // Index
+                    acroForm.getField(String.format("Formular1[0].#subform[1].Textfeld7[%d]", i)),
+                    acroForm.getField(String.format("Formular1[0].#subform[1].DateField3[%d]", i)),
+                    acroForm.getField(String.format("Formular1[0].#subform[1].Dezimalfeld1[%d]", i))
+            );
+            quotations.add(quotation);
+        }
 
         lfdNr = acroForm.getField("Formular1[0].#subform[1].Textfeld4[0]");
         flagDecisionCheapestOffer = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[2]");
@@ -287,6 +297,18 @@ public class PDFOrder {
     }else {
             throw new RuntimeException("Number of items must be less than 14.");
         }
+    }
+
+
+    public void setQuotations(List<Quotation> items) throws IOException {
+            for(int i = 0; i < items.size(); i++) {
+                Quotation quotation = items.get(i);
+                PDFQuotation pdfQuotation = this.quotations.get(i);
+                pdfQuotation.setIndex(Integer.valueOf(quotation.getIndex()));
+                pdfQuotation.setPrice(String.valueOf(quotation.getPrice()));
+                pdfQuotation.setCompanyName(quotation.getCompanyName());
+                pdfQuotation.setDate(String.valueOf(quotation.getQuoteDate()));
+            }
     }
 
     public void setPercentageDiscount(String percentageDiscount) throws IOException {

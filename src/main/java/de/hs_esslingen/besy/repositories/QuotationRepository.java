@@ -12,4 +12,6 @@ public interface QuotationRepository extends JpaRepository<Quotation, QuotationI
     boolean existsByIdAndOrderId(QuotationId id, Long orderId);
 
     boolean existsByIndexAndOrderId(Short index, Long orderId);
+
+    List<Quotation> getQuotationByOrderId(Long orderId);
 }

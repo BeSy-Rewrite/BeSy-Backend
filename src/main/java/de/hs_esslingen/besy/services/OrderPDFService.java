@@ -31,6 +31,7 @@ public class OrderPDFService {
     private final ItemRepository itemRepository;
     private final InvoiceRepository invoiceRepository;
     private final PersonRepository personRepository;
+    private final QuotationRepository quotationRepository;
 
     private final ItemResponseMapper itemResponseMapper;
 
@@ -51,7 +52,8 @@ public class OrderPDFService {
         PDAcroForm acroForm = document.getDocumentCatalog().getAcroForm();
         PDFOrder order = new PDFOrder();
         order.parseOrder(acroForm);
-        
+
+
         // Retrieve Order and necessary relations for PDF
         Optional<Order> orderOpt = orderRepository.findById(Long.valueOf(orderId));
         if (orderOpt.isEmpty()) throw new NotFoundException("Order with id " + orderId + " does not exist.");
@@ -67,6 +69,10 @@ public class OrderPDFService {
         Optional<Person> deliveryPersonOpt = personRepository.findById(Long.valueOf(orderDAO.getDeliveryPersonId()));
         Optional<Person> invoicePersonOpt = personRepository.findById(Long.valueOf(orderDAO.getInvoicePersonId()));
         Address supplierAddress = supplierDAO.getAddress();
+        List<Quotation> quotations = quotationRepository.getQuotationByOrderId(Long.valueOf(orderId));
+
+        Address deliveryAddress = orderDAO.getDeliveryAddress();
+        Address invoiceAddress = orderDAO.getInvoiceAddress();
 
 
         // Write to PDF
@@ -76,7 +82,6 @@ public class OrderPDFService {
         // nach VOL/UVgO (Liefer-/Dienstleistung)
         order.setDeliveryAndServiceFlag(true);
 
-        // ToDo: Replace supplier address by address relation
         order.setCompanyAddress("""
         %s
         %s %s
@@ -105,14 +110,14 @@ public class OrderPDFService {
         // Lieferanschrift
         order.setDeliveryFaculty(ANSCHRIFT_FAKULTAET_DEFAULT);
         if(deliveryPersonOpt.isPresent()) order.setDeliveryOrderer(deliveryPersonOpt.get().getName());
-        order.setDeliveryStreet(ANSCHRIFT_STRASSE_DEFAULT);
-        order.setDeliveryAddress(ANSCHRIFT_PLZ_ORT_DEFAULT);
+        order.setDeliveryStreet(deliveryAddress.getStreet());
+        order.setDeliveryAddress(deliveryAddress.getPostalCode() + " " + deliveryAddress.getTown());
 
         // Rechnungsanschrift
         order.setInvoiceFaculty(ANSCHRIFT_FAKULTAET_DEFAULT);
         if(invoicePersonOpt.isPresent()) order.setInvoiceOrderer(invoicePersonOpt.get().getName());
-        order.setInvoiceStreet(ANSCHRIFT_STRASSE_DEFAULT);
-        order.setInvoiceDeliveryAddress(ANSCHRIFT_PLZ_ORT_DEFAULT);
+        order.setInvoiceStreet(invoiceAddress.getStreet());
+        order.setInvoiceDeliveryAddress(invoiceAddress.getPostalCode() + " " + invoiceAddress.getTown());
 
         List<ItemResponseDTO> itemResponseDTOS = itemResponseMapper.toDto(itemsDAO);
         order.setItems(itemResponseDTOS);
@@ -123,7 +128,7 @@ public class OrderPDFService {
         order.setCostCenterSecondary(orderDAO.getSecondaryCostCenterId());
         order.setDfgKey(orderDAO.getDfgKey());
 
-        // ToDo Angebot/Preisvergleiche
+        order.setQuotations(quotations);
 
         // lfd.Nr.
         order.setLfdNr(LAUFENDE_NUMMER_DEFAULT);
