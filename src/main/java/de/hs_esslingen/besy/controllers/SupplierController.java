@@ -3,6 +3,7 @@ package de.hs_esslingen.besy.controllers;
 import de.hs_esslingen.besy.dtos.request.CustomerIdRequestDTO;
 import de.hs_esslingen.besy.dtos.request.SupplierRequestDTO;
 import de.hs_esslingen.besy.dtos.response.AddressResponseDTO;
+import de.hs_esslingen.besy.dtos.response.CreateSupplierResponseDTO;
 import de.hs_esslingen.besy.dtos.response.CustomerIdResponseDTO;
 import de.hs_esslingen.besy.dtos.response.SupplierResponseDTO;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
@@ -35,7 +36,7 @@ public class SupplierController {
     }
 
     @PostMapping
-    public ResponseEntity<SupplierResponseDTO> createSupplier(@RequestBody SupplierRequestDTO supplierRequestDTO) {
+    public ResponseEntity<CreateSupplierResponseDTO> createSupplier(@RequestBody SupplierRequestDTO supplierRequestDTO) {
         return supplierService.createSupplier(supplierRequestDTO);
     }
 

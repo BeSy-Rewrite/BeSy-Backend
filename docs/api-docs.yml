@@ -1398,6 +1398,8 @@ components:
           type: string
         website:
           type: string
+        address:
+          $ref: '#/components/schemas/AddressResponseDTO'
     CustomerIdRequestDTO:
       type: object
       required:
