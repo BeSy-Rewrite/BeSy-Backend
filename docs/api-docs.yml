@@ -694,6 +694,28 @@ paths:
           description: Interner Serverfehler.
 
   /orders/{order-id}/approval:
+    get:
+      description: Gibt die Zustimmungen für die angegebene Bestellung zurück.
+      tags:
+        - Orders
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID der Bestellung, deren Zustimmungen abgerufen wird.
+      responses:
+        '200':
+          description: Zustimmungen erfolgreich abgerufen.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalResponseDTO'
+        '404':
+          description: Bestellung nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
     patch:
       description: Aktualisiert Felder der Zustimmungen für die angegebene Bestellung. Nur nicht-leere Felder im Request-Body werden übernommen.
       tags:
