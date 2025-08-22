@@ -147,7 +147,13 @@ public class OrderController {
         return this.approvalService.getApprovalOfOrder(orderId);
     }
 
-    @PatchMapping("{order-id}/approvals")
+    @GetMapping("{order-id}/approval")
+    public ResponseEntity<ApprovalResponseDTO> getApprovalOfOrder(@PathVariable("order-id") Long orderId){
+        if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
+        return this.approvalService.getApprovalOfOrder(orderId);
+    }
+
+    @PatchMapping("{order-id}/approval")
     public ResponseEntity<ApprovalResponseDTO> updateApprovalOfOrder(
             @PathVariable("order-id") Long orderId,
             @RequestBody ApprovalRequestDTO dto
