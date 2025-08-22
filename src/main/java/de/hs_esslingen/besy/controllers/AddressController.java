@@ -16,16 +16,19 @@ public class AddressController {
 
     private final AddressService addressService;
 
+    @Deprecated
     @GetMapping
     ResponseEntity<List<AddressResponseDTO>> getAll() {
         return addressService.getAddresses();
     }
 
+    @Deprecated
     @GetMapping("{id}")
     ResponseEntity<AddressResponseDTO> getById(@PathVariable("id") Integer id) {
         return addressService.getAddressById(id);
     }
 
+    @Deprecated
     @PostMapping
     ResponseEntity<AddressResponseDTO> create(@RequestBody AddressRequestDTO addressRequestDTO) {
         return addressService.createAddress(addressRequestDTO);
