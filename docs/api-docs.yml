@@ -135,6 +135,27 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/AddressResponseDTO'
+    post:
+      tags:
+        - Persons
+      operationId: createPersonAddress
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressRequestDTO'
+      responses:
+        '201':
+          description: Adresse erfolgreich erstellt.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressResponseDTO'
+        '400':
+          description: Ungültige Eingabe(n).
+        '500':
+          description: Interner Serverfehler.
 
   /persons/{person-id}/address:
     get:
