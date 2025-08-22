@@ -6,7 +6,9 @@ import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.AddressRequestMapper;
 import de.hs_esslingen.besy.mappers.response.AddressResponseMapper;
 import de.hs_esslingen.besy.models.Address;
+import de.hs_esslingen.besy.models.Supplier;
 import de.hs_esslingen.besy.repositories.AddressRepository;
+import de.hs_esslingen.besy.repositories.SupplierRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,21 +21,27 @@ import java.util.List;
 public class AddressService {
 
     private final AddressRepository addressRepository;
+    private final SupplierRepository supplierRepository;
     private final AddressRequestMapper addressRequestMapper;
     private final AddressResponseMapper addressResponseMapper;
 
+    private final SupplierService supplierService;
+
+    @Deprecated
     public ResponseEntity<List<AddressResponseDTO>> getAddresses() {
         List<Address> addresses = addressRepository.findAll();
         List<AddressResponseDTO> responseDTOS = addressResponseMapper.toDto(addresses);
         return ResponseEntity.ok(responseDTOS);
     }
 
+    @Deprecated
     public ResponseEntity<AddressResponseDTO> getAddressById(Integer id) {
         return addressRepository.findById(id)
                 .map(address -> ResponseEntity.ok(addressResponseMapper.toDto(address)))
                 .orElseThrow(() -> new NotFoundException("Adresse mit id " + id + " existiert nicht."));
     }
 
+    @Deprecated
     public ResponseEntity<AddressResponseDTO> createAddress(
             AddressRequestDTO dto
     ) {
@@ -41,6 +49,20 @@ public class AddressService {
         Address addressPersisted = addressRepository.save(address);
         addressRepository.flush();
         return ResponseEntity.ok(addressResponseMapper.toDto(addressPersisted));
+    }
+
+
+    public ResponseEntity<List<AddressResponseDTO>> getSupplierAddresses() {
+        List<Integer> addressIds = supplierRepository.findAllAddressId();
+        List<Address> addresses = addressRepository.findAllById(addressIds);
+        return ResponseEntity.ok(addressResponseMapper.toDto(addresses));
+    }
+
+    public ResponseEntity<AddressResponseDTO> getAddressOfSupplier(Integer supplierId) {
+        Supplier supplier = supplierRepository.findById(supplierId).get();
+        if(!supplierService.existsSupplierById(supplierId)) throw new NotFoundException("Supplier mit ID " + supplierId + " existiert nicht.");
+        Address address = supplier.getAddress();
+        return ResponseEntity.ok(addressResponseMapper.toDto(address));
     }
 
 }
