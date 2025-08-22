@@ -235,6 +235,39 @@ paths:
             Verweis auf eine nicht existierende Entität.
         '500':
           description: Interner Serverfehler.
+  /suppliers/addresses:
+    get:
+      tags:
+        - Suppliers
+      responses:
+        '200':
+          description: Liste aller Adressen.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AddressResponseDTO'
+
+  /suppliers/{supplier-id}/address:
+    get:
+      tags:
+        - Suppliers
+      parameters:
+        - name: supplier-id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Adresse des Lieferanten.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressResponseDTO'
+        '404':
+          description: Lieferant nicht gefunden. Dieser Lieferant besitzt keine Adresse.
   /orders:
     get:
       tags:
@@ -1276,6 +1309,7 @@ components:
       required:
         - name
         - flag_preferred
+        - address
       properties:
         name:
           type: string
@@ -1297,6 +1331,8 @@ components:
           type: string
         website:
           type: string
+        address:
+          $ref: '#/components/schemas/AddressRequestDTO'
     SupplierResponseDTO:
       type: object
       properties:

@@ -60,9 +60,13 @@ public class AddressService {
 
     public ResponseEntity<AddressResponseDTO> getAddressOfSupplier(Integer supplierId) {
         Supplier supplier = supplierRepository.findById(supplierId).get();
-        if(!supplierService.existsSupplierById(supplierId)) throw new NotFoundException("Supplier mit ID " + supplierId + " existiert nicht.");
+        if(!existsById(supplier.getAddressId())) throw new NotFoundException("Dieser Lieferant besitzt keine Adresse.");
         Address address = supplier.getAddress();
         return ResponseEntity.ok(addressResponseMapper.toDto(address));
+    }
+
+    public boolean existsById(Integer id) {
+        return addressRepository.existsById(id);
     }
 
 }
