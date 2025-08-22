@@ -6,25 +6,6 @@ servers:
   - url: http://localhost:3000/api/v1
     description: Generierte Server-URL
 paths:
-  /persons/{id}:
-    get:
-      tags:
-        - Persons
-      operationId: getPersonById
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/PersonResponseDTO'
   /persons:
     get:
       tags:
@@ -60,6 +41,25 @@ paths:
                 $ref: '#/components/schemas/PersonResponseDTO'
         '500':
           description: Interner Serverfehler.
+  /persons/{id}:
+    get:
+      tags:
+        - Persons
+      operationId: getPersonById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PersonResponseDTO'
   /persons/addresses:
     get:
       tags:
