@@ -37,19 +37,17 @@ public class OrderResponseDTO implements Serializable {
     String secondaryCostCenterId;
     BigDecimal fixedDiscount;
     BigDecimal percentageDiscount;
-    BigDecimal cashDiscount;
+    BigDecimal cashbackPercentage;
     Short cashbackDays;
     OffsetDateTime lastUpdatedTime;
     Boolean flagDecisionCheapestOffer;
+    Boolean flagDecisionMostEconomicalOffer;
     Boolean flagDecisionSoleSupplier;
     Boolean flagDecisionContractPartner;
+    Boolean flagDecisionPreferredSupplierList;
     Boolean flagDecisionOtherReasons;
     String decisionOtherReasonsDescription;
-    Boolean flagEdvPermission;
-    Boolean flagFurniturePermission;
-    Boolean flagFurnitureRoom;
-    Boolean flagInvestmentRoom;
-    Boolean flagInvestmentStructuralMeasures;
-    Boolean flagMediaPermission;
     String dfgKey;
+    Integer deliveryAddressId;
+    Integer invoiceAddressId;
 }

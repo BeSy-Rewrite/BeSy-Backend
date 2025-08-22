@@ -191,7 +191,6 @@ FROM besy.customer_id b
               ON s.name = b.supplier_name;
 
 
-
 INSERT INTO migrated_data."order" (
     id,
     auto_index,
@@ -203,12 +202,6 @@ INSERT INTO migrated_data."order" (
     flag_decision_contract_partner,
     flag_decision_other_reasons,
     flag_decision_sole_supplier,
-    flag_edv_permission,
-    flag_furniture_permission,
-    flag_furniture_room,
-    flag_investment_room,
-    flag_investment_structural_measures,
-    flag_media_permission,
     legacy_alias,
     percentage_discount,
     quote_date,
@@ -231,7 +224,11 @@ INSERT INTO migrated_data."order" (
     status,
     supplier_id,
     comment_for_supplier,
-    decision_other_reasons_description
+    decision_other_reasons_description,
+    delivery_address_id,
+    invoice_address_id,
+    flag_decision_most_economical_offer,
+    flag_decision_preferred_supplier_list
 )
 SELECT
     o.order_id,
@@ -244,12 +241,6 @@ SELECT
     o.order_flag_decision_contract_partner,
     o.order_flag_decision_other_reasons,
     o.order_flag_decision_sole_supplier,
-    o.order_flag_edv_permission,
-    o.order_flag_furniture_permission,
-    o.order_flag_furniture_room,
-    o.order_flag_investment_room,
-    o.order_flag_investment_structural_measures,
-    o.order_flag_media_permission,
     o.order_legacy_alias,
     o.order_percentage_discount,
     o.order_quote_date,
@@ -283,7 +274,14 @@ SELECT
     sp.id,
 
     o.order_comment_for_supplier,
-    o.order_decision_other_reasons_description
+    o.order_decision_other_reasons_description,
+
+    del_add_new.id,
+    inv_add_new.id,
+
+    false,
+    false
+
 
 FROM besy."order" o
         JOIN migrated_data.person dp ON dp.id = o.delivery_person_id
@@ -294,7 +292,37 @@ FROM besy."order" o
 
         JOIN migrated_data.supplier sp ON sp.name = o.supplier_name
 
-        JOIN migrated_data."user" u ON u.legacy_user_name = o.owner_user_name;
+        JOIN migrated_data."user" u ON u.legacy_user_name = o.owner_user_name
+
+        -- Insert delivery address by retrieving the old delivery_person's address and mapping it to the new address ID
+        JOIN besy.person del_add_p_old ON del_add_p_old.person_id = o.delivery_person_id
+        JOIN besy.address del_add_old ON del_add_p_old.address_name = del_add_old.address_name
+        JOIN migrated_data.address del_add_new ON del_add_new.legacy_address_name = del_add_old.address_name
+
+        -- Insert invoice address by retrieving the old invoice_person's address and mapping it to the new address ID
+        JOIN besy.person inv_add_p_old ON inv_add_p_old.person_id = o.invoice_person_id
+        JOIN besy.address inv_add_old ON inv_add_old.address_name = inv_add_p_old.address_name
+        JOIN migrated_data.address inv_add_new ON inv_add_new.legacy_address_name = inv_add_old.address_name;
+
+
+INSERT INTO migrated_data.approvals (
+    order_id,
+    flag_edv_permission,
+    flag_furniture_permission,
+    flag_furniture_room,
+    flag_investment_room,
+    flag_investment_structural_measures,
+    flag_media_permission
+)
+SELECT
+    o.order_id,
+    o.order_flag_edv_permission,
+    o.order_flag_furniture_permission,
+    o.order_flag_furniture_room,
+    o.order_flag_investment_room,
+    o.order_flag_investment_structural_measures,
+    o.order_flag_media_permission
+FROM besy."order" o;
 
 
 INSERT INTO migrated_data.item(

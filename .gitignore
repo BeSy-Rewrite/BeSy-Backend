@@ -42,3 +42,4 @@ build/
 /migrated-init-database.sh/dump_migrated_25-08-17.sql
 /migrated-init-database.sh/
 /init-database.sh/
+/.mysql/dump_besy_v.1.3.sql

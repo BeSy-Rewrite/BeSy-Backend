@@ -4,6 +4,7 @@ import de.hs_esslingen.besy.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
@@ -145,6 +146,10 @@ public class Order {
     private Boolean flagDecisionCheapestOffer;
 
     @ColumnDefault("false")
+    @Column(name = "flag_decision_most_economical_offer")
+    private Boolean flagDecisionMostEconomicalOffer;
+
+    @ColumnDefault("false")
     @Column(name = "flag_decision_sole_supplier")
     private Boolean flagDecisionSoleSupplier;
 
@@ -153,43 +158,41 @@ public class Order {
     private Boolean flagDecisionContractPartner;
 
     @ColumnDefault("false")
+    @Column(name = "flag_decision_preferred_supplier_list")
+    private Boolean flagDecisionPreferredSupplierList;
+
+    @ColumnDefault("false")
     @Column(name = "flag_decision_other_reasons")
     private Boolean flagDecisionOtherReasons;
 
     @Column(name = "decision_other_reasons_description", length = Integer.MAX_VALUE)
     private String decisionOtherReasonsDescription;
 
-    @ColumnDefault("false")
-    @Column(name = "flag_edv_permission")
-    private Boolean flagEdvPermission;
-
-    @ColumnDefault("false")
-    @Column(name = "flag_furniture_permission")
-    private Boolean flagFurniturePermission;
-
-    @ColumnDefault("false")
-    @Column(name = "flag_furniture_room")
-    private Boolean flagFurnitureRoom;
-
-    @ColumnDefault("false")
-    @Column(name = "flag_investment_room")
-    private Boolean flagInvestmentRoom;
-
-    @ColumnDefault("false")
-    @Column(name = "flag_investment_structural_measures")
-    private Boolean flagInvestmentStructuralMeasures;
-
-    @ColumnDefault("false")
-    @Column(name = "flag_media_permission")
-    private Boolean flagMediaPermission;
-
     @Column(name = "dfg_key", length = 45)
     private String dfgKey;
 
+    @Column(name = "delivery_address_id", insertable = false, updatable = false)
+    private Integer deliveryAddressId;
+
+    @Column(name = "invoice_address_id", insertable = false, updatable = false)
+    private Integer invoiceAddressId;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "delivery_address_id", nullable = true)
+    private Address deliveryAddress;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "invoice_address_id", nullable = true)
+    private Address invoiceAddress;
+
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Approval approval;
 
     @PrePersist
     public void prePersist() {
         this.lastUpdatedTime = OffsetDateTime.now();
+        this.approval = new Approval();
+        this.approval.setOrder(this);
     }
 
     // only called if the data is actually changed

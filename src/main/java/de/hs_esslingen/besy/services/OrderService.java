@@ -34,6 +34,7 @@ public class OrderService {
 
     private final OrderResponseMapper orderResponseMapper;
     private final OrderRequestMapper orderRequestMapper;
+    private final AddressRepository addressRepository;
 
 
     public Page<OrderResponseDTO> getAllOrders(
@@ -116,6 +117,14 @@ public class OrderService {
                     new CustomerIdId(dto.getCustomerId(), dto.getSupplierId())
             );
             order.setCustomer(customerId);
+        }
+        if(dto.getDeliveryAddressId() != null) {
+            Address deliveryAddress = addressRepository.getReferenceById(dto.getDeliveryAddressId());
+            order.setDeliveryAddress(deliveryAddress);
+        }
+        if(dto.getInvoiceAddressId() != null) {
+            Address invoiceAddress = addressRepository.getReferenceById(dto.getInvoiceAddressId());
+            order.setInvoiceAddress(invoiceAddress);
         }
 
 

@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Bestellsystem API
-  version: v1.3.0
+  version: v1.4.0
 servers:
   - url: http://localhost:3000/api/v1
     description: Generierte Server-URL
@@ -692,6 +692,59 @@ paths:
           description: Bestellung nicht gefunden. Vergleichsartikel nicht gefunden.
         '500':
           description: Interner Serverfehler.
+
+  /orders/{order-id}/approval:
+    get:
+      description: Gibt die Zustimmungen für die angegebene Bestellung zurück.
+      tags:
+        - Orders
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID der Bestellung, deren Zustimmungen abgerufen wird.
+      responses:
+        '200':
+          description: Zustimmungen erfolgreich abgerufen.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalResponseDTO'
+        '404':
+          description: Bestellung nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
+    patch:
+      description: Aktualisiert Felder der Zustimmungen für die angegebene Bestellung. Nur nicht-leere Felder im Request-Body werden übernommen.
+      tags:
+        - Orders
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID der Bestellung, deren Zustimmungen aktualisiert wird.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalRequestDTO'
+      responses:
+        '200':
+          description: Approval successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalResponseDTO'
+        '404':
+          description: Bestellung nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
+
   /orders/{order-id}/export:
     get:
       tags:
@@ -711,6 +764,8 @@ paths:
             application/pdf: { }
         '404':
           description: Bestellung nicht gefunden.
+
+
   /cost_centers:
     get:
       tags:
@@ -981,28 +1036,24 @@ components:
           format: int32
         flag_decision_cheapest_offer:
           type: boolean
+        flag_decision_most_economical_offer:
+          type: boolean
         flag_decision_sole_supplier:
           type: boolean
         flag_decision_contract_partner:
+          type: boolean
+        flag_decision_preferred_supplier_list:
           type: boolean
         flag_decision_other_reasons:
           type: boolean
         decision_other_reasons_description:
           type: string
-        flag_edv_permission:
-          type: boolean
-        flag_furniture_permission:
-          type: boolean
-        flag_furniture_room:
-          type: boolean
-        flag_investment_room:
-          type: boolean
-        flag_investment_structural_measures:
-          type: boolean
-        flag_media_permission:
-          type: boolean
         dfg_key:
           type: string
+        delivery_address_id:
+          type: number
+        invoice_address_id:
+          type: number
     QuotationRequestDTO:
       type: object
       required:
@@ -1103,28 +1154,24 @@ components:
           format: date-time
         flag_decision_cheapest_offer:
           type: boolean
+        flag_decision_most_economical_offer:
+          type: boolean
         flag_decision_sole_supplier:
           type: boolean
         flag_decision_contract_partner:
+          type: boolean
+        flag_decision_preferred_supplier_list:
           type: boolean
         flag_decision_other_reasons:
           type: boolean
         decision_other_reasons_description:
           type: string
-        flag_edv_permission:
-          type: boolean
-        flag_furniture_permission:
-          type: boolean
-        flag_furniture_room:
-          type: boolean
-        flag_investment_room:
-          type: boolean
-        flag_investment_structural_measures:
-          type: boolean
-        flag_media_permission:
-          type: boolean
         dfg_key:
           type: string
+        delivery_address_id:
+          type: number
+        invoice_address_id:
+          type: number
     CostCenterRequestDTO:
       type: object
       required:
@@ -1453,3 +1500,50 @@ components:
           type: boolean
         unsorted:
           type: boolean
+
+    ApprovalResponseDTO:
+      type: object
+      properties:
+        orderId:
+          type: integer
+          format: int64
+        flagEdvPermission:
+          type: boolean
+          default: false
+        flagFurniturePermission:
+          type: boolean
+          default: false
+        flagFurnitureRoom:
+          type: boolean
+          default: false
+        flagInvestmentRoom:
+          type: boolean
+          default: false
+        flagInvestmentStructuralMeasures:
+          type: boolean
+          default: false
+        flagMediaPermission:
+          type: boolean
+          default: false
+
+    ApprovalRequestDTO:
+      type: object
+      properties:
+        flagEdvPermission:
+          type: boolean
+          default: false
+        flagFurniturePermission:
+          type: boolean
+          default: false
+        flagFurnitureRoom:
+          type: boolean
+          default: false
+        flagInvestmentRoom:
+          type: boolean
+          default: false
+        flagInvestmentStructuralMeasures:
+          type: boolean
+          default: false
+        flagMediaPermission:
+          type: boolean
+          default: false
