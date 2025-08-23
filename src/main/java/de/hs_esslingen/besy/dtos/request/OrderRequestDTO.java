@@ -1,11 +1,11 @@
 package de.hs_esslingen.besy.dtos.request;
 
+import de.hs_esslingen.besy.enums.OrderStatus;
 import lombok.Value;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 
 /**
  * DTO for {@link de.hs_esslingen.besy.models.Order}
@@ -34,7 +34,6 @@ public class OrderRequestDTO implements Serializable {
     BigDecimal percentageDiscount;
     BigDecimal cashbackPercentage;
     Short cashbackDays;
-    OffsetDateTime lastUpdatedTime;
     Boolean flagDecisionCheapestOffer;
     Boolean flagDecisionMostEconomicalOffer;
     Boolean flagDecisionSoleSupplier;
