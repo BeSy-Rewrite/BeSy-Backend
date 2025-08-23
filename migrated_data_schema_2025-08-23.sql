@@ -263,11 +263,11 @@ SELECT
     o.order_quote_sign,
     o.secondary_cost_center_id,
     CASE o.order_status
-        WHEN 'Abgerechnet' THEN 'ABR'
-        WHEN 'Abgeschickt' THEN 'ABS'
-        WHEN 'Archiviert' THEN 'ARC'
-        WHEN 'Gelöscht' THEN 'DEL'
-        WHEN 'In Bearbeitung' THEN 'INB'
+        WHEN 'Abgerechnet' THEN 'SETTLED'
+        WHEN 'Abgeschickt' THEN 'SENT'
+        WHEN 'Archiviert' THEN 'ARCHIVED'
+        WHEN 'Gelöscht' THEN 'DELETED'
+        WHEN 'In Bearbeitung' THEN 'IN_PROGRESS'
         ELSE NULL
         END AS status,
 

@@ -465,8 +465,7 @@ paths:
         - Orders
       operationId: createOrder
       description: >
-        Erstellt eine neue Bestellung und setzt den `status` auf "In Bearbeitung".
-        `booking_year` & `primary_cost_center_id` sind verpflichtend, um eine neue Bestellung anlegen zu können.
+        Erstellt eine neue Bestellung und setzt den Bestellstatus (`status`) auf "In Bearbeitung" (`IN_PROGRESS`). Nur in diesem Bestellstatus ist das Bearbeiten einer Bestellung möglich.
       requestBody:
         content:
           application/json:
@@ -506,6 +505,40 @@ paths:
                   $ref: '#/components/schemas/OrderResponseDTO'
         '404':
           description: Bestellung nicht gefunden.
+    patch:
+      tags:
+        - Orders
+      operationId: "updateOrder"
+      description: Aktualisiert eine Bestellung. Nur nicht-leere Felder im Request-Body werden übernommen. Nur möglich, wenn sich die Bestellung im Bestellstatus (`status`) "In Bearbeitung" (`IN_PROGRESS`) befindet.
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          description: Die eindeutige ID der Bestellung, die verändert werden soll.
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRequestDTO'
+        required: true
+      responses:
+        200:
+          description: "Bestellung erfolgreich aktualisiert."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponseDTO"
+        400:
+          description: "Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!"
+        404:
+          description: "Bestellung nicht gefunden."
+        '409':
+          description: "Verweis auf eine nicht existierende Entität."
+        500:
+          description: "Interner Serverfehler."
     delete:
       tags:
         - Orders
@@ -578,6 +611,8 @@ paths:
               schema:
                 items:
                   $ref: '#/components/schemas/ItemResponseDTO'
+        400:
+          description: "Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!"
         '404':
           description: Bestellung nicht gefunden.
         '409':
@@ -605,6 +640,8 @@ paths:
       responses:
         '204':
           description: Bestellung erfolgreich gelöscht (No Content).
+        400:
+          description: "Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!"
         '404':
           description: Bestellung nicht gefunden. Artikel nicht gefunden.
         '500':
@@ -661,6 +698,8 @@ paths:
               schema:
                 items:
                   $ref: '#/components/schemas/QuotationResponseDTO'
+        400:
+          description: "Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!"
         '404':
           description: Bestellung nicht gefunden.
         '409':
@@ -688,6 +727,8 @@ paths:
       responses:
         '204':
           description: Vergleichsartikel erfolgreich gelöscht (No Content).
+        400:
+          description: "Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!"
         '404':
           description: Bestellung nicht gefunden. Vergleichsartikel nicht gefunden.
         '500':
@@ -740,6 +781,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApprovalResponseDTO'
+        400:
+          description: "Bestellstatus befindet sich nicht auf fertiggestellt (`COMPLETED`)!"
         '404':
           description: Bestellung nicht gefunden.
         '500':
@@ -979,8 +1022,7 @@ components:
     OrderRequestDTO:
       type: object
       required:
-        - primary_cost_center_id
-        - booking_year
+        - content_description
       properties:
         primary_cost_center_id:
           type: string
@@ -1434,11 +1476,15 @@ components:
     OrderStatus:
       type: string
       enum:
-        - ABR
-        - ABS
-        - ARC
-        - DEL
-        - INB
+        - IN_PROGRESS
+        - COMPLETED
+        - APPROVALS_RECEIVED
+        - APPROVED
+        - REJECTED
+        - SENT
+        - SETTLED
+        - ARCHIVED
+        - DELETED
 
     PagedOrderResponseDTO:
       type: object

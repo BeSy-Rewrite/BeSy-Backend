@@ -2,8 +2,10 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.configurations.Specification;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
+import de.hs_esslingen.besy.dtos.response.AddressResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.enums.OrderStatus;
+import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
 import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
@@ -126,19 +128,24 @@ public class OrderService {
             Address invoiceAddress = addressRepository.getReferenceById(dto.getInvoiceAddressId());
             order.setInvoiceAddress(invoiceAddress);
         }
+        if(dto.getPrimaryCostCenterId() != null) {
+            CostCenter costCenter = costCenterRepository.getReferenceById(dto.getPrimaryCostCenterId());
+            order.setPrimaryCostCenter(costCenter);
+        }
 
-
-        CostCenter costCenter = costCenterRepository.getReferenceById(dto.getPrimaryCostCenterId());
-        order.setPrimaryCostCenter(costCenter);
-        order.setBookingYear(dto.getBookingYear());
-
-        Order latestAutoIndexOrder = orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(dto.getPrimaryCostCenterId(), dto.getBookingYear());
+        /*        Order latestAutoIndexOrder = orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(dto.getPrimaryCostCenterId(), dto.getBookingYear());
         Short latestAutoIndex = latestAutoIndexOrder.getAutoIndex();
-        order.setAutoIndex(++latestAutoIndex);
+        order.setAutoIndex(++latestAutoIndex);*/
 
-        order.setStatus(OrderStatus.INB);
+        order.setStatus(OrderStatus.IN_PROGRESS); // Override OrderStatus of DTO
         return ResponseEntity.ok(orderResponseMapper.toDto(orderRepository.save(order)));
 
+    }
+
+    public ResponseEntity<OrderResponseDTO> updateOrder(OrderRequestDTO dto, Long id) {
+        Order order = orderRepository.findById(id).get();
+        orderRequestMapper.partialUpdate(order, dto);
+        return ResponseEntity.ok(orderResponseMapper.toDto(orderRepository.save(order)));
     }
 
 
@@ -146,7 +153,7 @@ public class OrderService {
         Optional<Order> orderOpt = orderRepository.findById(id);
         if(orderOpt.isPresent()) {
             Order order = orderOpt.get();
-            order.setStatus(OrderStatus.DEL);
+            order.setStatus(OrderStatus.DELETED);
             orderRepository.save(order);
         }
         return ResponseEntity.noContent().build();
@@ -159,7 +166,28 @@ public class OrderService {
      * @return true if such an order exists and is not marked as deleted, false otherwise
      */
     public boolean existsOrderById(Long id) {
-        return orderRepository.existsByIdAndStatusNot(id, OrderStatus.DEL);
+        return orderRepository.existsByIdAndStatusNot(id, OrderStatus.DELETED);
+    }
+
+
+
+    /**
+     * Checks if the status of the order with the given ID matches the provided status.
+     *
+     * This method retrieves the order from the repository using the provided order ID and
+     * compares the order's status with the given status. If the order is found and its status
+     * matches the provided status, it returns true. Otherwise, it returns false.
+     *
+     * Note: This method assumes that the order with the given ID exists in the database. If
+     *       the order is not found, it will throw a {@link NoSuchElementException} when trying to access
+     *       the status.
+     *
+     * @param orderId The ID of the order to be checked.
+     * @param status The status to compare the order's status against.
+     * @return {@code true} if the order's status matches the given status, {@code false} otherwise.
+     */
+    public boolean isOrderStatusEqual(Long orderId, OrderStatus status) {
+        return orderRepository.findById(orderId).get().getStatus().equals(status);
     }
 
 
