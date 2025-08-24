@@ -195,7 +195,7 @@ public class Order {
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Approval approval;
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderStatusHistory> statusHistory;
 
     @PrePersist
@@ -203,7 +203,5 @@ public class Order {
         this.approval = new Approval();
         this.approval.setOrder(this);
     }
-
-
 
 }
