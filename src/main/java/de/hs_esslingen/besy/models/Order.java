@@ -4,7 +4,6 @@ import de.hs_esslingen.besy.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;

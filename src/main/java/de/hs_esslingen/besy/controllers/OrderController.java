@@ -100,6 +100,7 @@ public class OrderController {
     @DeleteMapping("{order-id}")
     public ResponseEntity<String> deleteOrder(@PathVariable("order-id") Long id) {
         if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(!orderService.isOrderStatusEqual(id, orderService.getStatusesAllowingTransitionTo(OrderStatus.DELETED))) throw new BadRequestException("Bestellstatus befindet sich nicht in gültigem Bestellstatus!");
         return orderService.deleteOrderById(id);
     }
 
@@ -173,11 +174,12 @@ public class OrderController {
     }
 
     @PutMapping("{order-id}/status")
-    public ResponseEntity<String> updateOrderStatus(
+    public ResponseEntity<OrderStatus> updateOrderStatus(
             @PathVariable("order-id") Long orderId,
-            @RequestBody OrderStatus orderStatus
+            @RequestBody OrderStatus targetOrderStatus
     ){
-        return ResponseEntity.ok().build();
+        if(targetOrderStatus.equals(OrderStatus.DELETED)) throw new BadRequestException("Löschen nicht erlaubt, nutze DELETE endpoint!");
+        return orderService.updateOrderStatus(orderId, targetOrderStatus);
     }
 
     @GetMapping

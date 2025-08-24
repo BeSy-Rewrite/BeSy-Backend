@@ -1,16 +1,20 @@
 package de.hs_esslingen.besy.services;
 
-import de.hs_esslingen.besy.configurations.Specification;
+import de.hs_esslingen.besy.configurations.SpecificationHelper;
+import de.hs_esslingen.besy.configurations.ValidationHelper;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
-import de.hs_esslingen.besy.dtos.response.AddressResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
+import de.hs_esslingen.besy.interfaces.OrderCompletedValidationDAO;
+import de.hs_esslingen.besy.mappers.OrderCompletedValidationMapper;
 import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
 import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
 import de.hs_esslingen.besy.models.*;
+import de.hs_esslingen.besy.models.Currency;
 import de.hs_esslingen.besy.repositories.*;
+import jakarta.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,8 +23,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -33,10 +37,30 @@ public class OrderService {
     private final PersonRepository personRepository;
     private final CostCenterRepository costCenterRepository;
     private final CustomerIdRepository customerIdRepository;
+    private final AddressRepository addressRepository;
 
     private final OrderResponseMapper orderResponseMapper;
     private final OrderRequestMapper orderRequestMapper;
-    private final AddressRepository addressRepository;
+    private final OrderCompletedValidationMapper orderCompletedValidationMapper;
+
+    private final ValidationHelper validator;
+
+
+    /**
+     * Defines valid status transitions for orders.
+     * Each entry maps a current {@link OrderStatus} to a set of allowed next statuses.
+     */
+    private static final Map<OrderStatus, Set<OrderStatus>> ORDER_STATUS_MATRIX = Map.of(
+            OrderStatus.IN_PROGRESS, Set.of(OrderStatus.COMPLETED, OrderStatus.DELETED),
+            OrderStatus.COMPLETED, Set.of(OrderStatus.APPROVALS_RECEIVED, OrderStatus.IN_PROGRESS, OrderStatus.DELETED),
+            OrderStatus.APPROVALS_RECEIVED, Set.of(OrderStatus.APPROVED, OrderStatus.DELETED),
+            OrderStatus.APPROVED, Set.of(OrderStatus.SENT, OrderStatus.DELETED),
+            OrderStatus.REJECTED, Set.of(),
+            OrderStatus.SENT, Set.of(OrderStatus.SETTLED),
+            OrderStatus.SETTLED, Set.of(OrderStatus.ARCHIVED),
+            OrderStatus.ARCHIVED, Set.of(),
+            OrderStatus.DELETED, Set.of(OrderStatus.IN_PROGRESS)
+    );
 
 
     public Page<OrderResponseDTO> getAllOrders(
@@ -60,20 +84,20 @@ public class OrderService {
 
     ) {
         org.springframework.data.jpa.domain.Specification<Order> spec =
-                Specification
+                SpecificationHelper
                         .contains(primaryCostCentersIds, "primaryCostCenterId")
-                        .and(Specification.contains(bookingYears, "bookingYear")
-                        .and(Specification.isBetween(createdAfter, createdBefore, "createdDate"))
-                        .and(Specification.contains(ownerIds, "ownerId"))
-                        .and(Specification.contains(statuses, "status"))
-                        .and(Specification.isBetween(quotePriceMin, quotePriceMax, "quotePrice"))
-                        .and(Specification.contains(deliveryPersonIds, "deliveryPersonId"))
-                        .and(Specification.contains(invoicePersonIds, "invoicePersonId"))
-                        .and(Specification.contains(queriesPersonIds, "queriesPersonId"))
-                        .and(Specification.contains(customerIds, "customerId"))
-                        .and(Specification.contains(supplierIds, "supplierId"))
-                        .and(Specification.contains(secondaryCostCenterIds, "secondaryCostCenterId"))
-                        .and(Specification.isBetween(lastUpdatedTimeAfter, lastUpdatedTimeBefore, "lastUpdatedTime"))
+                        .and(SpecificationHelper.contains(bookingYears, "bookingYear")
+                        .and(SpecificationHelper.isBetween(createdAfter, createdBefore, "createdDate"))
+                        .and(SpecificationHelper.contains(ownerIds, "ownerId"))
+                        .and(SpecificationHelper.contains(statuses, "status"))
+                        .and(SpecificationHelper.isBetween(quotePriceMin, quotePriceMax, "quotePrice"))
+                        .and(SpecificationHelper.contains(deliveryPersonIds, "deliveryPersonId"))
+                        .and(SpecificationHelper.contains(invoicePersonIds, "invoicePersonId"))
+                        .and(SpecificationHelper.contains(queriesPersonIds, "queriesPersonId"))
+                        .and(SpecificationHelper.contains(customerIds, "customerId"))
+                        .and(SpecificationHelper.contains(supplierIds, "supplierId"))
+                        .and(SpecificationHelper.contains(secondaryCostCenterIds, "secondaryCostCenterId"))
+                        .and(SpecificationHelper.isBetween(lastUpdatedTimeAfter, lastUpdatedTimeBefore, "lastUpdatedTime"))
                                 );
 
         Page<Order> orders = orderPageableRepository.findAll(spec, pageable);
@@ -92,9 +116,9 @@ public class OrderService {
 
         this.mapForeignRelationships(order, dto);
 
-        /*        Order latestAutoIndexOrder = orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(dto.getPrimaryCostCenterId(), dto.getBookingYear());
+        Order latestAutoIndexOrder = orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(dto.getPrimaryCostCenterId(), dto.getBookingYear());
         Short latestAutoIndex = latestAutoIndexOrder.getAutoIndex();
-        order.setAutoIndex(++latestAutoIndex);*/
+        order.setAutoIndex(++latestAutoIndex);
 
         order.setStatus(OrderStatus.IN_PROGRESS); // Override OrderStatus of DTO
         return ResponseEntity.ok(orderResponseMapper.toDto(orderRepository.save(order)));
@@ -118,6 +142,32 @@ public class OrderService {
         }
         return ResponseEntity.noContent().build();
     }
+
+
+
+    /**
+     * Updates the status of an existing order after validating the status transition.
+     * Performs any necessary validation before persisting the updated order.
+     *
+     * @param id         the ID of the order to update
+     * @param newStatus  the new {@link OrderStatus} to assign to the order
+     * @return a {@link ResponseEntity} containing the updated order status
+     *
+     * @throws NoSuchElementException       if no order with the given ID is found
+     * @throws BadRequestException        if the transition from the current to the new status is not allowed
+     * @throws ConstraintViolationException if the updated order violates validation constraints
+     */
+    public ResponseEntity<OrderStatus> updateOrderStatus(Long id, OrderStatus newStatus) {
+        Order order = orderRepository.findById(id).get();
+
+        this.validateStatusTransition(order, newStatus);
+
+        order.setStatus(newStatus);
+        Order savedOrder = orderRepository.save(order);
+        return ResponseEntity.ok(savedOrder.getStatus());
+    }
+
+
 
     /**
      * Checks if an order with the given ID exists and its status is not 'DEL' (deleted).
@@ -150,6 +200,55 @@ public class OrderService {
         return orderRepository.findById(orderId).get().getStatus().equals(status);
     }
 
+
+    /**
+     * Checks if the status of the order with the given ID is contained within the provided list of statuses.
+     *
+     * @param orderId the ID of the order to check
+     * @param statuses the list of OrderStatus values to check against
+     * @return true if the order exists and its status is in the list, false otherwise
+     */
+    public boolean isOrderStatusEqual(Long orderId, Set<OrderStatus> statuses){
+        return orderRepository.findById(orderId).map(order -> statuses.contains(order.getStatus())).orElse(false);
+    }
+
+
+    public Set<OrderStatus> getStatusesAllowingTransitionTo(OrderStatus status) {
+        return ORDER_STATUS_MATRIX.entrySet().stream()
+                .filter(entry -> entry.getValue().contains(status))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+    }
+
+
+    /**
+     * Checks whether a transition from the current order status to the target status is valid,
+     * based on the defined {@code ORDER_STATUS_MATRIX}.
+     *
+     * @param current the current status of the order
+     * @param target the desired target status
+     * @return {@code true} if the transition is allowed; {@code false} otherwise
+     */
+    private boolean isValidStatusTransition(OrderStatus current, OrderStatus target) {
+        return ORDER_STATUS_MATRIX.getOrDefault(current, Set.of()).contains(target);
+    }
+
+
+    private void validateStatusTransition(Order currentOrder, OrderStatus targetStatus) {
+        OrderStatus currentStatus = currentOrder.getStatus();
+
+        if (!isValidStatusTransition(currentStatus, targetStatus)) {
+            throw new BadRequestException(String.format(
+                    "Ungültiger Statusübergang von %s zu %s", currentStatus, targetStatus
+            ));
+        }
+
+        if(currentStatus.equals(OrderStatus.IN_PROGRESS) && targetStatus.equals(OrderStatus.COMPLETED)) {
+            OrderCompletedValidationDAO orderToBeValidated = orderCompletedValidationMapper.toEntity(currentOrder);
+            validator.validateOrThrow(orderToBeValidated);
+        }
+
+    }
 
 
     private Order mapForeignRelationships(Order order, OrderRequestDTO dto){
