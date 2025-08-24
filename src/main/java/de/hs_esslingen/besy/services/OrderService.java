@@ -298,4 +298,8 @@ public class OrderService {
     }
 
 
+    public static Map<OrderStatus, Set<OrderStatus>> getOrderStatusMatrix(){
+        return ORDER_STATUS_MATRIX;
+    }
+
 }

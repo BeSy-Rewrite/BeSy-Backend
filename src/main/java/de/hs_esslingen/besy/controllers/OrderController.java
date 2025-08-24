@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @AllArgsConstructor
@@ -172,6 +174,12 @@ public class OrderController {
         if(!orderService.isOrderStatusEqual(orderId, OrderStatus.COMPLETED)) throw new BadRequestException("Bestellstatus befindet sich nicht auf fertiggestellt!");
         return this.approvalService.updateApprovalOfOrder(orderId, dto);
     }
+
+    @GetMapping("/statuses")
+    public ResponseEntity<Map<OrderStatus, Set<OrderStatus>>> getOrderStatuses() {
+        return ResponseEntity.ok(OrderService.getOrderStatusMatrix());
+    }
+
 
     @PutMapping("{order-id}/status")
     public ResponseEntity<OrderStatus> updateOrderStatus(

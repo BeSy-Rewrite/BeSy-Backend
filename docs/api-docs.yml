@@ -785,6 +785,46 @@ paths:
         '500':
           description: Interner Serverfehler.
 
+
+  /orders/statuses:
+    get:
+      tags:
+        - Orders
+      description: Gibt eine Map zurück, die jedem OrderStatus die erlaubten nächsten OrderStatus-Werte zuordnet.
+      responses:
+        '200':
+          description: Erfolgreiche Abfrage der Order-Status-Matrix.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OrderStatus'
+              example:
+                APPROVALS_RECEIVED:
+                  - APPROVED
+                  - DELETED
+                REJECTED: [ ]
+                SENT:
+                  - SETTLED
+                APPROVED:
+                  - SENT
+                  - DELETED
+                SETTLED:
+                  - ARCHIVED
+                IN_PROGRESS:
+                  - COMPLETED
+                  - DELETED
+                ARCHIVED: [ ]
+                DELETED:
+                  - IN_PROGRESS
+                COMPLETED:
+                  - APPROVALS_RECEIVED
+                  - IN_PROGRESS
+                  - DELETED
+
   /orders/{order-id}/status:
     put:
       description: >
