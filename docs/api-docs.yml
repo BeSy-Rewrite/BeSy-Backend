@@ -785,7 +785,7 @@ paths:
         '500':
           description: Interner Serverfehler.
 
-  /{order-id}/status:
+  /orders/{order-id}/status:
     put:
       description: >
         Aktualisiert den Bestellstatus (`status`) mit der angegebenen `order-id`.  
