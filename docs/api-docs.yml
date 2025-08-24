@@ -355,11 +355,6 @@ paths:
             type: array
             items:
               $ref: '#/components/schemas/OrderStatus'
-            default:
-              - ABR
-              - ABS
-              - ARC
-              - INB
         - name: quotePriceMin
           in: query
           description: Filtert nach quotePriceMin.
