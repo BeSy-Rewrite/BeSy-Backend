@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 /**
@@ -28,7 +29,7 @@ public class OrderCompletedValidationDAO {
     Short autoIndex;
 
     @NotNull
-    OffsetDateTime createdDate;
+    LocalDateTime createdDate;
 
     String legacyAlias;
 
@@ -82,8 +83,7 @@ public class OrderCompletedValidationDAO {
 
     Short cashbackDays;
 
-    @NotNull
-    OffsetDateTime lastUpdatedTime;
+    LocalDateTime lastUpdatedTime;
 
     Boolean flagDecisionCheapestOffer;
     Boolean flagDecisionMostEconomicalOffer;

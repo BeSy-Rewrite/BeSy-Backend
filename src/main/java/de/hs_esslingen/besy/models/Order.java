@@ -5,15 +5,21 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "\"order\"")
+@EntityListeners(AuditingEntityListener.class)
 public class Order {
 
     @Id
@@ -35,7 +41,8 @@ public class Order {
     private Short autoIndex;
 
     @Column(name = "created_date", nullable = false)
-    private OffsetDateTime createdDate = OffsetDateTime.now();
+    @CreatedDate
+    private LocalDateTime createdDate;
 
     @Column(name = "legacy_alias", length = 2)
     private String legacyAlias;
@@ -137,8 +144,9 @@ public class Order {
     @Column(name = "cashback_days")
     private Short cashbackDays;
 
-    @Column(name = "last_updated_time", nullable = false)
-    private OffsetDateTime lastUpdatedTime;
+    @Column(name = "last_updated_time", nullable = true)
+    @LastModifiedDate
+    private LocalDateTime lastUpdatedTime;
 
     @ColumnDefault("false")
     @Column(name = "flag_decision_cheapest_offer")
@@ -187,17 +195,15 @@ public class Order {
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Approval approval;
 
+    @OneToMany(mappedBy = "order")
+    private List<OrderStatusHistory> statusHistory;
+
     @PrePersist
     public void prePersist() {
-        this.lastUpdatedTime = OffsetDateTime.now();
         this.approval = new Approval();
         this.approval.setOrder(this);
     }
 
-    // only called if the data is actually changed
-    @PreUpdate
-    public void preUpdate() {
-        this.lastUpdatedTime = OffsetDateTime.now();
-    }
+
 
 }

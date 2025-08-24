@@ -69,7 +69,7 @@ public class InsyService {
 
         InsyOrderRequestDTO requestOrder = new InsyOrderRequestDTO();
         requestOrder.setOrderId(orderId);
-        requestOrder.setOrderCreatedDate(order.getCreatedDate().toLocalDateTime());
+        requestOrder.setOrderCreatedDate(order.getCreatedDate());
         requestOrder.setSupplierName(supplier.getName());
         requestOrder.setCostCenterName(costCenter.getId());
         requestOrder.setUserName(user.getName() + " " + user.getSurname());
