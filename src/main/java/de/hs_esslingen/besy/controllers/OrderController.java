@@ -9,6 +9,7 @@ import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
 import de.hs_esslingen.besy.enums.OrderStatus;
+import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.services.*;
 import lombok.AllArgsConstructor;
@@ -86,9 +87,20 @@ public class OrderController {
         return orderService.getOrderById(id);
     }
 
+    @PatchMapping("{order-id}")
+    public ResponseEntity<OrderResponseDTO> updateOrder(
+            @PathVariable("order-id") Long id,
+            @RequestBody OrderRequestDTO dto
+    ){
+        if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(!orderService.isOrderStatusEqual(id, OrderStatus.IN_PROGRESS)) throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
+        return orderService.updateOrder(dto, id);
+    }
+
     @DeleteMapping("{order-id}")
     public ResponseEntity<String> deleteOrder(@PathVariable("order-id") Long id) {
         if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(!orderService.isOrderStatusEqual(id, orderService.getStatusesAllowingTransitionTo(OrderStatus.DELETED))) throw new BadRequestException("Bestellstatus befindet sich nicht in gültigem Bestellstatus!");
         return orderService.deleteOrderById(id);
     }
 
@@ -103,6 +115,7 @@ public class OrderController {
             @PathVariable("order-id") Long id,
             @RequestBody List<ItemRequestDTO> dtos) {
         if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(!orderService.isOrderStatusEqual(id, OrderStatus.IN_PROGRESS)) throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
         return itemService.createItemsOfOrder(id, dtos);
     }
 
@@ -113,6 +126,7 @@ public class OrderController {
     ){
         if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
         if(!itemService.existsItemOfOrder(orderId, itemId)) throw new NotFoundException("Artikel nicht gefunden.");
+        if(!orderService.isOrderStatusEqual(orderId, OrderStatus.IN_PROGRESS)) throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
         return itemService.deleteItemsOfOrder(orderId, itemId);
     }
 
@@ -129,6 +143,7 @@ public class OrderController {
     ){
         if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
         if(!quotationService.existsQuotation(orderId, quotationId)) throw new NotFoundException("Vergleichsartikel nicht gefunden.");
+        if(!orderService.isOrderStatusEqual(orderId, OrderStatus.IN_PROGRESS)) throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
         return quotationService.deleteQuotation(orderId, quotationId);
     }
 
@@ -138,6 +153,7 @@ public class OrderController {
             @RequestBody List<QuotationRequestDTO> dtos
     ){
         if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(!orderService.isOrderStatusEqual(id, OrderStatus.IN_PROGRESS)) throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
         return quotationService.createQuotation(id, dtos);
     }
 
@@ -153,7 +169,17 @@ public class OrderController {
             @RequestBody ApprovalRequestDTO dto
     ){
         if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(!orderService.isOrderStatusEqual(orderId, OrderStatus.COMPLETED)) throw new BadRequestException("Bestellstatus befindet sich nicht auf fertiggestellt!");
         return this.approvalService.updateApprovalOfOrder(orderId, dto);
+    }
+
+    @PutMapping("{order-id}/status")
+    public ResponseEntity<OrderStatus> updateOrderStatus(
+            @PathVariable("order-id") Long orderId,
+            @RequestBody OrderStatus targetOrderStatus
+    ){
+        if(targetOrderStatus.equals(OrderStatus.DELETED)) throw new BadRequestException("Löschen nicht erlaubt, nutze DELETE endpoint!");
+        return orderService.updateOrderStatus(orderId, targetOrderStatus);
     }
 
     @GetMapping

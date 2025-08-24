@@ -4,7 +4,6 @@ import de.hs_esslingen.besy.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
@@ -25,14 +24,14 @@ public class Order {
     @Column(name = "primary_cost_center_id", insertable = false, updatable = false)
     private String primaryCostCenterId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "primary_cost_center_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "primary_cost_center_id", nullable = true)
     private CostCenter primaryCostCenter;
 
-    @Column(name = "booking_year", nullable = false, length = 2)
+    @Column(name = "booking_year", nullable = true, length = 2)
     private String bookingYear;
 
-    @Column(name = "auto_index", nullable = false)
+    @Column(name = "auto_index", nullable = true)
     private Short autoIndex;
 
     @Column(name = "created_date", nullable = false)
@@ -48,7 +47,7 @@ public class Order {
     @JoinColumn(name = "owner_user_id",referencedColumnName = "id", nullable = true)
     private de.hs_esslingen.besy.models.User owner;
 
-    @Column(name = "content_description", nullable = true)
+    @Column(name = "content_description", nullable = false)
     private String contentDescription;
 
     @Column(name = "status", nullable = false)

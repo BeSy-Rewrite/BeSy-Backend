@@ -5,9 +5,9 @@ import de.hs_esslingen.besy.models.Order;
 
 import java.util.List;
 
-public class Specification {
+public class SpecificationHelper {
 
-    private Specification() {}
+    private SpecificationHelper() {}
 
     public static <T> org.springframework.data.jpa.domain.Specification<Order> contains(List<T> attributeList, String attributeName) {
         return (root, query, criteriaBuilder) -> {

@@ -5,7 +5,6 @@ import de.hs_esslingen.besy.models.Quotation;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
-import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
 
 import java.io.IOException;
 import java.util.ArrayList;
