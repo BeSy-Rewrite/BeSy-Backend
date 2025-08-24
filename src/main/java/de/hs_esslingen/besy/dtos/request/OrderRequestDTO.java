@@ -1,6 +1,5 @@
 package de.hs_esslingen.besy.dtos.request;
 
-import de.hs_esslingen.besy.enums.OrderStatus;
 import lombok.Value;
 
 import java.io.Serializable;
