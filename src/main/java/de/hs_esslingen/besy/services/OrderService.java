@@ -4,6 +4,7 @@ import de.hs_esslingen.besy.configurations.SpecificationHelper;
 import de.hs_esslingen.besy.configurations.ValidationHelper;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
+import de.hs_esslingen.besy.dtos.response.OrderStatusHistoryResponseDTO;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
@@ -11,6 +12,7 @@ import de.hs_esslingen.besy.interfaces.OrderCompletedValidationDAO;
 import de.hs_esslingen.besy.mappers.OrderCompletedValidationMapper;
 import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
 import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
+import de.hs_esslingen.besy.mappers.response.OrderStatusHistoryResponseMapper;
 import de.hs_esslingen.besy.models.*;
 import de.hs_esslingen.besy.models.Currency;
 import de.hs_esslingen.besy.repositories.*;
@@ -38,10 +40,12 @@ public class OrderService {
     private final CostCenterRepository costCenterRepository;
     private final CustomerIdRepository customerIdRepository;
     private final AddressRepository addressRepository;
+    private final OrderStatusHistoryRepository orderStatusHistoryRepository;
 
     private final OrderResponseMapper orderResponseMapper;
     private final OrderRequestMapper orderRequestMapper;
     private final OrderCompletedValidationMapper orderCompletedValidationMapper;
+    private final OrderStatusHistoryResponseMapper orderStatusHistoryResponseMapper;
 
     private final ValidationHelper validator;
 
@@ -118,7 +122,13 @@ public class OrderService {
 
         Order latestAutoIndexOrder = orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(dto.getPrimaryCostCenterId(), dto.getBookingYear());
         Short latestAutoIndex = latestAutoIndexOrder.getAutoIndex();
-        order.setAutoIndex(++latestAutoIndex);
+
+        if(latestAutoIndex != null) {
+            order.setAutoIndex(++latestAutoIndex);
+        } else{
+            order.setAutoIndex((short) 1);
+        }
+
 
         order.setStatus(OrderStatus.IN_PROGRESS); // Override OrderStatus of DTO
         return ResponseEntity.ok(orderResponseMapper.toDto(orderRepository.save(order)));
@@ -164,9 +174,20 @@ public class OrderService {
 
         order.setStatus(newStatus);
         Order savedOrder = orderRepository.save(order);
+
+        OrderStatusHistory orderStatusHistory = new OrderStatusHistory();
+        orderStatusHistory.setOrder(savedOrder);
+        orderStatusHistory.setStatus(savedOrder.getStatus());
+        orderStatusHistoryRepository.save(orderStatusHistory);
+
         return ResponseEntity.ok(savedOrder.getStatus());
     }
 
+
+    public ResponseEntity<List<OrderStatusHistoryResponseDTO>> getStatusHistory(Long orderId) {
+        List<OrderStatusHistory> statusHistory = orderStatusHistoryRepository.findAllByOrderId(orderId);
+        return ResponseEntity.ok(orderStatusHistoryResponseMapper.toDto(statusHistory));
+    }
 
 
     /**
@@ -297,5 +318,9 @@ public class OrderService {
         return order;
     }
 
+
+    public static Map<OrderStatus, Set<OrderStatus>> getOrderStatusMatrix(){
+        return ORDER_STATUS_MATRIX;
+    }
 
 }

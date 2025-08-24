@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Bestellsystem API
-  version: v1.5.0
+  version: v1.6.0
 servers:
   - url: http://localhost:3000/api/v1
     description: Generierte Server-URL
@@ -785,6 +785,46 @@ paths:
         '500':
           description: Interner Serverfehler.
 
+
+  /orders/statuses:
+    get:
+      tags:
+        - Orders
+      description: Gibt eine Map zurück, die jedem OrderStatus die erlaubten nächsten OrderStatus-Werte zuordnet.
+      responses:
+        '200':
+          description: Erfolgreiche Abfrage der Order-Status-Matrix.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OrderStatus'
+              example:
+                APPROVALS_RECEIVED:
+                  - APPROVED
+                  - DELETED
+                REJECTED: [ ]
+                SENT:
+                  - SETTLED
+                APPROVED:
+                  - SENT
+                  - DELETED
+                SETTLED:
+                  - ARCHIVED
+                IN_PROGRESS:
+                  - COMPLETED
+                  - DELETED
+                ARCHIVED: [ ]
+                DELETED:
+                  - IN_PROGRESS
+                COMPLETED:
+                  - APPROVALS_RECEIVED
+                  - IN_PROGRESS
+                  - DELETED
+
   /orders/{order-id}/status:
     put:
       description: >
@@ -815,6 +855,30 @@ paths:
         '400':
           description: Löschen nicht erlaubt, nutze DELETE endpoint! Ungültiger Statusübergang von `old_status` zu `new_status`. primary_cost_center_id darf nicht null sein.
 
+
+  /orders/{order-id}/status/history:
+    get:
+      description: Gibt eine Liste des Verlaufes des Bestellstatus einer Bestellung zurück.
+      tags:
+        - Orders
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID der Bestellung, deren Bestellstatus-Historie abgerufen werden soll.
+      responses:
+        '200':
+          description: Liste des Statusverlaufs erfolgreich abgerufen
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderStatusHistoryResponseDTO'
+        '404':
+          description: Bestellung nicht gefunden.
 
   /orders/{order-id}/export:
     get:
@@ -1622,3 +1686,12 @@ components:
         flagMediaPermission:
           type: boolean
           default: false
+
+    OrderStatusHistoryResponseDTO:
+      properties:
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        timestamp:
+          example: 2025-08-24T19:11:01.398273
+          type: string
+          format: date

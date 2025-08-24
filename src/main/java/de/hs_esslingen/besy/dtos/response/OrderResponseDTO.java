@@ -6,6 +6,7 @@ import lombok.Value;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 /**
@@ -17,7 +18,7 @@ public class OrderResponseDTO implements Serializable {
     String primaryCostCenterId;
     String bookingYear;
     Short autoIndex;
-    OffsetDateTime createdDate;
+    LocalDateTime createdDate;
     String legacyAlias;
     Integer ownerId;
     String contentDescription;
@@ -39,7 +40,7 @@ public class OrderResponseDTO implements Serializable {
     BigDecimal percentageDiscount;
     BigDecimal cashbackPercentage;
     Short cashbackDays;
-    OffsetDateTime lastUpdatedTime;
+    LocalDateTime lastUpdatedTime;
     Boolean flagDecisionCheapestOffer;
     Boolean flagDecisionMostEconomicalOffer;
     Boolean flagDecisionSoleSupplier;
