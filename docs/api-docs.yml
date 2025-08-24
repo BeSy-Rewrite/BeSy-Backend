@@ -544,7 +544,7 @@ paths:
         - Orders
       operationId: deleteOrder
       description: >
-        Löscht eine bestehende Bestellung anhand der `order-id` (Soft Delete). Setzt den Status der Bestellung auf `DEL` (gelöscht). Es sind nur Bestellungen löschbar, deren status != `DEL` ist.
+        Löscht eine bestehende Bestellung anhand der `order-id` (Soft Delete). Setzt den Bestelltatus (`order_status`) auf gelöscht (`DELETED`).
       parameters:
         - name: order-id
           in: path
@@ -555,6 +555,8 @@ paths:
       responses:
         '204':
           description: Bestellung erfolgreich gelöscht (No Content).
+        400:
+          description: Bestellstatus befindet sich nicht in gültigem Bestellstatus!
         '404':
           description: Bestellung mit der angegebenen ID nicht gefunden.
         '500':
@@ -787,6 +789,37 @@ paths:
           description: Bestellung nicht gefunden.
         '500':
           description: Interner Serverfehler.
+
+  /{order-id}/status:
+    put:
+      description: >
+        Aktualisiert den Bestellstatus (`status`) mit der angegebenen `order-id`.  
+        Wirft einen Fehler, wenn der neue Status `DELETED` ist — bitte stattdessen den DELETE-Endpunkt verwenden.
+      tags:
+        - Orders
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID der Bestellung, deren Bestellstatus aktualisiert wird.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderStatus'
+      responses:
+        '200':
+          description: Bestellstatus erfolgreich aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderStatus'
+        '400':
+          description: Löschen nicht erlaubt, nutze DELETE endpoint! Ungültiger Statusübergang von `old_status` zu `new_status`. primary_cost_center_id darf nicht null sein.
+
 
   /orders/{order-id}/export:
     get:
@@ -1475,6 +1508,7 @@ components:
           description: Optionaler Kommentar zur Kundenkennung
     OrderStatus:
       type: string
+      default: COMPLETED
       enum:
         - IN_PROGRESS
         - COMPLETED
