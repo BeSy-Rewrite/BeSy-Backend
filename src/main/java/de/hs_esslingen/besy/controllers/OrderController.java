@@ -172,6 +172,14 @@ public class OrderController {
         return this.approvalService.updateApprovalOfOrder(orderId, dto);
     }
 
+    @PutMapping("{order-id}/status")
+    public ResponseEntity<String> updateOrderStatus(
+            @PathVariable("order-id") Long orderId,
+            @RequestBody OrderStatus orderStatus
+    ){
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping
     @RequestMapping("{order-id}/export")
     public ResponseEntity<byte[]> exportOrder(@PathVariable("order-id") Integer orderId) throws IOException {

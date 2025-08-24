@@ -90,48 +90,7 @@ public class OrderService {
     public ResponseEntity<OrderResponseDTO> createOrder(OrderRequestDTO dto) {
         Order order = orderRequestMapper.toEntity(dto);
 
-        if(dto.getCurrencyShort() != null) {
-            Currency currency = currencyRepository.getReferenceById(dto.getCurrencyShort());
-            order.setCurrency(currency);
-        }
-        if(dto.getDeliveryPersonId() != null) {
-            Person deliveryPerson = personRepository.getReferenceById(dto.getDeliveryPersonId());
-            order.setDeliveryPerson(deliveryPerson);
-        }
-        if(dto.getInvoicePersonId() != null) {
-            Person invoicePerson = personRepository.getReferenceById(dto.getInvoicePersonId());
-            order.setInvoicePerson(invoicePerson);
-        }
-        if(dto.getQueriesPersonId() != null) {
-            Person queriesPerson = personRepository.getReferenceById(dto.getQueriesPersonId());
-            order.setQueriesPerson(queriesPerson);
-        }
-        if(dto.getSecondaryCostCenterId() != null) {
-            CostCenter costCenter = costCenterRepository.getReferenceById(dto.getSecondaryCostCenterId());
-            order.setSecondaryCostCenter(costCenter);
-        }
-        if(dto.getOwnerId() != null) {
-            User user = userRepository.getReferenceById(dto.getOwnerId());
-            order.setOwner(user);
-        }
-        if(dto.getCustomerId() != null) {
-            CustomerId customerId = customerIdRepository.getReferenceById(
-                    new CustomerIdId(dto.getCustomerId(), dto.getSupplierId())
-            );
-            order.setCustomer(customerId);
-        }
-        if(dto.getDeliveryAddressId() != null) {
-            Address deliveryAddress = addressRepository.getReferenceById(dto.getDeliveryAddressId());
-            order.setDeliveryAddress(deliveryAddress);
-        }
-        if(dto.getInvoiceAddressId() != null) {
-            Address invoiceAddress = addressRepository.getReferenceById(dto.getInvoiceAddressId());
-            order.setInvoiceAddress(invoiceAddress);
-        }
-        if(dto.getPrimaryCostCenterId() != null) {
-            CostCenter costCenter = costCenterRepository.getReferenceById(dto.getPrimaryCostCenterId());
-            order.setPrimaryCostCenter(costCenter);
-        }
+        this.mapForeignRelationships(order, dto);
 
         /*        Order latestAutoIndexOrder = orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(dto.getPrimaryCostCenterId(), dto.getBookingYear());
         Short latestAutoIndex = latestAutoIndexOrder.getAutoIndex();
@@ -145,6 +104,7 @@ public class OrderService {
     public ResponseEntity<OrderResponseDTO> updateOrder(OrderRequestDTO dto, Long id) {
         Order order = orderRepository.findById(id).get();
         orderRequestMapper.partialUpdate(order, dto);
+        this.mapForeignRelationships(order, dto);
         return ResponseEntity.ok(orderResponseMapper.toDto(orderRepository.save(order)));
     }
 
@@ -188,6 +148,54 @@ public class OrderService {
      */
     public boolean isOrderStatusEqual(Long orderId, OrderStatus status) {
         return orderRepository.findById(orderId).get().getStatus().equals(status);
+    }
+
+
+
+    private Order mapForeignRelationships(Order order, OrderRequestDTO dto){
+        if(dto.getCurrencyShort() != null) {
+            Currency currency = currencyRepository.getReferenceById(dto.getCurrencyShort());
+            order.setCurrency(currency);
+        }
+        if(dto.getDeliveryPersonId() != null) {
+            Person deliveryPerson = personRepository.getReferenceById(dto.getDeliveryPersonId());
+            order.setDeliveryPerson(deliveryPerson);
+        }
+        if(dto.getInvoicePersonId() != null) {
+            Person invoicePerson = personRepository.getReferenceById(dto.getInvoicePersonId());
+            order.setInvoicePerson(invoicePerson);
+        }
+        if(dto.getQueriesPersonId() != null) {
+            Person queriesPerson = personRepository.getReferenceById(dto.getQueriesPersonId());
+            order.setQueriesPerson(queriesPerson);
+        }
+        if(dto.getSecondaryCostCenterId() != null) {
+            CostCenter costCenter = costCenterRepository.getReferenceById(dto.getSecondaryCostCenterId());
+            order.setSecondaryCostCenter(costCenter);
+        }
+        if(dto.getOwnerId() != null) {
+            User user = userRepository.getReferenceById(dto.getOwnerId());
+            order.setOwner(user);
+        }
+        if(dto.getCustomerId() != null) {
+            CustomerId customerId = customerIdRepository.getReferenceById(
+                    new CustomerIdId(dto.getCustomerId(), dto.getSupplierId())
+            );
+            order.setCustomer(customerId);
+        }
+        if(dto.getDeliveryAddressId() != null) {
+            Address deliveryAddress = addressRepository.getReferenceById(dto.getDeliveryAddressId());
+            order.setDeliveryAddress(deliveryAddress);
+        }
+        if(dto.getInvoiceAddressId() != null) {
+            Address invoiceAddress = addressRepository.getReferenceById(dto.getInvoiceAddressId());
+            order.setInvoiceAddress(invoiceAddress);
+        }
+        if(dto.getPrimaryCostCenterId() != null) {
+            CostCenter costCenter = costCenterRepository.getReferenceById(dto.getPrimaryCostCenterId());
+            order.setPrimaryCostCenter(costCenter);
+        }
+        return order;
     }
 
 
