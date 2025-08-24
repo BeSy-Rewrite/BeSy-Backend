@@ -4,10 +4,7 @@ import de.hs_esslingen.besy.dtos.request.ApprovalRequestDTO;
 import de.hs_esslingen.besy.dtos.request.ItemRequestDTO;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
 import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
-import de.hs_esslingen.besy.dtos.response.ApprovalResponseDTO;
-import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
-import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
-import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
+import de.hs_esslingen.besy.dtos.response.*;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
@@ -188,6 +185,12 @@ public class OrderController {
     ){
         if(targetOrderStatus.equals(OrderStatus.DELETED)) throw new BadRequestException("Löschen nicht erlaubt, nutze DELETE endpoint!");
         return orderService.updateOrderStatus(orderId, targetOrderStatus);
+    }
+
+    @GetMapping("{order-id}/status/history")
+    public ResponseEntity<List<OrderStatusHistoryResponseDTO>> getOrderStatusHistory(@PathVariable("order-id") Long orderId){
+        if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
+        return orderService.getStatusHistory(orderId);
     }
 
     @GetMapping

@@ -856,6 +856,30 @@ paths:
           description: Löschen nicht erlaubt, nutze DELETE endpoint! Ungültiger Statusübergang von `old_status` zu `new_status`. primary_cost_center_id darf nicht null sein.
 
 
+  /orders/{order-id}/status/history:
+    get:
+      description: Gibt eine Liste des Verlaufes des Bestellstatus einer Bestellung zurück.
+      tags:
+        - Orders
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID der Bestellung, deren Bestellstatus-Historie abgerufen werden soll.
+      responses:
+        '200':
+          description: Liste des Statusverlaufs erfolgreich abgerufen
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderStatusHistoryResponseDTO'
+        '404':
+          description: Bestellung nicht gefunden.
+
   /orders/{order-id}/export:
     get:
       tags:
@@ -1662,3 +1686,12 @@ components:
         flagMediaPermission:
           type: boolean
           default: false
+
+    OrderStatusHistoryResponseDTO:
+      properties:
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        timestamp:
+          example: 2025-08-24T19:11:01.398273
+          type: string
+          format: date
