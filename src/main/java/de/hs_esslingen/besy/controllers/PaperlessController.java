@@ -41,7 +41,7 @@ public class PaperlessController {
 
 
     @PostMapping
-    public String uploadPDF(@RequestParam("file") MultipartFile file) throws IOException, ParseException {
+    public ResponseEntity<String> uploadPDF(@RequestParam("file") MultipartFile file) throws IOException, ParseException {
 
         String paperlessUrl = paperlessBaseUrl + paperlessUploadUrl;
         try (CloseableHttpClient client = HttpClients.createDefault()) {
@@ -55,11 +55,7 @@ public class PaperlessController {
 
             try (CloseableHttpResponse response = client.execute(post)) {
                 String responseString = EntityUtils.toString(response.getEntity());
-                if (response.getCode() == 200 || response.getCode() == 201) {
-                    return "Upload successful: " + responseString;
-                } else {
-                    return "Upload failed: " + response.getCode() + " - " + responseString;
-                }
+                return ResponseEntity.ok(responseString);
             }
         }
     }
