@@ -38,4 +38,7 @@ public class Invoice {
     @Column(name = "created_date", nullable = false)
     private OffsetDateTime createdDate;
 
+    @Column(name = "paperless_id", nullable = true)
+    private Long paperlessId;
+
 }
