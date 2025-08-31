@@ -41,7 +41,7 @@ public class OrderController {
             @RequestParam(name = "createdAfter", required = false) OffsetDateTime createdAfter,
             @RequestParam(name = "createdBefore", required = false) OffsetDateTime createdBefore,
             @RequestParam(name = "ownerIds", required = false) List<Integer> ownerIds,
-            @RequestParam(name = "statuses", required = false, defaultValue = "ABR,ABS,ARC,INB") List<OrderStatus> statuses,
+            @RequestParam(name = "statuses", required = false) List<OrderStatus> statuses,
             @RequestParam(name = "quotePriceMin", required = false) BigDecimal quotePriceMin,
             @RequestParam(name = "quotePriceMax", required = false) BigDecimal quotePriceMax,
             @RequestParam(name = "deliveryPersonIds", required = false) List<Long> deliveryPersonIds,
