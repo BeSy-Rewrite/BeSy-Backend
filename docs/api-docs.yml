@@ -339,7 +339,7 @@ paths:
 
         - name: ownerIds
           in: query
-          description: Filtert nach IDs der Ersteller der Bestellung.
+          description: Filtert nach IDs der Ersteller der Bestellung. Beinh
           required: false
           schema:
             type: array
@@ -349,7 +349,7 @@ paths:
 
         - name: statuses
           in: query
-          description: Filtert nach dem Bestellstatus.
+          description: Filtert nach dem Bestellstatus. Beinhaltet default-mäßig alle Bestellstatus.
           required: false
           schema:
             type: array
@@ -939,6 +939,7 @@ paths:
       tags:
         - Vat's
       operationId: getAllVats
+      description: Der `value` einer VAT ist zugleich dessen ID.
       responses:
         '200':
           description: OK
@@ -1567,7 +1568,6 @@ components:
           description: Optionaler Kommentar zur Kundenkennung
     OrderStatus:
       type: string
-      default: COMPLETED
       enum:
         - IN_PROGRESS
         - COMPLETED
