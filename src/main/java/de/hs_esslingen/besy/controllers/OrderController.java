@@ -8,17 +8,16 @@ import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
-import de.hs_esslingen.besy.services.ItemService;
-import de.hs_esslingen.besy.services.OrderPDFService;
-import de.hs_esslingen.besy.services.OrderService;
-import de.hs_esslingen.besy.services.QuotationService;
+import de.hs_esslingen.besy.services.*;
 import lombok.AllArgsConstructor;
+import org.apache.hc.core5.http.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -33,6 +32,7 @@ public class OrderController {
     private final ItemService itemService;
     private final QuotationService quotationService;
     private final OrderPDFService orderPDFService;
+    private final PaperlessService paperlessService;
 
     @GetMapping
     public Page<OrderResponseDTO> getAllOrders(
@@ -139,6 +139,14 @@ public class OrderController {
     ){
         if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
         return quotationService.createQuotation(id, dtos);
+    }
+
+    @PostMapping("invoice/{invoice-id}/document")
+    public ResponseEntity<Long> createInvoiceOfOrder(
+            @RequestParam("file") MultipartFile file,
+            @PathVariable("invoice-id") String invoiceId
+    ) throws IOException, ParseException {
+        return paperlessService.uploadPdfToPaperless(file, invoiceId);
     }
 
     @GetMapping

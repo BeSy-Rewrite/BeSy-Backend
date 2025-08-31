@@ -2,6 +2,7 @@ package de.hs_esslingen.besy;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.retry.annotation.EnableRetry;
 
 @SpringBootApplication
 public class BeSyApplication {
