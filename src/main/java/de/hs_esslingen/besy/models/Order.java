@@ -5,15 +5,21 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "\"order\"")
+@EntityListeners(AuditingEntityListener.class)
 public class Order {
 
     @Id
@@ -24,18 +30,19 @@ public class Order {
     @Column(name = "primary_cost_center_id", insertable = false, updatable = false)
     private String primaryCostCenterId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "primary_cost_center_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "primary_cost_center_id", nullable = true)
     private CostCenter primaryCostCenter;
 
-    @Column(name = "booking_year", nullable = false, length = 2)
+    @Column(name = "booking_year", nullable = true, length = 2)
     private String bookingYear;
 
-    @Column(name = "auto_index", nullable = false)
+    @Column(name = "auto_index", nullable = true)
     private Short autoIndex;
 
     @Column(name = "created_date", nullable = false)
-    private OffsetDateTime createdDate = OffsetDateTime.now();
+    @CreatedDate
+    private LocalDateTime createdDate;
 
     @Column(name = "legacy_alias", length = 2)
     private String legacyAlias;
@@ -47,7 +54,7 @@ public class Order {
     @JoinColumn(name = "owner_user_id",referencedColumnName = "id", nullable = true)
     private de.hs_esslingen.besy.models.User owner;
 
-    @Column(name = "content_description", nullable = true)
+    @Column(name = "content_description", nullable = false)
     private String contentDescription;
 
     @Column(name = "status", nullable = false)
@@ -137,12 +144,17 @@ public class Order {
     @Column(name = "cashback_days")
     private Short cashbackDays;
 
-    @Column(name = "last_updated_time", nullable = false)
-    private OffsetDateTime lastUpdatedTime;
+    @Column(name = "last_updated_time", nullable = true)
+    @LastModifiedDate
+    private LocalDateTime lastUpdatedTime;
 
     @ColumnDefault("false")
     @Column(name = "flag_decision_cheapest_offer")
     private Boolean flagDecisionCheapestOffer;
+
+    @ColumnDefault("false")
+    @Column(name = "flag_decision_most_economical_offer")
+    private Boolean flagDecisionMostEconomicalOffer;
 
     @ColumnDefault("false")
     @Column(name = "flag_decision_sole_supplier")
@@ -153,49 +165,43 @@ public class Order {
     private Boolean flagDecisionContractPartner;
 
     @ColumnDefault("false")
+    @Column(name = "flag_decision_preferred_supplier_list")
+    private Boolean flagDecisionPreferredSupplierList;
+
+    @ColumnDefault("false")
     @Column(name = "flag_decision_other_reasons")
     private Boolean flagDecisionOtherReasons;
 
     @Column(name = "decision_other_reasons_description", length = Integer.MAX_VALUE)
     private String decisionOtherReasonsDescription;
 
-    @ColumnDefault("false")
-    @Column(name = "flag_edv_permission")
-    private Boolean flagEdvPermission;
-
-    @ColumnDefault("false")
-    @Column(name = "flag_furniture_permission")
-    private Boolean flagFurniturePermission;
-
-    @ColumnDefault("false")
-    @Column(name = "flag_furniture_room")
-    private Boolean flagFurnitureRoom;
-
-    @ColumnDefault("false")
-    @Column(name = "flag_investment_room")
-    private Boolean flagInvestmentRoom;
-
-    @ColumnDefault("false")
-    @Column(name = "flag_investment_structural_measures")
-    private Boolean flagInvestmentStructuralMeasures;
-
-    @ColumnDefault("false")
-    @Column(name = "flag_media_permission")
-    private Boolean flagMediaPermission;
-
     @Column(name = "dfg_key", length = 45)
     private String dfgKey;
 
+    @Column(name = "delivery_address_id", insertable = false, updatable = false)
+    private Integer deliveryAddressId;
+
+    @Column(name = "invoice_address_id", insertable = false, updatable = false)
+    private Integer invoiceAddressId;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "delivery_address_id", nullable = true)
+    private Address deliveryAddress;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "invoice_address_id", nullable = true)
+    private Address invoiceAddress;
+
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Approval approval;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderStatusHistory> statusHistory;
 
     @PrePersist
     public void prePersist() {
-        this.lastUpdatedTime = OffsetDateTime.now();
-    }
-
-    // only called if the data is actually changed
-    @PreUpdate
-    public void preUpdate() {
-        this.lastUpdatedTime = OffsetDateTime.now();
+        this.approval = new Approval();
+        this.approval.setOrder(this);
     }
 
 }

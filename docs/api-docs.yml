@@ -6,86 +6,6 @@ servers:
   - url: http://localhost:3000/api/v1
     description: Generierte Server-URL
 paths:
-  /addresses:
-    get:
-      deprecated: true
-      tags:
-        - Addresses
-      
-      operationId: getAllAddresses
-      responses:
-        '200':
-          description: Eine Liste von Adressen
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AddressResponseDTO'
-    post:
-      deprecated: true
-      tags:
-        - Addresses
-      operationId: createAddress
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddressRequestDTO'
-      responses:
-        '201':
-          description: Adresse erfolgreich erstellt
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AddressResponseDTO'
-        '400':
-          description: Ungültige Eingabe
-
-
-  /addresses/{id}:
-      get:
-        deprecated: true
-        tags:
-          - Addresses
-        operationId: getAddressById
-        parameters:
-          - name: id
-            in: path
-            required: true
-            description: Eindeutige ID der Adresse
-            schema:
-              type: integer
-              format: int64
-        responses:
-          '200':
-            description: Adresse gefunden.
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/AddressResponseDTO'
-          '404':
-            description: Adresse nicht gefunden.
-  /persons/{id}:
-    get:
-      tags:
-        - Persons
-      operationId: getPersonById
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/PersonResponseDTO'
   /persons:
     get:
       tags:
@@ -121,6 +41,83 @@ paths:
                 $ref: '#/components/schemas/PersonResponseDTO'
         '500':
           description: Interner Serverfehler.
+  /persons/{id}:
+    get:
+      tags:
+        - Persons
+      operationId: getPersonById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PersonResponseDTO'
+  /persons/addresses:
+    get:
+      tags:
+        - Persons
+      description: Gibt eine Liste aller Adressen zurück, die Personen zugeordnet sind.
+      responses:
+        '200':
+          description: Erfolgreich – Liste der Personenadressen
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AddressResponseDTO'
+    post:
+      tags:
+        - Persons
+      operationId: createPersonAddress
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressRequestDTO'
+      responses:
+        '201':
+          description: Adresse erfolgreich erstellt.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressResponseDTO'
+        '400':
+          description: Ungültige Eingabe(n).
+        '500':
+          description: Interner Serverfehler.
+
+  /persons/{person-id}/address:
+    get:
+      tags:
+        - Persons
+      description: Gibt die Adresse der angegebenen Person zurück.
+      parameters:
+        - name: person-id
+          in: path
+          required: true
+          description: Die ID der Person, deren Adresse abgerufen werden soll
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Erfolgreich – Adresse der Person
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressResponseDTO'
+        '404':
+          description: Person nicht gefunden. Diese Person besitzt keine Adresse.
   /suppliers:
     get:
       tags:
@@ -235,6 +232,39 @@ paths:
             Verweis auf eine nicht existierende Entität.
         '500':
           description: Interner Serverfehler.
+  /suppliers/addresses:
+    get:
+      tags:
+        - Suppliers
+      responses:
+        '200':
+          description: Liste aller Adressen.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AddressResponseDTO'
+
+  /suppliers/{supplier-id}/address:
+    get:
+      tags:
+        - Suppliers
+      parameters:
+        - name: supplier-id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Adresse des Lieferanten.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressResponseDTO'
+        '404':
+          description: Lieferant nicht gefunden. Dieser Lieferant besitzt keine Adresse.
   /orders:
     get:
       tags:
@@ -309,7 +339,7 @@ paths:
 
         - name: ownerIds
           in: query
-          description: Filtert nach IDs der Ersteller der Bestellung.
+          description: Filtert nach IDs der Ersteller der Bestellung. Beinh
           required: false
           schema:
             type: array
@@ -319,17 +349,12 @@ paths:
 
         - name: statuses
           in: query
-          description: Filtert nach dem Bestellstatus.
+          description: Filtert nach dem Bestellstatus. Beinhaltet default-mäßig alle Bestellstatus.
           required: false
           schema:
             type: array
             items:
               $ref: '#/components/schemas/OrderStatus'
-            default:
-              - ABR
-              - ABS
-              - ARC
-              - INB
         - name: quotePriceMin
           in: query
           description: Filtert nach quotePriceMin.
@@ -435,8 +460,7 @@ paths:
         - Orders
       operationId: createOrder
       description: >
-        Erstellt eine neue Bestellung und setzt den `status` auf "In Bearbeitung".
-        `booking_year` & `primary_cost_center_id` sind verpflichtend, um eine neue Bestellung anlegen zu können.
+        Erstellt eine neue Bestellung und setzt den Bestellstatus (`status`) auf "In Bearbeitung" (`IN_PROGRESS`). Nur in diesem Bestellstatus ist das Bearbeiten einer Bestellung möglich.
       requestBody:
         content:
           application/json:
@@ -476,12 +500,46 @@ paths:
                   $ref: '#/components/schemas/OrderResponseDTO'
         '404':
           description: Bestellung nicht gefunden.
+    patch:
+      tags:
+        - Orders
+      operationId: "updateOrder"
+      description: Aktualisiert eine Bestellung. Nur nicht-leere Felder im Request-Body werden übernommen. Nur möglich, wenn sich die Bestellung im Bestellstatus (`status`) "In Bearbeitung" (`IN_PROGRESS`) befindet.
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          description: Die eindeutige ID der Bestellung, die verändert werden soll.
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRequestDTO'
+        required: true
+      responses:
+        200:
+          description: "Bestellung erfolgreich aktualisiert."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponseDTO"
+        400:
+          description: "Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!"
+        404:
+          description: "Bestellung nicht gefunden."
+        '409':
+          description: "Verweis auf eine nicht existierende Entität."
+        500:
+          description: "Interner Serverfehler."
     delete:
       tags:
         - Orders
       operationId: deleteOrder
       description: >
-        Löscht eine bestehende Bestellung anhand der `order-id` (Soft Delete). Setzt den Status der Bestellung auf `DEL` (gelöscht). Es sind nur Bestellungen löschbar, deren status != `DEL` ist.
+        Löscht eine bestehende Bestellung anhand der `order-id` (Soft Delete). Setzt den Bestelltatus (`order_status`) auf gelöscht (`DELETED`).
       parameters:
         - name: order-id
           in: path
@@ -492,6 +550,8 @@ paths:
       responses:
         '204':
           description: Bestellung erfolgreich gelöscht (No Content).
+        400:
+          description: Bestellstatus befindet sich nicht in gültigem Bestellstatus!
         '404':
           description: Bestellung mit der angegebenen ID nicht gefunden.
         '500':
@@ -548,6 +608,8 @@ paths:
               schema:
                 items:
                   $ref: '#/components/schemas/ItemResponseDTO'
+        400:
+          description: "Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!"
         '404':
           description: Bestellung nicht gefunden.
         '409':
@@ -575,6 +637,8 @@ paths:
       responses:
         '204':
           description: Bestellung erfolgreich gelöscht (No Content).
+        400:
+          description: "Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!"
         '404':
           description: Bestellung nicht gefunden. Artikel nicht gefunden.
         '500':
@@ -631,6 +695,8 @@ paths:
               schema:
                 items:
                   $ref: '#/components/schemas/QuotationResponseDTO'
+        400:
+          description: "Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!"
         '404':
           description: Bestellung nicht gefunden.
         '409':
@@ -658,10 +724,13 @@ paths:
       responses:
         '204':
           description: Vergleichsartikel erfolgreich gelöscht (No Content).
+        400:
+          description: "Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!"
         '404':
           description: Bestellung nicht gefunden. Vergleichsartikel nicht gefunden.
         '500':
           description: Interner Serverfehler.
+          
   /orders/invoice/{invoice-id}/document:
     get:
       tags:
@@ -747,6 +816,156 @@ paths:
           description: Rechnung nicht gefunden.
         '500':
           description: Interner Serverfehler.
+
+  /orders/{order-id}/approval:
+    get:
+      description: Gibt die Zustimmungen für die angegebene Bestellung zurück.
+      tags:
+        - Orders
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID der Bestellung, deren Zustimmungen abgerufen wird.
+      responses:
+        '200':
+          description: Zustimmungen erfolgreich abgerufen.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalResponseDTO'
+        '404':
+          description: Bestellung nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
+    patch:
+      description: Aktualisiert Felder der Zustimmungen für die angegebene Bestellung. Nur nicht-leere Felder im Request-Body werden übernommen.
+      tags:
+        - Orders
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID der Bestellung, deren Zustimmungen aktualisiert wird.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalRequestDTO'
+      responses:
+        '200':
+          description: Approval successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalResponseDTO'
+        400:
+          description: "Bestellstatus befindet sich nicht auf fertiggestellt (`COMPLETED`)!"
+        '404':
+          description: Bestellung nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
+
+
+  /orders/statuses:
+    get:
+      tags:
+        - Orders
+      description: Gibt eine Map zurück, die jedem OrderStatus die erlaubten nächsten OrderStatus-Werte zuordnet.
+      responses:
+        '200':
+          description: Erfolgreiche Abfrage der Order-Status-Matrix.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OrderStatus'
+              example:
+                APPROVALS_RECEIVED:
+                  - APPROVED
+                  - DELETED
+                REJECTED: [ ]
+                SENT:
+                  - SETTLED
+                APPROVED:
+                  - SENT
+                  - DELETED
+                SETTLED:
+                  - ARCHIVED
+                IN_PROGRESS:
+                  - COMPLETED
+                  - DELETED
+                ARCHIVED: [ ]
+                DELETED:
+                  - IN_PROGRESS
+                COMPLETED:
+                  - APPROVALS_RECEIVED
+                  - IN_PROGRESS
+                  - DELETED
+
+  /orders/{order-id}/status:
+    put:
+      description: >
+        Aktualisiert den Bestellstatus (`status`) mit der angegebenen `order-id`.  
+        Wirft einen Fehler, wenn der neue Status `DELETED` ist — bitte stattdessen den DELETE-Endpunkt verwenden.
+      tags:
+        - Orders
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID der Bestellung, deren Bestellstatus aktualisiert wird.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderStatus'
+      responses:
+        '200':
+          description: Bestellstatus erfolgreich aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderStatus'
+        '400':
+          description: Löschen nicht erlaubt, nutze DELETE endpoint! Ungültiger Statusübergang von `old_status` zu `new_status`. primary_cost_center_id darf nicht null sein.
+
+
+  /orders/{order-id}/status/history:
+    get:
+      description: Gibt eine Liste des Verlaufes des Bestellstatus einer Bestellung zurück.
+      tags:
+        - Orders
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID der Bestellung, deren Bestellstatus-Historie abgerufen werden soll.
+      responses:
+        '200':
+          description: Liste des Statusverlaufs erfolgreich abgerufen
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderStatusHistoryResponseDTO'
+        '404':
+          description: Bestellung nicht gefunden.
+
   /orders/{order-id}/export:
     get:
       tags:
@@ -766,6 +985,8 @@ paths:
             application/pdf: { }
         '404':
           description: Bestellung nicht gefunden.
+
+
   /cost_centers:
     get:
       tags:
@@ -804,6 +1025,7 @@ paths:
       tags:
         - Vat's
       operationId: getAllVats
+      description: Der `value` einer VAT ist zugleich dessen ID.
       responses:
         '200':
           description: OK
@@ -887,7 +1109,6 @@ components:
       required:
         - name
         - surname
-        - address_id
         - gender
       properties:
         name:
@@ -911,6 +1132,7 @@ components:
           enum:
             - m
             - f
+            - d
     PersonResponseDTO:
       type: object
       properties:
@@ -980,8 +1202,7 @@ components:
     OrderRequestDTO:
       type: object
       required:
-        - primary_cost_center_id
-        - booking_year
+        - content_description
       properties:
         primary_cost_center_id:
           type: string
@@ -1037,35 +1258,32 @@ components:
           format: int32
         flag_decision_cheapest_offer:
           type: boolean
+        flag_decision_most_economical_offer:
+          type: boolean
         flag_decision_sole_supplier:
           type: boolean
         flag_decision_contract_partner:
+          type: boolean
+        flag_decision_preferred_supplier_list:
           type: boolean
         flag_decision_other_reasons:
           type: boolean
         decision_other_reasons_description:
           type: string
-        flag_edv_permission:
-          type: boolean
-        flag_furniture_permission:
-          type: boolean
-        flag_furniture_room:
-          type: boolean
-        flag_investment_room:
-          type: boolean
-        flag_investment_structural_measures:
-          type: boolean
-        flag_media_permission:
-          type: boolean
         dfg_key:
           type: string
+        delivery_address_id:
+          type: number
+        invoice_address_id:
+          type: number
     QuotationRequestDTO:
       type: object
       required:
         - index
         - quote_date
         - price
-        - supplier_id
+        - company_name
+        - company_city
       properties:
         index:
           type: integer
@@ -1073,11 +1291,16 @@ components:
         quote_date:
           type: string
           format: date
+          example: 2013-03-27
         price:
           type: number
-        supplier_id:
-          type: integer
-          format: int64
+          example: 494.99
+        company_name:
+          type: string
+          example: computeruniverse.net
+        company_city:
+          type: string
+          example: 71546 Aspach
     OrderResponseDTO:
       type: object
       properties:
@@ -1153,28 +1376,24 @@ components:
           format: date-time
         flag_decision_cheapest_offer:
           type: boolean
+        flag_decision_most_economical_offer:
+          type: boolean
         flag_decision_sole_supplier:
           type: boolean
         flag_decision_contract_partner:
+          type: boolean
+        flag_decision_preferred_supplier_list:
           type: boolean
         flag_decision_other_reasons:
           type: boolean
         decision_other_reasons_description:
           type: string
-        flag_edv_permission:
-          type: boolean
-        flag_furniture_permission:
-          type: boolean
-        flag_furniture_room:
-          type: boolean
-        flag_investment_room:
-          type: boolean
-        flag_investment_structural_measures:
-          type: boolean
-        flag_media_permission:
-          type: boolean
         dfg_key:
           type: string
+        delivery_address_id:
+          type: number
+        invoice_address_id:
+          type: number
     CostCenterRequestDTO:
       type: object
       required:
@@ -1279,9 +1498,12 @@ components:
           format: date
         price:
           type: number
-        supplier_id:
-          type: integer
-          format: int64
+        company_name:
+          type: string
+          example: computeruniverse.net
+        company_city:
+          type: string
+          example: 71546 Aspach
     InvoiceResponseDTO:
       type: object
       properties:
@@ -1354,6 +1576,7 @@ components:
       required:
         - name
         - flag_preferred
+        - address
       properties:
         name:
           type: string
@@ -1375,6 +1598,8 @@ components:
           type: string
         website:
           type: string
+        address:
+          $ref: '#/components/schemas/AddressRequestDTO'
     SupplierResponseDTO:
       type: object
       properties:
@@ -1431,11 +1656,15 @@ components:
     OrderStatus:
       type: string
       enum:
-        - ABR
-        - ABS
-        - ARC
-        - DEL
-        - INB
+        - IN_PROGRESS
+        - COMPLETED
+        - APPROVALS_RECEIVED
+        - APPROVED
+        - REJECTED
+        - SENT
+        - SETTLED
+        - ARCHIVED
+        - DELETED
 
     PagedOrderResponseDTO:
       type: object
@@ -1497,3 +1726,59 @@ components:
           type: boolean
         unsorted:
           type: boolean
+
+    ApprovalResponseDTO:
+      type: object
+      properties:
+        orderId:
+          type: integer
+          format: int64
+        flagEdvPermission:
+          type: boolean
+          default: false
+        flagFurniturePermission:
+          type: boolean
+          default: false
+        flagFurnitureRoom:
+          type: boolean
+          default: false
+        flagInvestmentRoom:
+          type: boolean
+          default: false
+        flagInvestmentStructuralMeasures:
+          type: boolean
+          default: false
+        flagMediaPermission:
+          type: boolean
+          default: false
+
+    ApprovalRequestDTO:
+      type: object
+      properties:
+        flagEdvPermission:
+          type: boolean
+          default: false
+        flagFurniturePermission:
+          type: boolean
+          default: false
+        flagFurnitureRoom:
+          type: boolean
+          default: false
+        flagInvestmentRoom:
+          type: boolean
+          default: false
+        flagInvestmentStructuralMeasures:
+          type: boolean
+          default: false
+        flagMediaPermission:
+          type: boolean
+          default: false
+
+    OrderStatusHistoryResponseDTO:
+      properties:
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        timestamp:
+          example: 2025-08-24T19:11:01.398273
+          type: string
+          format: date

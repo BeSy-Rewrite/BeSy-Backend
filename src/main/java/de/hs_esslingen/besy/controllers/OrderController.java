@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.controllers;
 
+import de.hs_esslingen.besy.dtos.request.ApprovalRequestDTO;
 import de.hs_esslingen.besy.dtos.request.ItemRequestDTO;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
 import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
@@ -7,7 +8,9 @@ import de.hs_esslingen.besy.dtos.response.InvoiceResponseDTO;
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
+import de.hs_esslingen.besy.dtos.response.*;
 import de.hs_esslingen.besy.enums.OrderStatus;
+import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.repositories.InvoiceRepository;
 import de.hs_esslingen.besy.services.*;
@@ -27,6 +30,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @AllArgsConstructor
@@ -39,6 +44,7 @@ public class OrderController {
     private final PaperlessService paperlessService;
     private final InvoiceRepository invoiceRepository;
     private final InvoiceService invoiceService;
+    private final ApprovalService approvalService;
 
     @GetMapping
     public Page<OrderResponseDTO> getAllOrders(
@@ -47,7 +53,7 @@ public class OrderController {
             @RequestParam(name = "createdAfter", required = false) OffsetDateTime createdAfter,
             @RequestParam(name = "createdBefore", required = false) OffsetDateTime createdBefore,
             @RequestParam(name = "ownerIds", required = false) List<Integer> ownerIds,
-            @RequestParam(name = "statuses", required = false, defaultValue = "ABR,ABS,ARC,INB") List<OrderStatus> statuses,
+            @RequestParam(name = "statuses", required = false) List<OrderStatus> statuses,
             @RequestParam(name = "quotePriceMin", required = false) BigDecimal quotePriceMin,
             @RequestParam(name = "quotePriceMax", required = false) BigDecimal quotePriceMax,
             @RequestParam(name = "deliveryPersonIds", required = false) List<Long> deliveryPersonIds,
@@ -92,9 +98,20 @@ public class OrderController {
         return orderService.getOrderById(id);
     }
 
+    @PatchMapping("{order-id}")
+    public ResponseEntity<OrderResponseDTO> updateOrder(
+            @PathVariable("order-id") Long id,
+            @RequestBody OrderRequestDTO dto
+    ){
+        if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(!orderService.isOrderStatusEqual(id, OrderStatus.IN_PROGRESS)) throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
+        return orderService.updateOrder(dto, id);
+    }
+
     @DeleteMapping("{order-id}")
     public ResponseEntity<String> deleteOrder(@PathVariable("order-id") Long id) {
         if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(!orderService.isOrderStatusEqual(id, orderService.getStatusesAllowingTransitionTo(OrderStatus.DELETED))) throw new BadRequestException("Bestellstatus befindet sich nicht in gültigem Bestellstatus!");
         return orderService.deleteOrderById(id);
     }
 
@@ -109,6 +126,7 @@ public class OrderController {
             @PathVariable("order-id") Long id,
             @RequestBody List<ItemRequestDTO> dtos) {
         if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(!orderService.isOrderStatusEqual(id, OrderStatus.IN_PROGRESS)) throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
         return itemService.createItemsOfOrder(id, dtos);
     }
 
@@ -119,6 +137,7 @@ public class OrderController {
     ){
         if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
         if(!itemService.existsItemOfOrder(orderId, itemId)) throw new NotFoundException("Artikel nicht gefunden.");
+        if(!orderService.isOrderStatusEqual(orderId, OrderStatus.IN_PROGRESS)) throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
         return itemService.deleteItemsOfOrder(orderId, itemId);
     }
 
@@ -135,6 +154,7 @@ public class OrderController {
     ){
         if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
         if(!quotationService.existsQuotation(orderId, quotationId)) throw new NotFoundException("Vergleichsartikel nicht gefunden.");
+        if(!orderService.isOrderStatusEqual(orderId, OrderStatus.IN_PROGRESS)) throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
         return quotationService.deleteQuotation(orderId, quotationId);
     }
 
@@ -144,9 +164,9 @@ public class OrderController {
             @RequestBody List<QuotationRequestDTO> dtos
     ){
         if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(!orderService.isOrderStatusEqual(id, OrderStatus.IN_PROGRESS)) throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
         return quotationService.createQuotation(id, dtos);
     }
-
 
     @GetMapping("invoice/{invoice-id}/document")
     public ResponseEntity<byte[]> getPdfOfInvoice(@PathVariable("invoice-id") String invoiceId) throws IOException {
@@ -167,6 +187,43 @@ public class OrderController {
     public ResponseEntity<byte[]> getPreviewOfPdfOfInvoice(@PathVariable("invoice-id") String invoiceId) throws IOException {
         if(!invoiceService.existsInvoiceById(invoiceId)) throw new NotFoundException("Rechnung nicht gefunden.");
         return paperlessService.getPreviewOfPdfOfInvoice(invoiceId);
+
+    @GetMapping("{order-id}/approvals")
+    public ResponseEntity<ApprovalResponseDTO> getApprovalOfOrder(@PathVariable("order-id") Long orderId){
+        if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
+        return this.approvalService.getApprovalOfOrder(orderId);
+    }
+
+    @PatchMapping("{order-id}/approvals")
+    public ResponseEntity<ApprovalResponseDTO> updateApprovalOfOrder(
+            @PathVariable("order-id") Long orderId,
+            @RequestBody ApprovalRequestDTO dto
+    ){
+        if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(!orderService.isOrderStatusEqual(orderId, OrderStatus.COMPLETED)) throw new BadRequestException("Bestellstatus befindet sich nicht auf fertiggestellt!");
+        return this.approvalService.updateApprovalOfOrder(orderId, dto);
+    }
+
+    @GetMapping("/statuses")
+    public ResponseEntity<Map<OrderStatus, Set<OrderStatus>>> getOrderStatuses() {
+        return ResponseEntity.ok(OrderService.getOrderStatusMatrix());
+    }
+
+
+    @PutMapping("{order-id}/status")
+    public ResponseEntity<OrderStatus> updateOrderStatus(
+            @PathVariable("order-id") Long orderId,
+            @RequestBody OrderStatus targetOrderStatus
+    ){
+        if(targetOrderStatus.equals(OrderStatus.DELETED)) throw new BadRequestException("Löschen nicht erlaubt, nutze DELETE endpoint!");
+        return orderService.updateOrderStatus(orderId, targetOrderStatus);
+    }
+
+    @GetMapping("{order-id}/status/history")
+    public ResponseEntity<List<OrderStatusHistoryResponseDTO>> getOrderStatusHistory(@PathVariable("order-id") Long orderId){
+        if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
+        return orderService.getStatusHistory(orderId);
+
     }
 
     @GetMapping

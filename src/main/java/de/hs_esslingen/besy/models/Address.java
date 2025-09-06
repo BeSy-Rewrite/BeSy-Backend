@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.models;
 
+import de.hs_esslingen.besy.enums.AddressOwnerType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,8 +10,7 @@ import lombok.ToString;
 @Setter
 @Entity
 @ToString
-@Table(name = "address",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"building_name", "street", "building_number", "town", "postal_code", "county", "country"}))
+@Table(name = "address")
 public class Address {
 
     @Id
@@ -41,5 +41,15 @@ public class Address {
 
     @Column(name = "comment")
     private String comment;
+
+    @Column(name = "legacy_address_name")
+    private String legacyAddressName;
+
+    @Column(name = "legacy_supplier_name")
+    private String legacySupplierName;
+
+    @Column(name = "owner_type", nullable = false, updatable = false)
+    @Enumerated(EnumType.STRING)
+    private AddressOwnerType ownerType;
 
 }

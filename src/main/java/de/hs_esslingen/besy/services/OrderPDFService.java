@@ -31,6 +31,7 @@ public class OrderPDFService {
     private final ItemRepository itemRepository;
     private final InvoiceRepository invoiceRepository;
     private final PersonRepository personRepository;
+    private final QuotationRepository quotationRepository;
 
     private final ItemResponseMapper itemResponseMapper;
 
@@ -51,7 +52,8 @@ public class OrderPDFService {
         PDAcroForm acroForm = document.getDocumentCatalog().getAcroForm();
         PDFOrder order = new PDFOrder();
         order.parseOrder(acroForm);
-        
+
+
         // Retrieve Order and necessary relations for PDF
         Optional<Order> orderOpt = orderRepository.findById(Long.valueOf(orderId));
         if (orderOpt.isEmpty()) throw new NotFoundException("Order with id " + orderId + " does not exist.");
@@ -60,11 +62,17 @@ public class OrderPDFService {
         Supplier supplierDAO = supplierRepository.findById(orderDAO.getSupplierId())
                 .orElseThrow(() -> new NotFoundException("Supplier with id " + orderDAO.getSupplierId() + " does not exist."));
 
+        Approval approvals = orderDAO.getApproval();
+
         List<Item> itemsDAO = itemRepository.findByOrder_Id(orderDAO.getId());
         Optional<Invoice> invoiceOpt = invoiceRepository.findByOrderId(Long.valueOf(orderId));
         Optional<Person> deliveryPersonOpt = personRepository.findById(Long.valueOf(orderDAO.getDeliveryPersonId()));
         Optional<Person> invoicePersonOpt = personRepository.findById(Long.valueOf(orderDAO.getInvoicePersonId()));
         Address supplierAddress = supplierDAO.getAddress();
+        List<Quotation> quotations = quotationRepository.getQuotationByOrderId(Long.valueOf(orderId));
+
+        Address deliveryAddress = orderDAO.getDeliveryAddress();
+        Address invoiceAddress = orderDAO.getInvoiceAddress();
 
 
         // Write to PDF
@@ -74,7 +82,6 @@ public class OrderPDFService {
         // nach VOL/UVgO (Liefer-/Dienstleistung)
         order.setDeliveryAndServiceFlag(true);
 
-        // ToDo: Replace supplier address by address relation
         order.setCompanyAddress("""
         %s
         %s %s
@@ -103,14 +110,14 @@ public class OrderPDFService {
         // Lieferanschrift
         order.setDeliveryFaculty(ANSCHRIFT_FAKULTAET_DEFAULT);
         if(deliveryPersonOpt.isPresent()) order.setDeliveryOrderer(deliveryPersonOpt.get().getName());
-        order.setDeliveryStreet(ANSCHRIFT_STRASSE_DEFAULT);
-        order.setDeliveryAddress(ANSCHRIFT_PLZ_ORT_DEFAULT);
+        order.setDeliveryStreet(deliveryAddress.getStreet());
+        order.setDeliveryAddress(deliveryAddress.getPostalCode() + " " + deliveryAddress.getTown());
 
         // Rechnungsanschrift
         order.setInvoiceFaculty(ANSCHRIFT_FAKULTAET_DEFAULT);
         if(invoicePersonOpt.isPresent()) order.setInvoiceOrderer(invoicePersonOpt.get().getName());
-        order.setInvoiceStreet(ANSCHRIFT_STRASSE_DEFAULT);
-        order.setInvoiceDeliveryAddress(ANSCHRIFT_PLZ_ORT_DEFAULT);
+        order.setInvoiceStreet(invoiceAddress.getStreet());
+        order.setInvoiceDeliveryAddress(invoiceAddress.getPostalCode() + " " + invoiceAddress.getTown());
 
         List<ItemResponseDTO> itemResponseDTOS = itemResponseMapper.toDto(itemsDAO);
         order.setItems(itemResponseDTOS);
@@ -121,25 +128,25 @@ public class OrderPDFService {
         order.setCostCenterSecondary(orderDAO.getSecondaryCostCenterId());
         order.setDfgKey(orderDAO.getDfgKey());
 
-        // ToDo Angebot/Preisvergleiche
+        order.setQuotations(quotations);
 
         // lfd.Nr.
         order.setLfdNr(LAUFENDE_NUMMER_DEFAULT);
 
         order.setFlagDecisionCheapestOffer(orderDAO.getFlagDecisionCheapestOffer());
-        //ToDo wirtschaftlichstes Angebot
+        order.setFlagDecisionMostEconomicalOffer(orderDAO.getFlagDecisionMostEconomicalOffer());
         order.setFlagDecisionSoleSupplier(orderDAO.getFlagDecisionSoleSupplier());
         order.setFlagDecisionContractPartner(orderDAO.getFlagDecisionContractPartner());
-        //ToDo in der Vorzugsliste RZ (EDV) oder FM (Möbel) enthalten ist.
+        order.setFlagDecisionPreferredSupplierList(orderDAO.getFlagDecisionPreferredSupplierList());
         order.setFlagDecisionOtherReasons(orderDAO.getFlagDecisionOtherReasons());
         order.setFlagDecisionOtherReasonsDescription(orderDAO.getDecisionOtherReasonsDescription());
 
-        order.setOrderFlagEdvPermission(orderDAO.getFlagEdvPermission());
-        order.setOrderFlagFurniturePermission(orderDAO.getFlagFurniturePermission());
-        order.setOrderFlagFurnitureRoom(orderDAO.getFlagFurnitureRoom());
-        order.setOrderFlagInvestmentRoom(orderDAO.getFlagInvestmentRoom());
-        order.setOrderFlagInvestmentStructuralMeasures(orderDAO.getFlagInvestmentStructuralMeasures());
-        order.setOrderFlagMediaPermission(orderDAO.getFlagMediaPermission());
+        order.setOrderFlagEdvPermission(approvals.getFlagEdvPermission());
+        order.setOrderFlagFurniturePermission(approvals.getFlagFurniturePermission());
+        order.setOrderFlagFurnitureRoom(approvals.getFlagFurnitureRoom());
+        order.setOrderFlagInvestmentRoom(approvals.getFlagInvestmentRoom());
+        order.setOrderFlagInvestmentStructuralMeasures(approvals.getFlagInvestmentStructuralMeasures());
+        order.setOrderFlagMediaPermission(approvals.getFlagMediaPermission());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         document.save(baos);

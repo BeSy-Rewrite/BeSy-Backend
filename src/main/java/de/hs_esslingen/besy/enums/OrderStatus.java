@@ -6,11 +6,13 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum OrderStatus {
-    ABR("Abgerechnet"),
-    ABS("Abgeschickt"),
-    ARC("Archiviert"),
-    DEL("Gelöscht"),
-    INB("In Bearbeitung");
-
-    private final String description;
+    IN_PROGRESS,
+    COMPLETED,
+    APPROVALS_RECEIVED,
+    APPROVED,
+    REJECTED,
+    SENT,
+    SETTLED,
+    ARCHIVED,
+    DELETED
 }

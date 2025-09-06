@@ -5,7 +5,6 @@ import lombok.Value;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 
 /**
  * DTO for {@link de.hs_esslingen.besy.models.Order}
@@ -34,17 +33,14 @@ public class OrderRequestDTO implements Serializable {
     BigDecimal percentageDiscount;
     BigDecimal cashbackPercentage;
     Short cashbackDays;
-    OffsetDateTime lastUpdatedTime;
     Boolean flagDecisionCheapestOffer;
+    Boolean flagDecisionMostEconomicalOffer;
     Boolean flagDecisionSoleSupplier;
     Boolean flagDecisionContractPartner;
+    Boolean flagDecisionPreferredSupplierList;
     Boolean flagDecisionOtherReasons;
     String decisionOtherReasonsDescription;
-    Boolean flagEdvPermission;
-    Boolean flagFurniturePermission;
-    Boolean flagFurnitureRoom;
-    Boolean flagInvestmentRoom;
-    Boolean flagInvestmentStructuralMeasures;
-    Boolean flagMediaPermission;
     String dfgKey;
+    Integer deliveryAddressId;
+    Integer invoiceAddressId;
 }

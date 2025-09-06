@@ -44,8 +44,12 @@ public class Supplier {
     @Column(name = "deactivated_date")
     private LocalDate deactivatedDate;
 
-    @ManyToOne
-    @JoinColumn(name = "address_id", referencedColumnName = "id")
+    // Keep this for compatability with SupplierRepository
+    @Column(name = "address_id", insertable = false, updatable = false)
+    private Integer addressId;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id", referencedColumnName = "id", nullable = false)
     private Address address;
 
 }
