@@ -41,8 +41,8 @@ public class PaperlessService {
     @Value("${paperless.api.upload-url}")
     private String paperlessUploadUrl;
 
-    @Value("${paperless.api-task-url}")
-    private String paperlessTaskUrl;
+    @Value("${paperless.api.download-url}")
+    private String paperlessDownloadUrl;
 
     @Value("${paperless.api.token}")
     private String authToken;
@@ -72,6 +72,26 @@ public class PaperlessService {
         Invoice savedInvoice = invoiceRepository.save(invoice);
 
         return ResponseEntity.ok(invoiceResponseMapper.toDto(savedInvoice));
+    }
+
+
+    public ResponseEntity<byte[]> getPdfOfInvoice(String invoiceId) throws IOException {
+        Invoice invoice = invoiceRepository.findById(invoiceId).get();
+        Long paperlessId = invoice.getPaperlessId();
+
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+
+            HttpGet get = new HttpGet(paperlessBaseUrl + paperlessDownloadUrl.replace("{id}", String.valueOf(paperlessId)));
+            get.setHeader("Authorization", "Bearer " + authToken);
+
+            try (CloseableHttpResponse response = client.execute(get)) {
+                if (response.getCode() == 200) {
+                    return ResponseEntity.ok(response.getEntity().getContent().readAllBytes());
+                } else {
+                    throw new RuntimeException("Fehler beim Herunterladen der PDF.");
+                }
+            }
+        }
     }
 
 

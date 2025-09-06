@@ -1,7 +1,6 @@
 package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.response.InvoiceResponseDTO;
-import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.response.InvoiceResponseMapper;
 import de.hs_esslingen.besy.models.Invoice;

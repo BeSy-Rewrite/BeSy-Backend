@@ -36,6 +36,7 @@ public class OrderController {
     private final OrderPDFService orderPDFService;
     private final PaperlessService paperlessService;
     private final InvoiceRepository invoiceRepository;
+    private final InvoiceService invoiceService;
 
     @GetMapping
     public Page<OrderResponseDTO> getAllOrders(
@@ -144,12 +145,19 @@ public class OrderController {
         return quotationService.createQuotation(id, dtos);
     }
 
+
+    @GetMapping("invoice/{invoice-id}/document")
+    public ResponseEntity<byte[]> getPdfOfInvoice(@PathVariable("invoice-id") String invoiceId) throws IOException {
+        if(!invoiceService.existsInvoiceById(invoiceId)) throw new NotFoundException("Rechnung nicht gefunden.");
+        return paperlessService.getPdfOfInvoice(invoiceId);
+    }
+
     @PostMapping("invoice/{invoice-id}/document")
     public ResponseEntity<InvoiceResponseDTO> createInvoiceOfOrder(
             @RequestParam("file") MultipartFile file,
             @PathVariable("invoice-id") String invoiceId
     ) throws IOException, ParseException {
-        if(invoiceRepository.existsById(invoiceId)) throw new NotFoundException("Rechnung nicht gefunden.");
+        if(!invoiceService.existsInvoiceById(invoiceId)) throw new NotFoundException("Rechnung nicht gefunden.");
         return paperlessService.uploadPdfToPaperless(file, invoiceId);
     }
 
