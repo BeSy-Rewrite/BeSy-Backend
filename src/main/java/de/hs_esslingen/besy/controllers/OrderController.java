@@ -9,6 +9,7 @@ import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
+import de.hs_esslingen.besy.repositories.InvoiceRepository;
 import de.hs_esslingen.besy.services.*;
 import lombok.AllArgsConstructor;
 import org.apache.hc.core5.http.ParseException;
@@ -34,6 +35,7 @@ public class OrderController {
     private final QuotationService quotationService;
     private final OrderPDFService orderPDFService;
     private final PaperlessService paperlessService;
+    private final InvoiceRepository invoiceRepository;
 
     @GetMapping
     public Page<OrderResponseDTO> getAllOrders(
@@ -147,6 +149,7 @@ public class OrderController {
             @RequestParam("file") MultipartFile file,
             @PathVariable("invoice-id") String invoiceId
     ) throws IOException, ParseException {
+        if(invoiceRepository.existsById(invoiceId)) throw new NotFoundException("Rechnung nicht gefunden.");
         return paperlessService.uploadPdfToPaperless(file, invoiceId);
     }
 
