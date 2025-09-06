@@ -663,6 +663,29 @@ paths:
         '500':
           description: Interner Serverfehler.
   /orders/invoice/{invoice-id}/document:
+    get:
+      tags:
+        - Orders
+      description: Gibt das vollständige PDF-Dokument zur angegebenen Rechnung zurück.
+      parameters:
+        - name: invoice-id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID der Rechnung, für die das PDF heruntergeladen wird.
+      responses:
+        '200':
+          description: PDF erfolgreich zurückgegeben
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Rechnung nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
     post:
       tags:
         - Orders
@@ -700,6 +723,30 @@ paths:
           description: Rechnung nicht gefunden.
         '500':
           description: Fehler beim Hochladen des Dokumentes. Interner Serverfehler.
+  /orders/invoice/{invoice-id}/document/preview:
+    get:
+      tags:
+        - Orders
+      description: Gibt eine Vorschau des PDF-Dokuments als IMG-Datei zur angegebenen Rechnung zurück.
+      parameters:
+        - name: invoice-id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID der Rechnung, für die die PDF-Vorschau abgerufen wird.
+      responses:
+        '200':
+          description: PDF-Vorschau erfolgreich zurückgegeben
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Rechnung nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
   /orders/{order-id}/export:
     get:
       tags:
