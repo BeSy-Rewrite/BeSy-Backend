@@ -3,6 +3,7 @@ package de.hs_esslingen.besy.controllers;
 import de.hs_esslingen.besy.dtos.request.ItemRequestDTO;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
 import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
+import de.hs_esslingen.besy.dtos.response.InvoiceResponseDTO;
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
@@ -142,7 +143,7 @@ public class OrderController {
     }
 
     @PostMapping("invoice/{invoice-id}/document")
-    public ResponseEntity<Long> createInvoiceOfOrder(
+    public ResponseEntity<InvoiceResponseDTO> createInvoiceOfOrder(
             @RequestParam("file") MultipartFile file,
             @PathVariable("invoice-id") String invoiceId
     ) throws IOException, ParseException {
