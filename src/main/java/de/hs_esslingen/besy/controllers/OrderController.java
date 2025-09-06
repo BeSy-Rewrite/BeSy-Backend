@@ -229,7 +229,7 @@ public class OrderController {
     }
 
     @GetMapping("{order-id}/export")
-    public ResponseEntity<byte[]> exportOrder(@PathVariable("order-id") Integer orderId) throws IOException {
+    public ResponseEntity<byte[]> exportOrder(@PathVariable("order-id") Long orderId) throws IOException {
         if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
         return this.orderPDFService.generateOrderPDF(orderId);
     }
