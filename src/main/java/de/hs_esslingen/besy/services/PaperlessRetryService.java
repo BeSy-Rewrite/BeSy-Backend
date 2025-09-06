@@ -12,6 +12,7 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.retry.annotation.Recover;
@@ -32,12 +33,9 @@ import java.util.List;
 
 
 @EnableRetry
+@PropertySource("classpath:application.properties")
 @Service
 public class PaperlessRetryService {
-
-    private final static int MAX_RETRIES = 6;
-
-    private final static int MAX_DELAY = 5000;
 
     @Value("${paperless.api.base-url}")
     private String paperlessBaseUrl;
@@ -58,7 +56,7 @@ public class PaperlessRetryService {
     }
 
 
-    @Retryable(maxAttempts = MAX_RETRIES, backoff = @Backoff(delay = MAX_DELAY), retryFor = StatusNotSuccessException.class)
+    @Retryable(maxAttemptsExpression = "${retry.maxAttempts}", backoff = @Backoff(delayExpression = "${retry.maxDelay}"), retryFor = StatusNotSuccessException.class)
     public String getDocumentIdWithRetry(String uuid) throws IOException, ParseException {
 
         try(CloseableHttpClient client = HttpClients.createDefault()) {
