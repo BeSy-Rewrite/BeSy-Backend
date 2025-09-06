@@ -8,6 +8,7 @@ import de.hs_esslingen.besy.interfaces.paperless.Task;
 import de.hs_esslingen.besy.mappers.response.InvoiceResponseMapper;
 import de.hs_esslingen.besy.models.Invoice;
 import de.hs_esslingen.besy.repositories.InvoiceRepository;
+import org.apache.coyote.BadRequestException;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
@@ -56,6 +57,8 @@ public class PaperlessService {
     public ResponseEntity<InvoiceResponseDTO> uploadPdfToPaperless(MultipartFile file, String invoiceId) throws IOException, ParseException {
 
         Invoice invoice = invoiceRepository.findById(invoiceId).get();
+
+        if(invoice.getPaperlessId() != null) throw new BadRequestException("Diese Rechnung besitzt bereits ein verknüpftes Dokument mit der id: " + invoice.getPaperlessId());
 
         // Upload the pdf to paperless
         String uuid = uploadDocument(file);
