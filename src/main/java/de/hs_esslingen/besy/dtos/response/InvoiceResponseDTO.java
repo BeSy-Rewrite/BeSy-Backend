@@ -19,5 +19,5 @@ public class InvoiceResponseDTO implements Serializable {
     LocalDate date;
     String comment;
     OffsetDateTime createdDate;
-
+    Long paperlessId;
 }
