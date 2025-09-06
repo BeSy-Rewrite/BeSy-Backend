@@ -31,4 +31,4 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ghcr.io/kr1pt0n05/besy_backend:1.0.1
+          tags: ghcr.io/kr1pt0n05/besy_backend:1.7.0
