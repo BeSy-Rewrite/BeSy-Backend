@@ -1046,6 +1046,7 @@ components:
           enum:
             - m
             - f
+            - d
     PersonResponseDTO:
       type: object
       properties:
