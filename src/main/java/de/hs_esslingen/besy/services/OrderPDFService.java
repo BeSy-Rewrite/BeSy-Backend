@@ -45,7 +45,7 @@ public class OrderPDFService {
 
 
     // TODO: Ensure that this method is only called when the Order is in a state where all necessary constraints and relationships are satisfied
-    public ResponseEntity<byte[]> generateOrderPDF(Integer orderId) throws IOException {
+    public ResponseEntity<byte[]> generateOrderPDF(Long orderId) throws IOException {
 
         // Parse empty Order PDF's acro form elements
         PDDocument document = Loader.loadPDF(new File(FORMULAR_URI));
