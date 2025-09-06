@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Bestellsystem API
-  version: v1.6.2
+  version: v1.7.0
 servers:
   - url: http://localhost:3000/api/v1
     description: Generierte Server-URL
@@ -730,6 +730,92 @@ paths:
           description: Bestellung nicht gefunden. Vergleichsartikel nicht gefunden.
         '500':
           description: Interner Serverfehler.
+          
+  /orders/invoice/{invoice-id}/document:
+    get:
+      tags:
+        - Orders
+      description: Gibt das vollständige PDF-Dokument zur angegebenen Rechnung zurück.
+      parameters:
+        - name: invoice-id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID der Rechnung, für die das PDF heruntergeladen wird.
+      responses:
+        '200':
+          description: PDF erfolgreich zurückgegeben
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Rechnung nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
+    post:
+      tags:
+        - Orders
+      description: >
+        Lädt eine PDF-Datei hoch und verknüpft sie nach der Verarbeitung mit der angegebenen Rechnung. Jede Rechnung kann ausschließlich mit einem PDF-Dokument verküpft werden.
+      operationId: uploadInvoiceDocument
+      parameters:
+        - name: invoice-id
+          in: path
+          required: true
+          description: Die ID der Rechnung, mit der das Dokument verknüpft werden soll
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Die hochzuladende PDF-Datei
+      responses:
+        '200':
+          description: Dokument erfolgreich hochgeladen und mit der Rechnung verknüpft
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponseDTO'
+        '400':
+          description: Diese Rechnung besitzt bereits ein verknüpftes Dokument mit der id `paperless_id`.
+        '404':
+          description: Rechnung nicht gefunden.
+        '500':
+          description: Fehler beim Hochladen des Dokumentes. Interner Serverfehler.
+  /orders/invoice/{invoice-id}/document/preview:
+    get:
+      tags:
+        - Orders
+      description: Gibt eine Vorschau des PDF-Dokuments als IMG-Datei zur angegebenen Rechnung zurück.
+      parameters:
+        - name: invoice-id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID der Rechnung, für die die PDF-Vorschau abgerufen wird.
+      responses:
+        '200':
+          description: PDF-Vorschau erfolgreich zurückgegeben
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Rechnung nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
 
   /orders/{order-id}/approval:
     get:
@@ -1438,6 +1524,8 @@ components:
         created_date:
           type: string
           format: date-time
+        paperless_id:
+          type: number
     AddressRequestDTO:
       type: object
       required:

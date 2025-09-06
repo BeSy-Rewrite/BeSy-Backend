@@ -4,18 +4,27 @@ import de.hs_esslingen.besy.dtos.request.ApprovalRequestDTO;
 import de.hs_esslingen.besy.dtos.request.ItemRequestDTO;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
 import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
+import de.hs_esslingen.besy.dtos.response.InvoiceResponseDTO;
+import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
+import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
+import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
 import de.hs_esslingen.besy.dtos.response.*;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
+import de.hs_esslingen.besy.repositories.InvoiceRepository;
 import de.hs_esslingen.besy.services.*;
 import lombok.AllArgsConstructor;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -32,6 +41,9 @@ public class OrderController {
     private final ItemService itemService;
     private final QuotationService quotationService;
     private final OrderPDFService orderPDFService;
+    private final PaperlessService paperlessService;
+    private final InvoiceRepository invoiceRepository;
+    private final InvoiceService invoiceService;
     private final ApprovalService approvalService;
 
     @GetMapping
@@ -156,6 +168,27 @@ public class OrderController {
         return quotationService.createQuotation(id, dtos);
     }
 
+    @GetMapping("invoice/{invoice-id}/document")
+    public ResponseEntity<byte[]> getPdfOfInvoice(@PathVariable("invoice-id") String invoiceId) throws IOException {
+        if(!invoiceService.existsInvoiceById(invoiceId)) throw new NotFoundException("Rechnung nicht gefunden.");
+        return paperlessService.getPdfOfInvoice(invoiceId);
+    }
+
+    @PostMapping("invoice/{invoice-id}/document")
+    public ResponseEntity<InvoiceResponseDTO> createInvoiceOfOrder(
+            @RequestParam("file") MultipartFile file,
+            @PathVariable("invoice-id") String invoiceId
+    ) throws IOException, ParseException {
+        if(!invoiceService.existsInvoiceById(invoiceId)) throw new NotFoundException("Rechnung nicht gefunden.");
+        return paperlessService.uploadPdfToPaperless(file, invoiceId);
+    }
+
+    @GetMapping("invoice/{invoice-id}/document/preview")
+    public ResponseEntity<byte[]> getPreviewOfPdfOfInvoice(@PathVariable("invoice-id") String invoiceId) throws IOException {
+        if(!invoiceService.existsInvoiceById(invoiceId)) throw new NotFoundException("Rechnung nicht gefunden.");
+        return paperlessService.getPreviewOfPdfOfInvoice(invoiceId);
+    }
+
     @GetMapping("{order-id}/approvals")
     public ResponseEntity<ApprovalResponseDTO> getApprovalOfOrder(@PathVariable("order-id") Long orderId){
         if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
@@ -190,12 +223,14 @@ public class OrderController {
     @GetMapping("{order-id}/status/history")
     public ResponseEntity<List<OrderStatusHistoryResponseDTO>> getOrderStatusHistory(@PathVariable("order-id") Long orderId){
         if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
         return orderService.getStatusHistory(orderId);
+
     }
 
-    @GetMapping
-    @RequestMapping("{order-id}/export")
-    public ResponseEntity<byte[]> exportOrder(@PathVariable("order-id") Integer orderId) throws IOException {
+    @GetMapping("{order-id}/export")
+    public ResponseEntity<byte[]> exportOrder(@PathVariable("order-id") Long orderId) throws IOException {
+        if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
         return this.orderPDFService.generateOrderPDF(orderId);
     }
 

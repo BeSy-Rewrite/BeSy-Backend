@@ -26,4 +26,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: kr1pt0n05/besy_backend:1.6.2
+          tags: kr1pt0n05/besy_backend:1.7.0

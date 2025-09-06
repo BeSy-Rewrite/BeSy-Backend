@@ -21,4 +21,8 @@ public class InvoiceService {
         InvoiceResponseDTO invoiceResponseDTO = invoiceResponseMapper.toDto(invoice);
         return ResponseEntity.ok(invoiceResponseDTO);
     }
+
+    public boolean existsInvoiceById(String id) {
+        return invoiceRepository.existsById(id);
+    }
 }
