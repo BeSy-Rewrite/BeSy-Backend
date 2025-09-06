@@ -2,8 +2,10 @@ package de.hs_esslingen.besy.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.hs_esslingen.besy.dtos.response.InvoiceResponseDTO;
 import de.hs_esslingen.besy.exceptions.StatusNotSuccessException;
 import de.hs_esslingen.besy.interfaces.paperless.Task;
+import de.hs_esslingen.besy.mappers.response.InvoiceResponseMapper;
 import de.hs_esslingen.besy.models.Invoice;
 import de.hs_esslingen.besy.repositories.InvoiceRepository;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -30,6 +32,7 @@ public class PaperlessService {
 
     private final InvoiceRepository invoiceRepository;
     private final PaperlessRetryService retryService;
+    private final InvoiceResponseMapper invoiceResponseMapper;
 
     @Value("${paperless.api.base-url}")
     private String paperlessBaseUrl;
@@ -43,17 +46,14 @@ public class PaperlessService {
     @Value("${paperless.api.token}")
     private String authToken;
 
-    @Autowired
-    private final ObjectMapper mapper;
-
-    public PaperlessService(InvoiceRepository invoiceRepository, PaperlessRetryService retryService, ObjectMapper mapper) {
+    public PaperlessService(InvoiceRepository invoiceRepository, PaperlessRetryService retryService, ObjectMapper mapper, InvoiceResponseMapper invoiceResponseMapper) {
         this.invoiceRepository = invoiceRepository;
         this.retryService = retryService;
-        this.mapper = mapper;
+        this.invoiceResponseMapper = invoiceResponseMapper;
     }
 
 
-    public ResponseEntity<Long> uploadPdfToPaperless(MultipartFile file, String invoiceId) throws IOException, ParseException {
+    public ResponseEntity<InvoiceResponseDTO> uploadPdfToPaperless(MultipartFile file, String invoiceId) throws IOException, ParseException {
 
         Invoice invoice = invoiceRepository.findById(invoiceId).get();
 
@@ -66,7 +66,9 @@ public class PaperlessService {
 
         if(documentId == null) throw new RuntimeException("Fehler beim Hochladen des Dokumentes.");
         invoice.setPaperlessId(documentId);
-        return ResponseEntity.ok(documentId);
+        Invoice savedInvoice = invoiceRepository.save(invoice);
+
+        return ResponseEntity.ok(invoiceResponseMapper.toDto(savedInvoice));
     }
 
 
