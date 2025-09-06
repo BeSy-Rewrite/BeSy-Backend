@@ -12,11 +12,13 @@ import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.repositories.InvoiceRepository;
 import de.hs_esslingen.besy.services.*;
 import lombok.AllArgsConstructor;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -159,6 +161,12 @@ public class OrderController {
     ) throws IOException, ParseException {
         if(!invoiceService.existsInvoiceById(invoiceId)) throw new NotFoundException("Rechnung nicht gefunden.");
         return paperlessService.uploadPdfToPaperless(file, invoiceId);
+    }
+
+    @GetMapping("invoice/{invoice-id}/document/preview")
+    public ResponseEntity<byte[]> getPreviewOfPdfOfInvoice(@PathVariable("invoice-id") String invoiceId) throws IOException {
+        if(!invoiceService.existsInvoiceById(invoiceId)) throw new NotFoundException("Rechnung nicht gefunden.");
+        return paperlessService.getPreviewOfPdfOfInvoice(invoiceId);
     }
 
     @GetMapping

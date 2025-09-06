@@ -20,7 +20,7 @@ import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,6 +43,9 @@ public class PaperlessService {
 
     @Value("${paperless.api.download-url}")
     private String paperlessDownloadUrl;
+
+    @Value("${paperless.api.preview-url}")
+    private String paperlessPreviewUrl;
 
     @Value("${paperless.api.token}")
     private String authToken;
@@ -82,13 +85,42 @@ public class PaperlessService {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
 
             HttpGet get = new HttpGet(paperlessBaseUrl + paperlessDownloadUrl.replace("{id}", String.valueOf(paperlessId)));
-            get.setHeader("Authorization", "Bearer " + authToken);
+            get.setHeader("Authorization", "Token " + authToken);
 
             try (CloseableHttpResponse response = client.execute(get)) {
                 if (response.getCode() == 200) {
-                    return ResponseEntity.ok(response.getEntity().getContent().readAllBytes());
+
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentType(MediaType.APPLICATION_PDF);
+                    headers.setContentDisposition(ContentDisposition.builder(invoice.getId()+ ".pdf").build());
+                    return new ResponseEntity<>(EntityUtils.toByteArray(response.getEntity()), headers, HttpStatus.OK);
                 } else {
                     throw new RuntimeException("Fehler beim Herunterladen der PDF.");
+                }
+            }
+        }
+    }
+
+
+    public ResponseEntity<byte[]> getPreviewOfPdfOfInvoice(String invoiceId) throws IOException {
+        Invoice invoice = invoiceRepository.findById(invoiceId).get();
+        Long paperlessId = invoice.getPaperlessId();
+
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+
+            HttpGet get = new HttpGet(paperlessBaseUrl + paperlessPreviewUrl.replace("{id}", String.valueOf(paperlessId)));
+            get.setHeader("Authorization", "Token " + authToken);
+
+            try (CloseableHttpResponse response = client.execute(get)) {
+                if (response.getCode() == 200) {
+
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentType(MediaType.IMAGE_PNG);
+                    headers.setContentDisposition(ContentDisposition.builder(invoice.getId()+ ".webp").build());
+
+                    return new ResponseEntity<>(EntityUtils.toByteArray(response.getEntity()), headers, HttpStatus.OK);
+                } else {
+                    throw new RuntimeException("Fehler beim Herunterladen des Fotos");
                 }
             }
         }
