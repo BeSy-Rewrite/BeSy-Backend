@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Bestellsystem API
-  version: v1.6.1
+  version: v1.6.2
 servers:
   - url: http://localhost:3000/api/v1
     description: Generierte Server-URL
@@ -1046,6 +1046,7 @@ components:
           enum:
             - m
             - f
+            - d
     PersonResponseDTO:
       type: object
       properties:
@@ -1540,8 +1541,6 @@ components:
           type: string
         website:
           type: string
-        address:
-          $ref: '#/components/schemas/AddressResponseDTO'
     CustomerIdRequestDTO:
       type: object
       required:
