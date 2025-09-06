@@ -187,6 +187,7 @@ public class OrderController {
     public ResponseEntity<byte[]> getPreviewOfPdfOfInvoice(@PathVariable("invoice-id") String invoiceId) throws IOException {
         if(!invoiceService.existsInvoiceById(invoiceId)) throw new NotFoundException("Rechnung nicht gefunden.");
         return paperlessService.getPreviewOfPdfOfInvoice(invoiceId);
+    }
 
     @GetMapping("{order-id}/approvals")
     public ResponseEntity<ApprovalResponseDTO> getApprovalOfOrder(@PathVariable("order-id") Long orderId){
