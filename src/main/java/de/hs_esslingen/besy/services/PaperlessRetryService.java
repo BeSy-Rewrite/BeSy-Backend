@@ -2,6 +2,7 @@ package de.hs_esslingen.besy.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.hs_esslingen.besy.exceptions.PaperlessException;
 import de.hs_esslingen.besy.exceptions.StatusNotSuccessException;
 import de.hs_esslingen.besy.interfaces.paperless.Task;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -13,6 +14,7 @@ import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
@@ -79,6 +81,11 @@ public class PaperlessRetryService {
                 return task.getRelated_document();
             }
         }
+    }
+
+    @Recover
+    void recover(Throwable ex) {
+        throw new PaperlessException("Fehler beim Hochladen des Dokumentes.");
     }
 
 }
