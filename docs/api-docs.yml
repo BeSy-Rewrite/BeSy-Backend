@@ -46,6 +46,35 @@ paths:
       tags:
         - Persons
       operationId: getPersonById
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonRequestDTO'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PersonResponseDTO'
+        '404':
+          description: Person nicht gefunden.
+        '409':
+          description: Verweis auf eine nicht existierende Entität.
+        '500':
+          description: Interner Serverfehler.
+    put:
+      tags:
+        - Persons
+      operationId: updatePersonById
       parameters:
         - name: id
           in: path
