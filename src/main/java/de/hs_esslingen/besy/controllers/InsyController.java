@@ -1,5 +1,7 @@
 package de.hs_esslingen.besy.controllers;
 
+import de.hs_esslingen.besy.enums.OrderStatus;
+import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.services.InsyService;
 import de.hs_esslingen.besy.services.OrderService;
@@ -9,6 +11,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 
 @RestController
@@ -22,6 +26,7 @@ public class InsyController {
     @PostMapping("{order-id}")
     public ResponseEntity<String> postOrderToInsy(@PathVariable("order-id") Long orderId) {
         if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(!orderService.isOrderStatusEqual(orderId, List.of(OrderStatus.COMPLETED, OrderStatus.ARCHIVED))) throw new BadRequestException("Bestellstatus befindet sich nicht auf fertiggestellt!");
         return insyService.createOrder(orderId);
     }
 }
