@@ -45,6 +45,7 @@ public class PersonController {
         return personService.updatePerson(id, personRequestDTO);
     }
 
+    @Deprecated(since = "api-1.8.x")
     @GetMapping("/addresses")
     public ResponseEntity<List<AddressResponseDTO>> getAddresses() {
         return addressService.getPersonAddresses();
