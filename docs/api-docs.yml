@@ -204,6 +204,35 @@ paths:
                 $ref: '#/components/schemas/SupplierResponseDTO'
         '404':
           description: Lieferant nicht gefunden.
+    put:
+      tags:
+        - Suppliers
+      operationId: updateSupplierById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierRequestDTO'
+      parameters:
+        - name: supplier-id
+          in: path
+          required: true
+          description: Die eindeutige ID des Lieferanten, welcher aktualisiert werden soll.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Lieferant gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierResponseDTO'
+        '404':
+          description: Lieferant nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
   /suppliers/{supplier-id}/customer_ids:
     get:
       tags:
@@ -265,6 +294,7 @@ paths:
     get:
       tags:
         - Suppliers
+      deprecated: true
       responses:
         '200':
           description: Liste aller Adressen.
