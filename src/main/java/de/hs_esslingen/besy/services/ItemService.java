@@ -41,12 +41,11 @@ public class ItemService {
         Order order = orderRepository.getReferenceById(orderId);
 
         // Server-side id generation
-        AtomicInteger itemIdCounter = new AtomicInteger(0);
+        int smallestItemId = itemRepository.findByOrder_Id(orderId).size();
+        AtomicInteger itemIdCounter = new AtomicInteger(smallestItemId+1);
 
         items.forEach(item -> {
-            if(itemRepository.existsByItemIdAndOrderId(item.getItemId(), orderId)) throw new EntityAlreadyExistsException("Zugehöriger Artikel mit Artikelnummer " + item.getItemId() + " existiert bereits.");
-
-            ItemId itemId = new ItemId(orderId,  itemIdCounter.incrementAndGet());
+            ItemId itemId = new ItemId(orderId,  itemIdCounter.getAndIncrement());
             Vat vat = vatRepository.getReferenceById(item.getVatValue());
 
             item.setId(itemId);
