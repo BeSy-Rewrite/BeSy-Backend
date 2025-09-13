@@ -16,9 +16,25 @@ public class Quotation {
     @EmbeddedId
     private QuotationId id;
 
+    /**
+     * The order ID column is mapped here with insertable=false, updatable=false
+     * to allow easier JPQL queries and criteria building without affecting
+     * persistence operations.
+     * <p>
+     * This field is read-only from JPA perspective and mirrors the orderId
+     * from the embedded ID. It should NOT be removed, as queries or joins
+     * relying on this field would break.
+     */
     @Column(name = "order_id", insertable = false, updatable = false)
     private Long orderId;
 
+    /**
+     * The index column is mapped here with insertable=false, updatable=false
+     * similarly to orderId for ease of querying and criteria API usage.
+     * It mirrors the index value from the embedded ID.
+     * <p>
+     * Do not remove this field, as queries depending on this column will fail.
+     */
     @Column(name = "index", insertable = false, updatable = false)
     private Short index;
 
@@ -38,4 +54,27 @@ public class Quotation {
 
     @Column(name = "company_city", nullable = false)
     private String companyCity;
+
+
+    /**
+     * Returns the index part of the embedded ID.
+     *
+     * This method is marked @Transient to avoid JPA mapping it again.
+     * It provides a convenient way to access the index from the composite key.
+     */
+    @Transient
+    public Short getIndex() {
+        return id != null ? id.getIndex() : null;
+    }
+
+    /**
+     * Returns the orderId part of the embedded ID.
+     *
+     * This method is marked @Transient to avoid JPA mapping it again.
+     * It provides a convenient way to access the orderId from the composite key.
+     */
+    @Transient
+    public Long getOrderId() {
+        return id != null ? id.getOrderId() : null;
+    }
 }
