@@ -42,10 +42,10 @@ public class ItemService {
 
         // Server-side id generation
         int smallestItemId = itemRepository.findByOrder_Id(orderId).size();
-        AtomicInteger itemIdCounter = new AtomicInteger(smallestItemId+1);
+        AtomicInteger itemIdCounter = new AtomicInteger(smallestItemId);
 
         items.forEach(item -> {
-            ItemId itemId = new ItemId(orderId,  itemIdCounter.getAndIncrement());
+            ItemId itemId = new ItemId(orderId,  itemIdCounter.incrementAndGet());
             Vat vat = vatRepository.getReferenceById(item.getVatValue());
 
             item.setId(itemId);
