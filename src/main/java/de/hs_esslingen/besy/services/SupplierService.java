@@ -5,9 +5,11 @@ import de.hs_esslingen.besy.dtos.response.CreateSupplierResponseDTO;
 import de.hs_esslingen.besy.dtos.response.SupplierResponseDTO;
 import de.hs_esslingen.besy.enums.AddressOwnerType;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
+import de.hs_esslingen.besy.mappers.request.AddressRequestMapper;
 import de.hs_esslingen.besy.mappers.request.SupplierRequestMapper;
 import de.hs_esslingen.besy.mappers.response.CreateSupplierResponseMapper;
 import de.hs_esslingen.besy.mappers.response.SupplierResponseMapper;
+import de.hs_esslingen.besy.models.Address;
 import de.hs_esslingen.besy.models.Supplier;
 import de.hs_esslingen.besy.repositories.SupplierRepository;
 import lombok.AllArgsConstructor;
@@ -24,6 +26,7 @@ public class SupplierService {
     private final SupplierRequestMapper supplierRequestMapper;
     private final SupplierResponseMapper supplierResponseMapper;
     private final CreateSupplierResponseMapper createSupplierResponseMapper;
+    private final AddressRequestMapper addressRequestMapper;
 
     public ResponseEntity<List<SupplierResponseDTO>> getAllSuppliers() {
         List<Supplier> suppliers = supplierRepository.findAll();
@@ -43,6 +46,22 @@ public class SupplierService {
         supplier.getAddress().setOwnerType(AddressOwnerType.Supplier);
         Supplier supplierPersisted = supplierRepository.save(supplier);
         return ResponseEntity.ok(createSupplierResponseMapper.toDto(supplierPersisted));
+    }
+
+    public ResponseEntity<CreateSupplierResponseDTO> updateSupplier(Integer id, SupplierRequestDTO dto) {
+        Supplier supplier = supplierRepository.findById(id).get();
+        Address address = supplier.getAddress();
+
+        supplierRequestMapper.partialUpdate(supplier, dto);
+
+        if(supplier.getAddress() != null) {
+            addressRequestMapper.partialUpdate(address, dto.getAddress());
+            supplier.setAddress(address);
+        }
+
+        Supplier savedSupplier = supplierRepository.save(supplier);
+        return ResponseEntity.ok(createSupplierResponseMapper.toDto(savedSupplier));
+
     }
 
     public boolean existsSupplierById(Integer id) {
