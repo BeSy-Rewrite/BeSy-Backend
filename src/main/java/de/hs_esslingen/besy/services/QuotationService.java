@@ -2,13 +2,11 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
 import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
-import de.hs_esslingen.besy.exceptions.EntityAlreadyExistsException;
 import de.hs_esslingen.besy.mappers.request.QuotationRequestMapper;
 import de.hs_esslingen.besy.mappers.response.QuotationResponseMapper;
 import de.hs_esslingen.besy.models.Order;
 import de.hs_esslingen.besy.models.Quotation;
 import de.hs_esslingen.besy.models.QuotationId;
-import de.hs_esslingen.besy.models.Supplier;
 import de.hs_esslingen.besy.repositories.OrderRepository;
 import de.hs_esslingen.besy.repositories.QuotationRepository;
 import de.hs_esslingen.besy.repositories.SupplierRepository;
@@ -17,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @AllArgsConstructor
@@ -38,10 +37,12 @@ public class QuotationService {
         List<Quotation> quotations = quotationRequestMapper.toEntity(dtos);
         Order order = orderRepository.getReferenceById(orderId);
 
-        quotations.forEach(quotation -> {
-            if(quotationRepository.existsByIndexAndOrderId(quotation.getIndex(), orderId)) throw new EntityAlreadyExistsException("Zugehöriges Vergleichsangebot mit dem Index " + quotation.getIndex() + " existiert bereits.");
+        // Server-side id generation
+        int smallestIndex = quotationRepository.findByOrderId(orderId).size();
+        AtomicInteger indexCounter = new AtomicInteger(smallestIndex);
 
-            QuotationId quotationId = new QuotationId(orderId, quotation.getIndex());
+        quotations.forEach(quotation -> {
+            QuotationId quotationId = new QuotationId(orderId, (short) indexCounter.incrementAndGet());
 
             quotation.setId(quotationId);
             quotation.setOrder(order);

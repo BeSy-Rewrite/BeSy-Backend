@@ -15,12 +15,34 @@ import java.math.BigDecimal;
 @Table(name = "item")
 public class Item {
 
+    /**
+     * The item ID column is part of the composite primary key {@link ItemId}.
+     * <p>
+     * This field is marked {@code insertable = false, updatable = false} because
+     * it is managed as part of the embedded ID.
+     * <p>
+     * It is included as a separate field to allow easier and more efficient querying
+     * and filtering on this specific column without having to navigate through the embedded ID.
+     * <p>
+     * <strong>Removing this line will introduce breaking changes!</strong>
+     */
     @Column(name = "item_id", insertable = false, updatable = false)
     private Integer itemId;
 
     @EmbeddedId
     private ItemId id;
 
+    /**
+     * The order ID column is part of the composite primary key {@link ItemId}.
+     * <p>
+     * This field is marked {@code insertable = false, updatable = false} because
+     * it is managed as part of the embedded ID.
+     * <p>
+     * It is included as a separate field to allow easier and more efficient querying
+     * and filtering on this specific column without having to navigate through the embedded ID.
+     * <p>
+     * <strong>Removing this line will introduce breaking changes!</strong>
+     */
     @Column(name = "order_id", insertable = false, updatable = false)
     private Long orderId;
 
@@ -68,4 +90,33 @@ public class Item {
     @Enumerated(EnumType.STRING)
     private VatType vatType;
 
+
+    /**
+     * Returns the item ID part of the composite primary key.
+     * <p>
+     * This method provides convenient access to the {@code itemId} embedded inside the {@link ItemId} composite key.
+     * It is marked {@code @Transient} because it does not correspond to a separate database column,
+     * but derives its value from the embedded ID.
+     *
+     * @return the item ID if the embedded ID is not null; otherwise, {@code null}.
+     */
+    @Transient
+    public Integer getItemId() {
+        return id != null ? id.getItemId() : null;
+    }
+
+
+    /**
+     * Returns the order ID part of the composite primary key.
+     * <p>
+     * This method provides convenient access to the {@code orderId} embedded inside the {@link ItemId} composite key.
+     * It is marked {@code @Transient} because it does not correspond to a separate database column,
+     * but derives its value from the embedded ID.
+     *
+     * @return the order ID if the embedded ID is not null; otherwise, {@code null}.
+     */
+    @Transient
+    public Long getOrderId() {
+        return id != null ? id.getOrderId() : null;
+    }
 }

@@ -37,6 +37,15 @@ public class PersonController {
         return personService.createPerson(personRequestDTO);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<PersonResponseDTO> updatePerson(
+            @PathVariable("id") Long id,
+            @RequestBody PersonRequestDTO personRequestDTO) {
+        if(!personService.existsById(id)) throw new NotFoundException("Person nicht gefunden.");
+        return personService.updatePerson(id, personRequestDTO);
+    }
+
+    @Deprecated(since = "api-1.8.x")
     @GetMapping("/addresses")
     public ResponseEntity<List<AddressResponseDTO>> getAddresses() {
         return addressService.getPersonAddresses();

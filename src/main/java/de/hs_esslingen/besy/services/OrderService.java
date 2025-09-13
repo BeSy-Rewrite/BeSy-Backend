@@ -56,9 +56,9 @@ public class OrderService {
      */
     private static final Map<OrderStatus, Set<OrderStatus>> ORDER_STATUS_MATRIX = Map.of(
             OrderStatus.IN_PROGRESS, Set.of(OrderStatus.COMPLETED, OrderStatus.DELETED),
-            OrderStatus.COMPLETED, Set.of(OrderStatus.APPROVALS_RECEIVED, OrderStatus.IN_PROGRESS, OrderStatus.DELETED),
+            OrderStatus.COMPLETED, Set.of(OrderStatus.APPROVALS_RECEIVED, OrderStatus.IN_PROGRESS, OrderStatus.DELETED, OrderStatus.APPROVED),
             OrderStatus.APPROVALS_RECEIVED, Set.of(OrderStatus.APPROVED, OrderStatus.DELETED),
-            OrderStatus.APPROVED, Set.of(OrderStatus.SENT, OrderStatus.DELETED),
+            OrderStatus.APPROVED, Set.of(OrderStatus.SENT),
             OrderStatus.REJECTED, Set.of(),
             OrderStatus.SENT, Set.of(OrderStatus.SETTLED),
             OrderStatus.SETTLED, Set.of(OrderStatus.ARCHIVED),
@@ -219,6 +219,11 @@ public class OrderService {
      */
     public boolean isOrderStatusEqual(Long orderId, OrderStatus status) {
         return orderRepository.findById(orderId).get().getStatus().equals(status);
+    }
+
+    public boolean isOrderStatusEqual(Long orderId, List<OrderStatus> statusList) {
+        OrderStatus orderStatus = orderRepository.findById(orderId).get().getStatus();
+        return statusList.stream().anyMatch(orderStatus::equals);
     }
 
 

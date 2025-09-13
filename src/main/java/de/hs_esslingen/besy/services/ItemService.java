@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @AllArgsConstructor
@@ -39,10 +40,12 @@ public class ItemService {
         List<Item> items = itemRequestMapper.toEntity(dto);
         Order order = orderRepository.getReferenceById(orderId);
 
-        items.forEach(item -> {
-            if(itemRepository.existsByItemIdAndOrderId(item.getItemId(), orderId)) throw new EntityAlreadyExistsException("Zugehöriger Artikel mit Artikelnummer " + item.getItemId() + " existiert bereits.");
+        // Server-side id generation
+        int smallestItemId = itemRepository.findByOrder_Id(orderId).size();
+        AtomicInteger itemIdCounter = new AtomicInteger(smallestItemId);
 
-            ItemId itemId = new ItemId(orderId, item.getItemId());
+        items.forEach(item -> {
+            ItemId itemId = new ItemId(orderId,  itemIdCounter.incrementAndGet());
             Vat vat = vatRepository.getReferenceById(item.getVatValue());
 
             item.setId(itemId);

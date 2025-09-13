@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Bestellsystem API
-  version: v1.7.0
+  version: v1.8.0
 servers:
   - url: http://localhost:3000/api/v1
     description: Generierte Server-URL
@@ -60,6 +60,37 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/PersonResponseDTO'
+        '404':
+          description: Person nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
+    put:
+      tags:
+        - Persons
+      operationId: updatePersonById
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonRequestDTO'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PersonResponseDTO'
+        '409':
+          description: Verweis auf eine nicht existierende Entität.
+        '500':
+          description: Interner Serverfehler.
   /persons/addresses:
     get:
       tags:
@@ -175,6 +206,35 @@ paths:
                 $ref: '#/components/schemas/SupplierResponseDTO'
         '404':
           description: Lieferant nicht gefunden.
+    put:
+      tags:
+        - Suppliers
+      operationId: updateSupplierById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierRequestDTO'
+      parameters:
+        - name: supplier-id
+          in: path
+          required: true
+          description: Die eindeutige ID des Lieferanten, welcher aktualisiert werden soll.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Lieferant gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierResponseDTO'
+        '404':
+          description: Lieferant nicht gefunden.
+        '500':
+          description: Interner Serverfehler.
   /suppliers/{supplier-id}/customer_ids:
     get:
       tags:
@@ -236,6 +296,7 @@ paths:
     get:
       tags:
         - Suppliers
+      deprecated: true
       responses:
         '200':
           description: Liste aller Adressen.
@@ -1163,15 +1224,12 @@ components:
     ItemRequestDTO:
       type: object
       required:
-        - item_id
         - name
         - price_per_unit
         - quantity
         - vat_value
         - vat_type
       properties:
-        item_id:
-          type: number
         name:
           type: string
         price_per_unit:
@@ -1279,15 +1337,11 @@ components:
     QuotationRequestDTO:
       type: object
       required:
-        - index
         - quote_date
         - price
         - company_name
         - company_city
       properties:
-        index:
-          type: integer
-          format: int32
         quote_date:
           type: string
           format: date

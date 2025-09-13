@@ -48,6 +48,20 @@ public class PersonService {
         return ResponseEntity.ok(personResponseMapper.toDto(savedPerson));
     }
 
+
+    public ResponseEntity<PersonResponseDTO> updatePerson(Long id, PersonRequestDTO personDTO) {
+        Person person = personRepository.findById(id).get();
+        personRequestMapper.partialUpdate(person, personDTO);
+
+        if(personDTO.getAddressId() != null){
+            Address address = addressRepository.getReferenceById(personDTO.getAddressId());
+            person.setAddress(address);
+        }
+
+        Person savedPerson = personRepository.save(person);
+        return ResponseEntity.ok(personResponseMapper.toDto(savedPerson));
+    }
+
     public boolean existsById(Long id) {
         return personRepository.existsById(id);
     }
