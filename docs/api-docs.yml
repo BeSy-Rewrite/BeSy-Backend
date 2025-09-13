@@ -1163,15 +1163,12 @@ components:
     ItemRequestDTO:
       type: object
       required:
-        - item_id
         - name
         - price_per_unit
         - quantity
         - vat_value
         - vat_type
       properties:
-        item_id:
-          type: number
         name:
           type: string
         price_per_unit:
