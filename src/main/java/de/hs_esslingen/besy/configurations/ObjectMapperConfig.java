@@ -1,3 +1,4 @@
+/*
 package de.hs_esslingen.besy.configurations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,3 +17,4 @@ public class ObjectMapperConfig {
                 .build();
     }
 }
+*/
