@@ -7,6 +7,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -157,7 +158,8 @@ public class PDFOrder {
                     acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Artikel[%d]", i)),
                     acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Beschreibung[%d]", i)),
                     acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Menge[%d]", i)),
-                    acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Stückpreis[%d]", i))
+                    acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Stückpreis[%d]", i)),
+                    acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Betrag[%d]", i))
             );
             items.add(article);
         }
@@ -291,7 +293,8 @@ public class PDFOrder {
                     pdfItem.setPosition(String.valueOf(itemDTO.getItemId()));
                     pdfItem.setDescription(itemDTO.getName());
                     pdfItem.setQuantity(String.valueOf(itemDTO.getQuantity()));
-                    pdfItem.setPrice(String.valueOf(itemDTO.getPricePerUnit()));
+                    pdfItem.setPrice((itemDTO.getPricePerUnit() + " €").replace('.', ','));
+                    pdfItem.setAmount((BigDecimal.valueOf(itemDTO.getQuantity()).multiply(itemDTO.getPricePerUnit()) + " €").replace('.', ','));
                 }
     }else {
             throw new RuntimeException("Number of items must be less than 14.");
