@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,6 +55,9 @@ public class OrderPDFService {
         PDFOrder order = new PDFOrder();
         order.parseOrder(acroForm);
         acroForm.setXFA(null);
+
+        // Print form fields for debugging
+        // printFormFields(acroForm);
 
         // Retrieve Order and necessary relations for PDF
         Optional<Order> orderOpt = orderRepository.findById(Long.valueOf(orderId));
@@ -155,5 +160,21 @@ public class OrderPDFService {
                 .ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(baos.toByteArray());
+    }
+
+    private void printFormFields(PDAcroForm acroForm) {
+        Iterable<PDField> fieldTree = acroForm.getFieldTree();
+
+        List<PDField> allFields = new ArrayList<>();
+        fieldTree.forEach(allFields::add);
+
+        System.out.println("Total fields (including nested): " + allFields.size());
+
+        for (PDField field : allFields) {
+            System.out.println("Name:  " + field.getFullyQualifiedName());
+            System.out.println("Type:  " + field.getClass().getSimpleName());
+            System.out.println("Value: " + field.getValueAsString());
+            System.out.println("----------------------------");
+        }
     }
 }
