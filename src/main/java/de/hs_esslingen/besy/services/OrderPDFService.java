@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
@@ -126,6 +128,25 @@ public class OrderPDFService {
 
         List<ItemResponseDTO> itemResponseDTOS = itemResponseMapper.toDto(itemsDAO);
         order.setItems(itemResponseDTOS);
+
+        BigDecimal subTotal = itemResponseDTOS
+                .stream()
+                .map(item -> item.getPricePerUnit().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        order.setSubTotal(String.valueOf(
+                subTotal)
+                .replace('.', ',')
+                .concat(" €")
+        );
+
+        BigDecimal netTotal = subTotal.multiply((BigDecimal.valueOf(100).subtract(orderDAO.getPercentageDiscount())).divide(BigDecimal.valueOf(100))).setScale(2, RoundingMode.HALF_UP);
+        order.setNetTotal(String.valueOf(netTotal).replace('.', ',').concat(" €"));
+
+        // TODO: VAT should be stored by the order itself
+        BigDecimal total = netTotal.multiply((BigDecimal.valueOf(100).add(itemsDAO.get(0).getVatValue())).divide(BigDecimal.valueOf(100))).setScale(2, RoundingMode.HALF_UP);
+        order.setTotal(String.valueOf(total).replace('.', ',').concat(" €"));
+
         order.setCommentForSupplier(orderDAO.getCommentForSupplier());
         order.setPercentageDiscount(String.valueOf(orderDAO.getPercentageDiscount()));
         order.setVat(MEHRWERTSTEUER_DEFAULT);

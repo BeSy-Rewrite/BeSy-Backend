@@ -73,6 +73,15 @@ public class PDFOrder {
     // Artikel
     private List<PDFItem> items = new ArrayList<>();
 
+    // Zwischensumme
+    private PDField subTotal;
+
+    // Nettosumme
+    private PDField netTotal;
+
+    // Gesamtsumme
+    private PDField total;
+
     // % Rabatt
     private PDField percentageDiscount;
 
@@ -163,6 +172,10 @@ public class PDFOrder {
             );
             items.add(article);
         }
+
+        subTotal = acroForm.getField("Formular1[0].#subform[0].Body[0].Zwischensumme[0]");
+        netTotal = acroForm.getField("Formular1[0].#subform[0].Body[0].Nettosumme[1]");
+        total = acroForm.getField("Formular1[0].#subform[0].Body[0].Gesamtsumme[0]");
 
         percentageDiscount = acroForm.getField("Formular1[0].#subform[0].Body[0].RabattText[0]");
         vat = acroForm.getField("Formular1[0].#subform[0].Body[0].MwStSatz[0]");
@@ -299,6 +312,18 @@ public class PDFOrder {
     }else {
             throw new RuntimeException("Number of items must be less than 14.");
         }
+    }
+
+    public void setSubTotal(String subTotal) throws IOException {
+        this.subTotal.setValue(subTotal);
+    }
+
+    public void setNetTotal(String netTotal) throws IOException {
+        this.netTotal.setValue(netTotal);
+    }
+
+    public void setTotal(String total) throws IOException {
+        this.total.setValue(total);
     }
 
 
@@ -447,6 +472,10 @@ public class PDFOrder {
         } else {
             this.orderFlagMediaPermission.unCheck();
         }
+    }
+
+    public List<PDFItem> getItems() {
+        return this.items;
     }
 
 
