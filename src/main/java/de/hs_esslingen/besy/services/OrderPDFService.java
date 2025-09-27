@@ -52,7 +52,7 @@ public class OrderPDFService {
         PDAcroForm acroForm = document.getDocumentCatalog().getAcroForm();
         PDFOrder order = new PDFOrder();
         order.parseOrder(acroForm);
-
+        acroForm.setXFA(null);
 
         // Retrieve Order and necessary relations for PDF
         Optional<Order> orderOpt = orderRepository.findById(Long.valueOf(orderId));
@@ -150,6 +150,7 @@ public class OrderPDFService {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         document.save(baos);
+        document.close();
         return ResponseEntity
                 .ok()
                 .contentType(MediaType.APPLICATION_PDF)
