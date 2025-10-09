@@ -1,9 +1,6 @@
 package de.hs_esslingen.besy.controllers;
 
-import de.hs_esslingen.besy.dtos.request.ApprovalRequestDTO;
-import de.hs_esslingen.besy.dtos.request.ItemRequestDTO;
-import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
-import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
+import de.hs_esslingen.besy.dtos.request.*;
 import de.hs_esslingen.besy.dtos.response.InvoiceResponseDTO;
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
@@ -11,6 +8,7 @@ import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
 import de.hs_esslingen.besy.dtos.response.*;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
+import de.hs_esslingen.besy.exceptions.EntityAlreadyExistsException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.repositories.InvoiceRepository;
 import de.hs_esslingen.besy.services.*;
@@ -45,6 +43,7 @@ public class OrderController {
     private final InvoiceRepository invoiceRepository;
     private final InvoiceService invoiceService;
     private final ApprovalService approvalService;
+    private final CostCenterService costCenterService;
 
     @GetMapping
     public Page<OrderResponseDTO> getAllOrders(
@@ -139,6 +138,24 @@ public class OrderController {
         if(!itemService.existsItemOfOrder(orderId, itemId)) throw new NotFoundException("Artikel nicht gefunden.");
         if(!orderService.isOrderStatusEqual(orderId, OrderStatus.IN_PROGRESS)) throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
         return itemService.deleteItemsOfOrder(orderId, itemId);
+    }
+
+    @GetMapping("{order-id}/invoices")
+    public ResponseEntity<List<InvoiceResponseDTO>> getInvoicesOfOrder(@PathVariable("order-id") Long orderId) {
+        if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
+        return invoiceService.getAllInvoices(orderId);
+    }
+
+    @PostMapping("{order-id}/invoices")
+    public ResponseEntity<InvoiceResponseDTO> createInvoice(
+            @PathVariable("order-id") Long orderId,
+            @RequestBody InvoiceRequestDTO dto
+    ){
+        if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(invoiceService.existsInvoiceById(dto.getId())) throw new EntityAlreadyExistsException("Rechnung existiert bereits.");
+        if(!orderService.isOrderStatusEqual(orderId, OrderStatus.IN_PROGRESS)) throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
+        if(!costCenterService.existsById(dto.getCostCenterId())) throw new NotFoundException("Kostenstelle nicht gefunden.");
+        return this.invoiceService.createInvoice(dto, orderId);
     }
 
     @GetMapping("{order-id}/quotations")
