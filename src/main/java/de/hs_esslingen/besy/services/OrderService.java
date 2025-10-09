@@ -121,9 +121,9 @@ public class OrderService {
         this.mapForeignRelationships(order, dto);
 
         Order latestAutoIndexOrder = orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(dto.getPrimaryCostCenterId(), dto.getBookingYear());
-        Short latestAutoIndex = latestAutoIndexOrder.getAutoIndex();
 
-        if(latestAutoIndex != null) {
+        if(latestAutoIndexOrder != null) {
+            Short latestAutoIndex = latestAutoIndexOrder.getAutoIndex();
             order.setAutoIndex(++latestAutoIndex);
         } else{
             order.setAutoIndex((short) 1);
