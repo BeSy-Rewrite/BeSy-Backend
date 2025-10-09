@@ -7,6 +7,7 @@ import de.hs_esslingen.besy.models.User;
 import de.hs_esslingen.besy.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,5 +29,10 @@ public class UserService {
         return userRepository.findById(id)
                 .map(user -> ResponseEntity.ok(userResponseMapper.toDto(user)))
                 .orElseThrow(() -> new NotFoundException("Benutzer mit id " + id + " nicht gefunden."));
+    }
+
+    public ResponseEntity<UserResponseDTO> getUserByKeycloakUUID(Jwt jwt){
+        User user = userRepository.findByKeycloakUUID(jwt.getSubject());
+        return ResponseEntity.ok(userResponseMapper.toDto(user));
     }
 }
