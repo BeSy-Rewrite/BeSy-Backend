@@ -89,8 +89,8 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO orderRequestDTO) {
-        return orderService.createOrder(orderRequestDTO);
+    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO orderRequestDTO, @AuthenticationPrincipal Jwt jwt) {
+        return orderService.createOrder(orderRequestDTO, jwt);
     }
 
     @GetMapping("{order-id}")

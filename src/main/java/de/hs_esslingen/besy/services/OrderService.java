@@ -23,6 +23,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
@@ -118,10 +119,10 @@ public class OrderService {
                 }).orElseThrow(() -> new NotFoundException("Bestellung mit id " + id + " nicht gefunden."));
     }
 
-    public ResponseEntity<OrderResponseDTO> createOrder(OrderRequestDTO dto) {
+    public ResponseEntity<OrderResponseDTO> createOrder(OrderRequestDTO dto, Jwt jwt) {
         Order order = orderRequestMapper.toEntity(dto);
 
-        this.mapForeignRelationships(order, dto);
+        this.mapForeignRelationships(order, dto, jwt);
 
         Order latestAutoIndexOrder = orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(dto.getPrimaryCostCenterId(), dto.getBookingYear());
         Short latestAutoIndex = latestAutoIndexOrder.getAutoIndex();
@@ -141,7 +142,7 @@ public class OrderService {
     public ResponseEntity<OrderResponseDTO> updateOrder(OrderRequestDTO dto, Long id) {
         Order order = orderRepository.findById(id).get();
         orderRequestMapper.partialUpdate(order, dto);
-        this.mapForeignRelationships(order, dto);
+        this.mapForeignRelationships(order, dto, null);
         return ResponseEntity.ok(orderResponseMapper.toDto(orderRepository.save(order)));
     }
 
@@ -285,7 +286,7 @@ public class OrderService {
     }
 
 
-    private Order mapForeignRelationships(Order order, OrderRequestDTO dto){
+    private Order mapForeignRelationships(Order order, OrderRequestDTO dto, Jwt jwt){
         if(dto.getCurrencyShort() != null) {
             Currency currency = currencyRepository.getReferenceById(dto.getCurrencyShort());
             order.setCurrency(currency);
@@ -327,6 +328,10 @@ public class OrderService {
         if(dto.getPrimaryCostCenterId() != null) {
             CostCenter costCenter = costCenterRepository.getReferenceById(dto.getPrimaryCostCenterId());
             order.setPrimaryCostCenter(costCenter);
+        }
+        if(dto.getOwnerId() == null && jwt != null) {
+            User user = userRepository.findByKeycloakUUID(jwt.getSubject());
+            if(user != null) order.setOwner(user);
         }
         return order;
     }
