@@ -90,6 +90,9 @@ public class Item {
     @Enumerated(EnumType.STRING)
     private VatType vatType;
 
+    @Column(name = "migrated_to_insy", nullable = false)
+    Boolean migratedToInsy;
+
 
     /**
      * Returns the item ID part of the composite primary key.

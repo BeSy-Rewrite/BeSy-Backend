@@ -337,7 +337,8 @@ INSERT INTO migrated_data.item(
    preferred_list, -- enum
    preferred_list_number,
    vat_value,
-   name
+   name,
+   migrated_to_insy
 )
 SELECT
         item_id,
@@ -351,7 +352,8 @@ SELECT
        preferred_list_abbr,
        item_preferred_list_number,
        vat_value,
-       item_name
+       item_name,
+       False
 
 FROM besy.item i;
 
