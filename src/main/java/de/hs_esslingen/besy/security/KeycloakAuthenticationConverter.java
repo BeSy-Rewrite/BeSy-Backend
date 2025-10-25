@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class KeycloakAuthenticationConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 
-    @Value("${keycloak-client-id}")
+
     private static String clientId;
 
     @Override
@@ -48,6 +48,15 @@ public class KeycloakAuthenticationConverter implements Converter<Jwt, Collectio
 
         Collection<String> rolesCollection = getRoles(jwt);
         return rolesCollection.contains(role);
+    }
+
+    @Value("${keycloak-client-id}")
+    public void setClientId(String keycloakClientId) {
+        clientId = keycloakClientId.trim();
+    }
+
+    public static String getClientId() {
+        return clientId;
     }
 
 }
