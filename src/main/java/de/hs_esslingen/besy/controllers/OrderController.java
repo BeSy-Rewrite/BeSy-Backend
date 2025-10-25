@@ -65,6 +65,8 @@ public class OrderController {
             @RequestParam(name = "secondaryCostCenters", required = false) List<String> secondaryCostCenterIds,
             @RequestParam(name = "lastUpdatedTimeAfter", required = false) OffsetDateTime lastUpdatedTimeAfter,
             @RequestParam(name = "lastUpdatedTimeBefore", required = false) OffsetDateTime lastUpdatedTimeBefore,
+            @RequestParam(name = "autoIndexGTE", required = false) Short autoIndexGTE,
+            @RequestParam(name = "autoIndexLTE", required = false) Short autoIndexLTE,
             @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.ASC) Pageable pageable
             ) {
         return orderService.getAllOrders(
@@ -84,6 +86,8 @@ public class OrderController {
                 secondaryCostCenterIds,
                 lastUpdatedTimeAfter,
                 lastUpdatedTimeBefore,
+                autoIndexGTE,
+                autoIndexLTE,
                 pageable
         );
     }

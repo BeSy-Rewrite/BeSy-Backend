@@ -88,6 +88,8 @@ public class OrderService {
             List<String> secondaryCostCenterIds,
             OffsetDateTime lastUpdatedTimeAfter,
             OffsetDateTime lastUpdatedTimeBefore,
+            Short autoIndexGTE,
+            Short autoIndexLTE,
             Pageable pageable
 
     ) {
@@ -106,6 +108,7 @@ public class OrderService {
                         .and(SpecificationHelper.contains(supplierIds, "supplierId"))
                         .and(SpecificationHelper.contains(secondaryCostCenterIds, "secondaryCostCenterId"))
                         .and(SpecificationHelper.isBetween(lastUpdatedTimeAfter, lastUpdatedTimeBefore, "lastUpdatedTime"))
+                        .and(SpecificationHelper.isBetween(autoIndexGTE, autoIndexLTE, "autoIndex"))
                                 );
 
         Page<Order> orders = orderPageableRepository.findAll(spec, pageable);
@@ -178,7 +181,7 @@ public class OrderService {
             generateOrderAutoIndex(order);
             if(order.getAutoIndex() == null) throw new RuntimeException("Fehler beim Generieren des Bestellnummer (autoIndex)!");
         }
-        
+
         orderStatusHistoryRepository.save(orderStatusHistory);
 
         return ResponseEntity.ok(savedOrder.getStatus());
