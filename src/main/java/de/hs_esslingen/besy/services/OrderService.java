@@ -124,16 +124,6 @@ public class OrderService {
 
         this.mapForeignRelationships(order, dto, jwt);
 
-        Order latestAutoIndexOrder = orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(dto.getPrimaryCostCenterId(), dto.getBookingYear());
-        Short latestAutoIndex = latestAutoIndexOrder.getAutoIndex();
-
-        if(latestAutoIndex != null) {
-            order.setAutoIndex(++latestAutoIndex);
-        } else{
-            order.setAutoIndex((short) 1);
-        }
-
-
         order.setStatus(OrderStatus.IN_PROGRESS); // Override OrderStatus of DTO
         return ResponseEntity.ok(orderResponseMapper.toDto(orderRepository.save(order)));
 
@@ -182,6 +172,12 @@ public class OrderService {
         OrderStatusHistory orderStatusHistory = new OrderStatusHistory();
         orderStatusHistory.setOrder(savedOrder);
         orderStatusHistory.setStatus(savedOrder.getStatus());
+
+        if(isOrderStatusEqual(id, OrderStatus.COMPLETED)) {
+            // Order got validated and is completed: set autoIndex
+            generateOrderAutoIndex(order);
+        }
+
         orderStatusHistoryRepository.save(orderStatusHistory);
 
         return ResponseEntity.ok(savedOrder.getStatus());
@@ -339,6 +335,18 @@ public class OrderService {
 
     public static Map<OrderStatus, Set<OrderStatus>> getOrderStatusMatrix(){
         return ORDER_STATUS_MATRIX;
+    }
+
+
+    private void generateOrderAutoIndex(Order order) {
+        Order latestAutoIndexOrder = orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(order.getPrimaryCostCenterId(), order.getBookingYear());
+        Short latestAutoIndex = latestAutoIndexOrder.getAutoIndex();
+
+        if(latestAutoIndex != null) {
+            order.setAutoIndex(++latestAutoIndex);
+        } else{
+            order.setAutoIndex((short) 1);
+        }
     }
 
 }
