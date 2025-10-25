@@ -3,6 +3,7 @@ package de.hs_esslingen.besy.security;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,6 +17,7 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
+@Profile("development")
 public class SecurityConfigDev {
 
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
