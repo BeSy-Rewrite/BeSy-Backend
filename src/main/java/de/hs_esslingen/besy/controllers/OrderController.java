@@ -21,6 +21,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -231,10 +233,11 @@ public class OrderController {
     @PutMapping("{order-id}/status")
     public ResponseEntity<OrderStatus> updateOrderStatus(
             @PathVariable("order-id") Long orderId,
-            @RequestBody OrderStatus targetOrderStatus
+            @RequestBody OrderStatus targetOrderStatus,
+            @AuthenticationPrincipal Jwt jwt
     ){
         if(targetOrderStatus.equals(OrderStatus.DELETED)) throw new BadRequestException("Löschen nicht erlaubt, nutze DELETE endpoint!");
-        return orderService.updateOrderStatus(orderId, targetOrderStatus);
+        return orderService.updateOrderStatus(orderId, targetOrderStatus, jwt);
     }
 
     @GetMapping("{order-id}/status/history")

@@ -7,6 +7,7 @@ import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderStatusHistoryResponseDTO;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
+import de.hs_esslingen.besy.exceptions.NotAuthorizedException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.interfaces.OrderCompletedValidationDAO;
 import de.hs_esslingen.besy.mappers.OrderCompletedValidationMapper;
@@ -16,11 +17,13 @@ import de.hs_esslingen.besy.mappers.response.OrderStatusHistoryResponseMapper;
 import de.hs_esslingen.besy.models.*;
 import de.hs_esslingen.besy.models.Currency;
 import de.hs_esslingen.besy.repositories.*;
+import de.hs_esslingen.besy.security.KeycloakAuthenticationConverter;
 import jakarta.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -167,10 +170,10 @@ public class OrderService {
      * @throws BadRequestException        if the transition from the current to the new status is not allowed
      * @throws ConstraintViolationException if the updated order violates validation constraints
      */
-    public ResponseEntity<OrderStatus> updateOrderStatus(Long id, OrderStatus newStatus) {
+    public ResponseEntity<OrderStatus> updateOrderStatus(Long id, OrderStatus newStatus, Jwt jwt) {
         Order order = orderRepository.findById(id).get();
 
-        this.validateStatusTransition(order, newStatus);
+        this.validateStatusTransition(order, newStatus, jwt);
 
         order.setStatus(newStatus);
         Order savedOrder = orderRepository.save(order);
@@ -260,7 +263,7 @@ public class OrderService {
     }
 
 
-    private void validateStatusTransition(Order currentOrder, OrderStatus targetStatus) {
+    private void validateStatusTransition(Order currentOrder, OrderStatus targetStatus, Jwt jwt) {
         OrderStatus currentStatus = currentOrder.getStatus();
 
         if (!isValidStatusTransition(currentStatus, targetStatus)) {
@@ -269,9 +272,14 @@ public class OrderService {
             ));
         }
 
+        // Validate all non-null fields are set when moving from IN_PROGRESS to COMPLETED
         if(currentStatus.equals(OrderStatus.IN_PROGRESS) && targetStatus.equals(OrderStatus.COMPLETED)) {
             OrderCompletedValidationDAO orderToBeValidated = orderCompletedValidationMapper.toEntity(currentOrder);
             validator.validateOrThrow(orderToBeValidated);
+        }
+
+        if(currentStatus.equals(OrderStatus.APPROVALS_RECEIVED) && targetStatus.equals(OrderStatus.APPROVED)) {
+            if(!KeycloakAuthenticationConverter.hasRole(jwt, "dekan")) throw new NotAuthorizedException("Not authorized to modify this order!");
         }
 
     }
