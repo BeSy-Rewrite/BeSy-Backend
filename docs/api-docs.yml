@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Bestellsystem API
-  version: v1.8.0
+  version: v1.9.0
 servers:
   - url: http://localhost:3000/api/v1
     description: Generierte Server-URL
@@ -10,7 +10,7 @@ paths:
     get:
       tags:
         - Persons
-      
+
       operationId: getAllPersons
       responses:
         '200':
@@ -24,7 +24,7 @@ paths:
     post:
       tags:
         - Persons
-      
+
       operationId: createPerson
       requestBody:
         content:
@@ -850,7 +850,7 @@ paths:
           description: Rechnung existiert bereits.
         '500':
           description: Interner Serverfehler.
-          
+
   /orders/invoice/{invoice-id}/document:
     get:
       tags:
@@ -1184,6 +1184,29 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CurrencyResponseDTO'
+  /currencies/{code}:
+    get:
+      tags:
+        - Currencies
+      parameters:
+        - name: code
+          in: path
+          description: Der ISO-Code der abzurufenden Währung
+          required: true
+          schema:
+            type: string
+            example: EUR
+      responses:
+        '200':
+          description: Währung gefunden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrencyResponseDTO'
+        '404':
+          description: Währung nicht gefunden
+        '500':
+          description: Interner Serverfehler
   /users/{id}:
     get:
       tags:
@@ -1949,3 +1972,4 @@ components:
         - orderId
         - price
         - date
+
