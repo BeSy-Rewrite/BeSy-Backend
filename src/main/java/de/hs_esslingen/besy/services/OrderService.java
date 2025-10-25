@@ -125,7 +125,18 @@ public class OrderService {
     public ResponseEntity<OrderResponseDTO> createOrder(OrderRequestDTO dto, Jwt jwt) {
         Order order = orderRequestMapper.toEntity(dto);
 
-        this.mapForeignRelationships(order, dto, jwt);
+
+        this.mapForeignRelationships(order, dto);
+
+        Order latestAutoIndexOrder = orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(dto.getPrimaryCostCenterId(), dto.getBookingYear());
+
+        if(latestAutoIndexOrder != null) {
+            Short latestAutoIndex = latestAutoIndexOrder.getAutoIndex();
+            order.setAutoIndex(++latestAutoIndex);
+        } else{
+            order.setAutoIndex((short) 1);
+        }
+
 
         order.setStatus(OrderStatus.IN_PROGRESS); // Override OrderStatus of DTO
         return ResponseEntity.ok(orderResponseMapper.toDto(orderRepository.save(order)));
