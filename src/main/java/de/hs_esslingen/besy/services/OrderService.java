@@ -176,8 +176,9 @@ public class OrderService {
         if(isOrderStatusEqual(id, OrderStatus.COMPLETED)) {
             // Order got validated and is completed: set autoIndex
             generateOrderAutoIndex(order);
+            if(order.getAutoIndex() == null) throw new RuntimeException("Fehler beim Generieren des Bestellnummer (autoIndex)!");
         }
-
+        
         orderStatusHistoryRepository.save(orderStatusHistory);
 
         return ResponseEntity.ok(savedOrder.getStatus());
