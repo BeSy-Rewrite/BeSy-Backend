@@ -126,7 +126,7 @@ public class OrderService {
         Order order = orderRequestMapper.toEntity(dto);
 
 
-        this.mapForeignRelationships(order, dto);
+        this.mapForeignRelationships(order, dto, null);
 
         Order latestAutoIndexOrder = orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(dto.getPrimaryCostCenterId(), dto.getBookingYear());
 
