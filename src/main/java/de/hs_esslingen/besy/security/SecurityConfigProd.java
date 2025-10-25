@@ -63,7 +63,7 @@ public class SecurityConfigProd {
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        KeycloakAuthenticationConverter grantedAuthoritiesConverter = new KeycloakAuthenticationConverter(keycloakClientId);
+        KeycloakAuthenticationConverter grantedAuthoritiesConverter = new KeycloakAuthenticationConverter();
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
