@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,11 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,7 +56,10 @@ public class OrderPDFService {
         PDAcroForm acroForm = document.getDocumentCatalog().getAcroForm();
         PDFOrder order = new PDFOrder();
         order.parseOrder(acroForm);
+        acroForm.setXFA(null);
 
+        // Print form fields for debugging
+        // printFormFields(acroForm);
 
         // Retrieve Order and necessary relations for PDF
         Optional<Order> orderOpt = orderRepository.findById(Long.valueOf(orderId));
@@ -121,6 +128,25 @@ public class OrderPDFService {
 
         List<ItemResponseDTO> itemResponseDTOS = itemResponseMapper.toDto(itemsDAO);
         order.setItems(itemResponseDTOS);
+
+        BigDecimal subTotal = itemResponseDTOS
+                .stream()
+                .map(item -> item.getPricePerUnit().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        order.setSubTotal(String.valueOf(
+                subTotal)
+                .replace('.', ',')
+                .concat(" €")
+        );
+
+        BigDecimal netTotal = subTotal.multiply((BigDecimal.valueOf(100).subtract(orderDAO.getPercentageDiscount())).divide(BigDecimal.valueOf(100))).setScale(2, RoundingMode.HALF_UP);
+        order.setNetTotal(String.valueOf(netTotal).replace('.', ',').concat(" €"));
+
+        // TODO: VAT should be stored by the order itself
+        BigDecimal total = netTotal.multiply((BigDecimal.valueOf(100).add(itemsDAO.get(0).getVatValue())).divide(BigDecimal.valueOf(100))).setScale(2, RoundingMode.HALF_UP);
+        order.setTotal(String.valueOf(total).replace('.', ',').concat(" €"));
+
         order.setCommentForSupplier(orderDAO.getCommentForSupplier());
         order.setPercentageDiscount(String.valueOf(orderDAO.getPercentageDiscount()));
         order.setVat(MEHRWERTSTEUER_DEFAULT);
@@ -150,9 +176,26 @@ public class OrderPDFService {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         document.save(baos);
+        document.close();
         return ResponseEntity
                 .ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(baos.toByteArray());
+    }
+
+    private void printFormFields(PDAcroForm acroForm) {
+        Iterable<PDField> fieldTree = acroForm.getFieldTree();
+
+        List<PDField> allFields = new ArrayList<>();
+        fieldTree.forEach(allFields::add);
+
+        System.out.println("Total fields (including nested): " + allFields.size());
+
+        for (PDField field : allFields) {
+            System.out.println("Name:  " + field.getFullyQualifiedName());
+            System.out.println("Type:  " + field.getClass().getSimpleName());
+            System.out.println("Value: " + field.getValueAsString());
+            System.out.println("----------------------------");
+        }
     }
 }

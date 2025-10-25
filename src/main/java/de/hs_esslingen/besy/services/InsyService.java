@@ -4,7 +4,6 @@ import de.hs_esslingen.besy.dtos.insy.InsyItemRequestDTO;
 import de.hs_esslingen.besy.dtos.insy.InsyOrderRequestDTO;
 import de.hs_esslingen.besy.models.*;
 import de.hs_esslingen.besy.repositories.*;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +13,6 @@ import org.springframework.web.client.RestClient;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class InsyService {

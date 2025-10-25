@@ -13,6 +13,7 @@ public class PDFItem {
     PDField description;
     PDField quantity;
     PDField price;
+    PDField amount;
 
     public void setPosition(String pos) throws IOException {
         this.position.setValue(pos);
@@ -28,5 +29,9 @@ public class PDFItem {
 
     public void setPrice(String price) throws IOException {
         this.price.setValue(price);
+    }
+
+    public void setAmount(String amount) throws IOException {
+        this.amount.setValue(amount);
     }
 }

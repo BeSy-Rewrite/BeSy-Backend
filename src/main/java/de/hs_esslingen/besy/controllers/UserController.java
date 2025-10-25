@@ -4,6 +4,8 @@ import de.hs_esslingen.besy.dtos.response.UserResponseDTO;
 import de.hs_esslingen.besy.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,5 +29,10 @@ public class UserController {
     @RequestMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getUser(@PathVariable("id") Integer id) {
         return userService.getUserById(id);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDTO> getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
+        return userService.getUserByKeycloakUUID(jwt);
     }
 }

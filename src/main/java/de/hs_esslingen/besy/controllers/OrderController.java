@@ -1,9 +1,6 @@
 package de.hs_esslingen.besy.controllers;
 
-import de.hs_esslingen.besy.dtos.request.ApprovalRequestDTO;
-import de.hs_esslingen.besy.dtos.request.ItemRequestDTO;
-import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
-import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
+import de.hs_esslingen.besy.dtos.request.*;
 import de.hs_esslingen.besy.dtos.response.InvoiceResponseDTO;
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
@@ -11,6 +8,7 @@ import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
 import de.hs_esslingen.besy.dtos.response.*;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
+import de.hs_esslingen.besy.exceptions.EntityAlreadyExistsException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.repositories.InvoiceRepository;
 import de.hs_esslingen.besy.services.*;
@@ -23,6 +21,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,6 +45,7 @@ public class OrderController {
     private final InvoiceRepository invoiceRepository;
     private final InvoiceService invoiceService;
     private final ApprovalService approvalService;
+    private final CostCenterService costCenterService;
 
     @GetMapping
     public Page<OrderResponseDTO> getAllOrders(
@@ -64,6 +65,8 @@ public class OrderController {
             @RequestParam(name = "secondaryCostCenters", required = false) List<String> secondaryCostCenterIds,
             @RequestParam(name = "lastUpdatedTimeAfter", required = false) OffsetDateTime lastUpdatedTimeAfter,
             @RequestParam(name = "lastUpdatedTimeBefore", required = false) OffsetDateTime lastUpdatedTimeBefore,
+            @RequestParam(name = "autoIndexGTE", required = false) Short autoIndexGTE,
+            @RequestParam(name = "autoIndexLTE", required = false) Short autoIndexLTE,
             @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.ASC) Pageable pageable
             ) {
         return orderService.getAllOrders(
@@ -83,13 +86,15 @@ public class OrderController {
                 secondaryCostCenterIds,
                 lastUpdatedTimeAfter,
                 lastUpdatedTimeBefore,
+                autoIndexGTE,
+                autoIndexLTE,
                 pageable
         );
     }
 
     @PostMapping
-    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO orderRequestDTO) {
-        return orderService.createOrder(orderRequestDTO);
+    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO orderRequestDTO, @AuthenticationPrincipal Jwt jwt) {
+        return orderService.createOrder(orderRequestDTO, jwt);
     }
 
     @GetMapping("{order-id}")
@@ -139,6 +144,24 @@ public class OrderController {
         if(!itemService.existsItemOfOrder(orderId, itemId)) throw new NotFoundException("Artikel nicht gefunden.");
         if(!orderService.isOrderStatusEqual(orderId, OrderStatus.IN_PROGRESS)) throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
         return itemService.deleteItemsOfOrder(orderId, itemId);
+    }
+
+    @GetMapping("{order-id}/invoices")
+    public ResponseEntity<List<InvoiceResponseDTO>> getInvoicesOfOrder(@PathVariable("order-id") Long orderId) {
+        if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
+        return invoiceService.getAllInvoices(orderId);
+    }
+
+    @PostMapping("{order-id}/invoices")
+    public ResponseEntity<InvoiceResponseDTO> createInvoice(
+            @PathVariable("order-id") Long orderId,
+            @RequestBody InvoiceRequestDTO dto
+    ){
+        if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
+        if(invoiceService.existsInvoiceById(dto.getId())) throw new EntityAlreadyExistsException("Rechnung existiert bereits.");
+        if(!orderService.isOrderStatusEqual(orderId, OrderStatus.IN_PROGRESS)) throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
+        if(!costCenterService.existsById(dto.getCostCenterId())) throw new NotFoundException("Kostenstelle nicht gefunden.");
+        return this.invoiceService.createInvoice(dto, orderId);
     }
 
     @GetMapping("{order-id}/quotations")
@@ -214,10 +237,11 @@ public class OrderController {
     @PutMapping("{order-id}/status")
     public ResponseEntity<OrderStatus> updateOrderStatus(
             @PathVariable("order-id") Long orderId,
-            @RequestBody OrderStatus targetOrderStatus
+            @RequestBody OrderStatus targetOrderStatus,
+            @AuthenticationPrincipal Jwt jwt
     ){
         if(targetOrderStatus.equals(OrderStatus.DELETED)) throw new BadRequestException("Löschen nicht erlaubt, nutze DELETE endpoint!");
-        return orderService.updateOrderStatus(orderId, targetOrderStatus);
+        return orderService.updateOrderStatus(orderId, targetOrderStatus, jwt);
     }
 
     @GetMapping("{order-id}/status/history")
@@ -230,7 +254,7 @@ public class OrderController {
     @GetMapping("{order-id}/export")
     public ResponseEntity<byte[]> exportOrder(@PathVariable("order-id") Long orderId) throws IOException {
         if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
-        if(!orderService.isOrderStatusEqual(orderId, List.of(OrderStatus.COMPLETED, OrderStatus.ARCHIVED))) throw new BadRequestException("Bestellstatus befindet sich nicht auf fertiggestellt!");
+        if(!orderService.isOrderStatusEqual(orderId, List.of(OrderStatus.SETTLED, OrderStatus.ARCHIVED))) throw new BadRequestException("Bestellstatus muss auf 'abgerechnet' oder 'archiviert' stehen!");
         return this.orderPDFService.generateOrderPDF(orderId);
     }
 

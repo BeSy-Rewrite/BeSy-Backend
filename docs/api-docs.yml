@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Bestellsystem API
-  version: v1.8.0
+  version: v1.9.0
 servers:
   - url: http://localhost:3000/api/v1
     description: Generierte Server-URL
@@ -10,7 +10,7 @@ paths:
     get:
       tags:
         - Persons
-      
+
       operationId: getAllPersons
       responses:
         '200':
@@ -24,7 +24,7 @@ paths:
     post:
       tags:
         - Persons
-      
+
       operationId: createPerson
       requestBody:
         content:
@@ -507,6 +507,24 @@ paths:
             type: string
             format: date-time
             example: 2022-09-26T15:22:01Z
+
+        - name: autoIndexGTE
+          in: query
+          description: Filtert nach Bestellnummern, die größer oder gleich diesem Wert sind.
+          required: false
+          schema:
+            type: integer
+            format: int32
+            example: 100
+
+        - name: autoIndexLTE
+          in: query
+          description: Filtert nach Bestellnummern, die kleiner oder gleich diesem Wert sind.
+          required: false
+          schema:
+            type: integer
+            format: int32
+            example: 200
       responses:
         '200':
           description: OK
@@ -791,7 +809,66 @@ paths:
           description: Bestellung nicht gefunden. Vergleichsartikel nicht gefunden.
         '500':
           description: Interner Serverfehler.
-          
+
+  /{order-id}/invoices:
+    get:
+      tags:
+        - Orders
+      operationId: getInvoicesOfOrder
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          description: ID der Bestellung
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Liste der zugehörigen Rechnungen
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvoiceResponseDTO'
+        '404':
+          description: Bestellung nicht gefunden.
+
+    post:
+      operationId: createInvoice
+      tags:
+        - Orders
+      parameters:
+        - name: order-id
+          in: path
+          required: true
+          description: ID der Bestellung
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceRequestDTO'
+      responses:
+        '200':
+          description: Rechnung erfolgreich erstellt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponseDTO'
+        '400':
+          description: Ungültige Anfrage (z.B. falscher Bestellstatus).
+        '404':
+          description: Bestellung oder Kostenstelle nicht gefunden.
+        '409':
+          description: Rechnung existiert bereits.
+        '500':
+          description: Interner Serverfehler.
+
   /orders/invoice/{invoice-id}/document:
     get:
       tags:
@@ -1110,6 +1187,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/UserResponseDTO'
+
   /currencies:
     get:
       tags:
@@ -1124,6 +1202,29 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CurrencyResponseDTO'
+  /currencies/{code}:
+    get:
+      tags:
+        - Currencies
+      parameters:
+        - name: code
+          in: path
+          description: Der ISO-Code der abzurufenden Währung
+          required: true
+          schema:
+            type: string
+            example: EUR
+      responses:
+        '200':
+          description: Währung gefunden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrencyResponseDTO'
+        '404':
+          description: Währung nicht gefunden
+        '500':
+          description: Interner Serverfehler
   /users/{id}:
     get:
       tags:
@@ -1142,6 +1243,23 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/UserResponseDTO'
+  /users/me:
+    get:
+      tags:
+        - Users
+      operationId: getCurrentUser
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Erfolgreiche Abfrage des Benutzers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponseDTO'
+        '500':
+          description: Interner Serverfehler.
+
   /insy/{order-id}:
     post:
       description: Sendet eine Bestellung anhand der Bestell-ID an das Insy-System.
@@ -1836,3 +1954,40 @@ components:
           example: 2025-08-24T19:11:01.398273
           type: string
           format: date
+
+    InvoiceRequestDTO:
+      type: object
+      description: Datenübertragungsobjekt zur Erstellung einer Rechnung
+      properties:
+        id:
+          type: string
+          description: ID der Rechnung
+        costCenterId:
+          type: string
+          description: ID der zugehörigen Kostenstelle
+        orderId:
+          type: integer
+          format: int64
+          description: Referenz auf die zugehörige Bestellung
+        price:
+          type: number
+          format: double
+          description: Rechnungsbetrag
+        date:
+          type: string
+          format: date
+          description: Rechnungsdatum
+        comment:
+          type: string
+          description: Kommentar zur Rechnung
+        paperlessId:
+          type: integer
+          format: int64
+          description: Referenz auf ein Dokument im papierlosen System
+      required:
+        - id
+        - costCenterId
+        - orderId
+        - price
+        - date
+

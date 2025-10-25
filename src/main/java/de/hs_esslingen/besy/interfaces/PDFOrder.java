@@ -7,6 +7,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,6 +72,15 @@ public class PDFOrder {
 
     // Artikel
     private List<PDFItem> items = new ArrayList<>();
+
+    // Zwischensumme
+    private PDField subTotal;
+
+    // Nettosumme
+    private PDField netTotal;
+
+    // Gesamtsumme
+    private PDField total;
 
     // % Rabatt
     private PDField percentageDiscount;
@@ -157,10 +167,15 @@ public class PDFOrder {
                     acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Artikel[%d]", i)),
                     acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Beschreibung[%d]", i)),
                     acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Menge[%d]", i)),
-                    acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Stückpreis[%d]", i))
+                    acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Stückpreis[%d]", i)),
+                    acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Betrag[%d]", i))
             );
             items.add(article);
         }
+
+        subTotal = acroForm.getField("Formular1[0].#subform[0].Body[0].Zwischensumme[0]");
+        netTotal = acroForm.getField("Formular1[0].#subform[0].Body[0].Nettosumme[1]");
+        total = acroForm.getField("Formular1[0].#subform[0].Body[0].Gesamtsumme[0]");
 
         percentageDiscount = acroForm.getField("Formular1[0].#subform[0].Body[0].RabattText[0]");
         vat = acroForm.getField("Formular1[0].#subform[0].Body[0].MwStSatz[0]");
@@ -291,11 +306,24 @@ public class PDFOrder {
                     pdfItem.setPosition(String.valueOf(itemDTO.getItemId()));
                     pdfItem.setDescription(itemDTO.getName());
                     pdfItem.setQuantity(String.valueOf(itemDTO.getQuantity()));
-                    pdfItem.setPrice(String.valueOf(itemDTO.getPricePerUnit()));
+                    pdfItem.setPrice((itemDTO.getPricePerUnit() + " €").replace('.', ','));
+                    pdfItem.setAmount((BigDecimal.valueOf(itemDTO.getQuantity()).multiply(itemDTO.getPricePerUnit()) + " €").replace('.', ','));
                 }
     }else {
             throw new RuntimeException("Number of items must be less than 14.");
         }
+    }
+
+    public void setSubTotal(String subTotal) throws IOException {
+        this.subTotal.setValue(subTotal);
+    }
+
+    public void setNetTotal(String netTotal) throws IOException {
+        this.netTotal.setValue(netTotal);
+    }
+
+    public void setTotal(String total) throws IOException {
+        this.total.setValue(total);
     }
 
 
@@ -444,6 +472,10 @@ public class PDFOrder {
         } else {
             this.orderFlagMediaPermission.unCheck();
         }
+    }
+
+    public List<PDFItem> getItems() {
+        return this.items;
     }
 
 

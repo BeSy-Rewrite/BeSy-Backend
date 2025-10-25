@@ -7,6 +7,7 @@ import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderStatusHistoryResponseDTO;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
+import de.hs_esslingen.besy.exceptions.NotAuthorizedException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.interfaces.OrderCompletedValidationDAO;
 import de.hs_esslingen.besy.mappers.OrderCompletedValidationMapper;
@@ -16,11 +17,14 @@ import de.hs_esslingen.besy.mappers.response.OrderStatusHistoryResponseMapper;
 import de.hs_esslingen.besy.models.*;
 import de.hs_esslingen.besy.models.Currency;
 import de.hs_esslingen.besy.repositories.*;
+import de.hs_esslingen.besy.security.KeycloakAuthenticationConverter;
 import jakarta.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -84,6 +88,8 @@ public class OrderService {
             List<String> secondaryCostCenterIds,
             OffsetDateTime lastUpdatedTimeAfter,
             OffsetDateTime lastUpdatedTimeBefore,
+            Short autoIndexGTE,
+            Short autoIndexLTE,
             Pageable pageable
 
     ) {
@@ -102,6 +108,7 @@ public class OrderService {
                         .and(SpecificationHelper.contains(supplierIds, "supplierId"))
                         .and(SpecificationHelper.contains(secondaryCostCenterIds, "secondaryCostCenterId"))
                         .and(SpecificationHelper.isBetween(lastUpdatedTimeAfter, lastUpdatedTimeBefore, "lastUpdatedTime"))
+                        .and(SpecificationHelper.isBetween(autoIndexGTE, autoIndexLTE, "autoIndex"))
                                 );
 
         Page<Order> orders = orderPageableRepository.findAll(spec, pageable);
@@ -115,10 +122,11 @@ public class OrderService {
                 }).orElseThrow(() -> new NotFoundException("Bestellung mit id " + id + " nicht gefunden."));
     }
 
-    public ResponseEntity<OrderResponseDTO> createOrder(OrderRequestDTO dto) {
+    public ResponseEntity<OrderResponseDTO> createOrder(OrderRequestDTO dto, Jwt jwt) {
         Order order = orderRequestMapper.toEntity(dto);
 
-        this.mapForeignRelationships(order, dto);
+
+        this.mapForeignRelationships(order, dto, null);
 
         Order latestAutoIndexOrder = orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(dto.getPrimaryCostCenterId(), dto.getBookingYear());
 
@@ -138,7 +146,7 @@ public class OrderService {
     public ResponseEntity<OrderResponseDTO> updateOrder(OrderRequestDTO dto, Long id) {
         Order order = orderRepository.findById(id).get();
         orderRequestMapper.partialUpdate(order, dto);
-        this.mapForeignRelationships(order, dto);
+        this.mapForeignRelationships(order, dto, null);
         return ResponseEntity.ok(orderResponseMapper.toDto(orderRepository.save(order)));
     }
 
@@ -167,10 +175,10 @@ public class OrderService {
      * @throws BadRequestException        if the transition from the current to the new status is not allowed
      * @throws ConstraintViolationException if the updated order violates validation constraints
      */
-    public ResponseEntity<OrderStatus> updateOrderStatus(Long id, OrderStatus newStatus) {
+    public ResponseEntity<OrderStatus> updateOrderStatus(Long id, OrderStatus newStatus, Jwt jwt) {
         Order order = orderRepository.findById(id).get();
 
-        this.validateStatusTransition(order, newStatus);
+        this.validateStatusTransition(order, newStatus, jwt);
 
         order.setStatus(newStatus);
         Order savedOrder = orderRepository.save(order);
@@ -178,6 +186,13 @@ public class OrderService {
         OrderStatusHistory orderStatusHistory = new OrderStatusHistory();
         orderStatusHistory.setOrder(savedOrder);
         orderStatusHistory.setStatus(savedOrder.getStatus());
+
+        if(isOrderStatusEqual(id, OrderStatus.COMPLETED)) {
+            // Order got validated and is completed: set autoIndex
+            generateOrderAutoIndex(order);
+            if(order.getAutoIndex() == null) throw new RuntimeException("Fehler beim Generieren des Bestellnummer (autoIndex)!");
+        }
+
         orderStatusHistoryRepository.save(orderStatusHistory);
 
         return ResponseEntity.ok(savedOrder.getStatus());
@@ -260,7 +275,7 @@ public class OrderService {
     }
 
 
-    private void validateStatusTransition(Order currentOrder, OrderStatus targetStatus) {
+    private void validateStatusTransition(Order currentOrder, OrderStatus targetStatus, Jwt jwt) {
         OrderStatus currentStatus = currentOrder.getStatus();
 
         if (!isValidStatusTransition(currentStatus, targetStatus)) {
@@ -269,15 +284,20 @@ public class OrderService {
             ));
         }
 
+        // Validate all non-null fields are set when moving from IN_PROGRESS to COMPLETED
         if(currentStatus.equals(OrderStatus.IN_PROGRESS) && targetStatus.equals(OrderStatus.COMPLETED)) {
             OrderCompletedValidationDAO orderToBeValidated = orderCompletedValidationMapper.toEntity(currentOrder);
             validator.validateOrThrow(orderToBeValidated);
         }
 
+        if(currentStatus.equals(OrderStatus.APPROVALS_RECEIVED) && targetStatus.equals(OrderStatus.APPROVED)) {
+            if(!KeycloakAuthenticationConverter.hasRole(jwt, "dekan")) throw new NotAuthorizedException("Not authorized to modify this order!");
+        }
+
     }
 
 
-    private Order mapForeignRelationships(Order order, OrderRequestDTO dto){
+    private Order mapForeignRelationships(Order order, OrderRequestDTO dto, Jwt jwt){
         if(dto.getCurrencyShort() != null) {
             Currency currency = currencyRepository.getReferenceById(dto.getCurrencyShort());
             order.setCurrency(currency);
@@ -320,12 +340,28 @@ public class OrderService {
             CostCenter costCenter = costCenterRepository.getReferenceById(dto.getPrimaryCostCenterId());
             order.setPrimaryCostCenter(costCenter);
         }
+        if(dto.getOwnerId() == null && jwt != null) {
+            User user = userRepository.findByKeycloakUUID(jwt.getSubject());
+            if(user != null) order.setOwner(user);
+        }
         return order;
     }
 
 
     public static Map<OrderStatus, Set<OrderStatus>> getOrderStatusMatrix(){
         return ORDER_STATUS_MATRIX;
+    }
+
+
+    private void generateOrderAutoIndex(Order order) {
+        Order latestAutoIndexOrder = orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(order.getPrimaryCostCenterId(), order.getBookingYear());
+        Short latestAutoIndex = latestAutoIndexOrder.getAutoIndex();
+
+        if(latestAutoIndex != null) {
+            order.setAutoIndex(++latestAutoIndex);
+        } else{
+            order.setAutoIndex((short) 1);
+        }
     }
 
 }

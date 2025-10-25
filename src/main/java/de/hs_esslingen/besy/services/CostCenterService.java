@@ -2,6 +2,7 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.request.CostCenterRequestDTO;
 import de.hs_esslingen.besy.dtos.response.CostCenterResponseDTO;
+import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.mappers.request.CostCenterRequestMapper;
 import de.hs_esslingen.besy.mappers.response.CostCenterResponseMapper;
 import de.hs_esslingen.besy.models.CostCenter;
@@ -33,6 +34,10 @@ public class CostCenterService {
         CostCenter costCenter = costCenterRequestMapper.toEntity(dto);
         CostCenter costCenterPersisted = costCenterRepository.save(costCenter);
         return ResponseEntity.status(HttpStatus.CREATED).body(costCenterResponseMapper.toDto(costCenterPersisted));
+    }
+
+    public boolean existsById(String id) {
+        return costCenterRepository.existsById(id);
     }
 
 }

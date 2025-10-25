@@ -7,7 +7,6 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 
 /**
  * DTO for {@link de.hs_esslingen.besy.models.Order}
@@ -24,8 +23,7 @@ public class OrderCompletedValidationDAO {
 
     @NotNull
     String bookingYear;
-
-    @NotNull
+    
     Short autoIndex;
 
     @NotNull
