@@ -254,7 +254,7 @@ public class OrderController {
     @GetMapping("{order-id}/export")
     public ResponseEntity<byte[]> exportOrder(@PathVariable("order-id") Long orderId) throws IOException {
         if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
-        if(!orderService.isOrderStatusEqual(orderId, List.of(OrderStatus.SETTLED, OrderStatus.ARCHIVED))) throw new BadRequestException("Bestellstatus muss auf 'abgerechnet' oder 'archiviert' stehen!");
+        //if(!orderService.isOrderStatusEqual(orderId, List.of(OrderStatus.SETTLED, OrderStatus.ARCHIVED))) throw new BadRequestException("Bestellstatus muss auf 'abgerechnet' oder 'archiviert' stehen!");
         return this.orderPDFService.generateOrderPDF(orderId);
     }
 
