@@ -41,15 +41,17 @@ public class ItemService {
         Order order = orderRepository.getReferenceById(orderId);
 
         // Server-side id generation
-        int smallestItemId = itemRepository.findByOrder_Id(orderId).size();
-        AtomicInteger itemIdCounter = new AtomicInteger(smallestItemId);
+        int largestItemId = itemRepository.findByOrder_Id(orderId).size();
+        AtomicInteger itemIdCounter = new AtomicInteger(largestItemId);
 
         items.forEach(item -> {
-            ItemId itemId = new ItemId(orderId,  itemIdCounter.incrementAndGet());
+            int newItemId = itemIdCounter.incrementAndGet();
+            ItemId itemId = new ItemId(orderId,  newItemId);
             Vat vat = vatRepository.getReferenceById(item.getVatValue());
 
             item.setId(itemId);
             item.setVat(vat);
+            item.setMigratedToInsy(false);
             item.setOrder(order);
         });
         List<Item> itemsPersisted = itemRepository.saveAll(items);
