@@ -808,7 +808,7 @@ paths:
         '500':
           description: Interner Serverfehler.
 
-  orders/{order-id}/invoices:
+  /orders/{order-id}/invoices:
     get:
       tags:
         - Orders
