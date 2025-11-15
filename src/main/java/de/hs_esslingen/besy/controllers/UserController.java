@@ -40,14 +40,14 @@ public class UserController {
         return userService.getUserPreferences(id);
     }
 
-    @PostMapping("{id}/preferences")
+    @PostMapping("/{id}/preferences")
     public ResponseEntity<UserPreferencesResponseDTO> addUserPreferences(
             @PathVariable("id") Integer id,
             @RequestBody UserPreferencesRequestDTO requestDTO) {
         return userService.addUserPreferences(id, requestDTO);
     }
 
-    @DeleteMapping("{id}/preferences")
+    @DeleteMapping("/{id}/preferences")
     public ResponseEntity<UserPreferencesResponseDTO> deleteUserPreferences(
             @PathVariable("id") Integer id,
             @RequestBody UserPreferencesRequestDTO requestDTO
