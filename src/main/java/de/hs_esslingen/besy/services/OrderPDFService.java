@@ -200,6 +200,6 @@ public class OrderPDFService {
         IT%s_%s_%s
         """.formatted(
                 primaryCostCenterId, bookingYear, autoIndex)
-        );
+        ).trim();
     }
 }
