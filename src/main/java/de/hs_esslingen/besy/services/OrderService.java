@@ -238,7 +238,7 @@ public class OrderService {
 
     public boolean isOrderStatusEqual(Long orderId, List<OrderStatus> statusList) {
         OrderStatus orderStatus = orderRepository.findById(orderId).get().getStatus();
-        return statusList.stream().anyMatch(orderStatus::equals);
+        return statusList.contains(orderStatus);
     }
 
 

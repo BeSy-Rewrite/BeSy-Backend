@@ -56,20 +56,23 @@ public class InsyService {
 
         List<InsyItemRequestDTO> requestItems = items
                 .stream()
-                .map(item -> {
-                    InsyItemRequestDTO requestItem = new InsyItemRequestDTO();
-                    requestItem.setItemId(item.getItemId());
-                    requestItem.setItemPricePerUnit(item.getPricePerUnit());
-                    requestItem.setItemName(item.getName());
-                    return requestItem;
-                })
+                .flatMap(item -> java.util.stream.IntStream.range(0, Math.toIntExact(item.getQuantity()))
+                        .mapToObj(i -> {
+                            InsyItemRequestDTO requestItem = new InsyItemRequestDTO();
+                            requestItem.setItemId(item.getItemId());
+                            requestItem.setItemPricePerUnit(item.getPricePerUnit());
+                            requestItem.setItemName(item.getName());
+                            return requestItem;
+                        })
+                )
                 .toList();
 
         InsyOrderRequestDTO requestOrder = new InsyOrderRequestDTO();
-        requestOrder.setOrderId(orderId);
+        requestOrder.setBesyId(orderId);
+        requestOrder.setOrderNumber(OrderPDFService.generateOrderNumber(order.getPrimaryCostCenterId(), order.getBookingYear(), order.getAutoIndex()));
         requestOrder.setOrderCreatedDate(order.getCreatedDate());
         requestOrder.setSupplierName(supplier.getName());
-        requestOrder.setCostCenterName(costCenter.getId());
+        requestOrder.setCostCenter(costCenter.getName());
         requestOrder.setUserName(user.getName() + " " + user.getSurname());
         requestOrder.setOrderQuotePrice(order.getQuotePrice());
         requestOrder.setItems(requestItems);
@@ -83,6 +86,12 @@ public class InsyService {
                 .body(List.of(requestOrder))
                 .retrieve()
                 .body(String.class);
+
+        // Set all items as "migrated to insy"
+        items.forEach(item -> {
+            item.setMigratedToInsy(true);
+        });
+        itemRepository.saveAll(items);
 
         return ResponseEntity.ok(response);
     }
