@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+import java.util.Set;
+
 @Getter
 @Setter
 @Entity
@@ -28,5 +31,8 @@ public class User {
 
     @Column(name = "legacy_user_name", nullable = true)
     private String legacyUserName;
+
+    @ElementCollection(targetClass = String.class, fetch = FetchType.LAZY)
+    private Set<String> orderFilterPreferences;
 
 }

@@ -1,15 +1,14 @@
 package de.hs_esslingen.besy.controllers;
 
+import de.hs_esslingen.besy.dtos.request.UserPreferencesRequestDTO;
+import de.hs_esslingen.besy.dtos.response.UserPreferencesResponseDTO;
 import de.hs_esslingen.besy.dtos.response.UserResponseDTO;
 import de.hs_esslingen.besy.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -35,4 +34,25 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
         return userService.getUserByKeycloakUUID(jwt);
     }
+
+    @GetMapping("/{id}/preferences")
+    public ResponseEntity<UserPreferencesResponseDTO> getUserPreferences(@PathVariable("id") Integer id) {
+        return userService.getUserPreferences(id);
+    }
+
+    @PostMapping("{id}/preferences")
+    public ResponseEntity<UserPreferencesResponseDTO> addUserPreferences(
+            @PathVariable("id") Integer id,
+            @RequestBody UserPreferencesRequestDTO requestDTO) {
+        return userService.addUserPreferences(id, requestDTO);
+    }
+
+    @DeleteMapping("{id}/preferences")
+    public ResponseEntity<UserPreferencesResponseDTO> deleteUserPreferences(
+            @PathVariable("id") Integer id,
+            @RequestBody UserPreferencesRequestDTO requestDTO
+    ){
+        return userService.deleteUserPreferences(id, requestDTO);
+    }
+
 }
