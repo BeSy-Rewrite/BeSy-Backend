@@ -576,7 +576,7 @@ paths:
           content:
             '*/*':
               schema:
-                  $ref: '#/components/schemas/OrderResponseDTO'
+                $ref: '#/components/schemas/OrderResponseDTO'
         '404':
           description: Bestellung nicht gefunden.
     patch:
@@ -1260,12 +1260,103 @@ paths:
         '500':
           description: Interner Serverfehler.
 
+
+  /users/{id}/preferences:
+    get:
+      tags:
+        - Users
+      operationId: getUserPreferences
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID des Benutzers
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Erfolgreiche Abfrage der Benutzerpräferenzen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferencesResponseDTO'
+        '404':
+          description: Benutzer nicht gefunden
+        '500':
+          description: Interner Serverfehler
+
+    post:
+      tags:
+        - Users
+      operationId: addUserPreferences
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID des Benutzers
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPreferencesRequestDTO'
+      responses:
+        '200':
+          description: Benutzerpräferenzen erfolgreich hinzugefügt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferencesResponseDTO'
+        '400':
+          description: Ungültige Anfrage
+        '404':
+          description: Benutzer nicht gefunden
+        '500':
+          description: Interner Serverfehler
+
+    delete:
+      tags:
+        - Users
+      operationId: deleteUserPreferences
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID des Benutzers
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPreferencesRequestDTO'
+      responses:
+        '200':
+          description: Benutzerpräferenzen erfolgreich gelöscht
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferencesResponseDTO'
+        '400':
+          description: Ungültige Anfrage
+        '404':
+          description: Benutzer nicht gefunden
+        '500':
+          description: Interner Serverfehler
+
+
   /insy/{order-id}:
     post:
       description: Sendet eine Bestellung anhand der Bestell-ID an das Insy-System.
       operationId: postOrderToInsy
       tags:
-      - Insy
+        - Insy
       parameters:
         - name: order-id
           in: path
@@ -1990,4 +2081,23 @@ components:
         - orderId
         - price
         - date
+
+    UserPreferencesRequestDTO:
+      type: object
+      properties:
+        orderFilterPreferences:
+          type: array
+          items:
+            type: string
+      required:
+        - orderFilterPreferences
+
+    UserPreferencesResponseDTO:
+      type: object
+      properties:
+        orderFilterPreferences:
+          type: array
+          items:
+            type: string
+
 
