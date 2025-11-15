@@ -2092,5 +2092,5 @@ components:
           type: array
           items:
             type: string
-
-
+      required:
+        - orderFilterPreferences
