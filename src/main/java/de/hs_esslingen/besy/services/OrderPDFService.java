@@ -100,11 +100,7 @@ public class OrderPDFService {
         );
 
         // Bestell-Nr.
-        order.setOrderNumber("""
-        IT%s_%s_%s
-        """.formatted(
-                orderDAO.getPrimaryCostCenterId(), orderDAO.getBookingYear(), orderDAO.getAutoIndex())
-        );
+        order.setOrderNumber(OrderPDFService.generateOrderNumber(orderDAO.getPrimaryCostCenterId(), orderDAO.getBookingYear(), orderDAO.getAutoIndex()));
         // Datum:
         order.setDate(orderDAO.getCreatedDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)));
         // Besteller:in
@@ -197,5 +193,13 @@ public class OrderPDFService {
             System.out.println("Value: " + field.getValueAsString());
             System.out.println("----------------------------");
         }
+    }
+
+    public static String generateOrderNumber(String primaryCostCenterId, String bookingYear, Short autoIndex) {
+        return ("""
+        IT%s_%s_%s
+        """.formatted(
+                primaryCostCenterId, bookingYear, autoIndex)
+        ).trim();
     }
 }

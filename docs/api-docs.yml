@@ -16,7 +16,7 @@ paths:
         '200':
           description: OK
           content:
-            '*/*':
+            application/json:
               schema:
                 type: array
                 items:
@@ -36,7 +36,7 @@ paths:
         '200':
           description: OK
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: '#/components/schemas/PersonResponseDTO'
         '500':
@@ -57,7 +57,7 @@ paths:
         '200':
           description: OK
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: '#/components/schemas/PersonResponseDTO'
         '404':
@@ -529,11 +529,9 @@ paths:
         '200':
           description: OK
           content:
-            '*/*':
+            application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PagedOrderResponseDTO'
+                $ref: '#/components/schemas/PagedOrderResponseDTO'
     post:
       tags:
         - Orders
@@ -550,7 +548,7 @@ paths:
         '200':
           description: OK
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: '#/components/schemas/OrderResponseDTO'
         '409':
@@ -574,9 +572,9 @@ paths:
         '200':
           description: OK
           content:
-            '*/*':
+            application/json:
               schema:
-                  $ref: '#/components/schemas/OrderResponseDTO'
+                $ref: '#/components/schemas/OrderResponseDTO'
         '404':
           description: Bestellung nicht gefunden.
     patch:
@@ -645,7 +643,7 @@ paths:
           name: order-id
           required: true
           schema:
-            type: string
+            type: number
           description: Die eindeutige ID der Bestellung, für welche die Artikel abgerufen werden sollen.
       responses:
         '200':
@@ -683,7 +681,7 @@ paths:
         '201':
           description: OK
           content:
-            '*/*':
+            application/json:
               schema:
                 items:
                   $ref: '#/components/schemas/ItemResponseDTO'
@@ -732,7 +730,7 @@ paths:
           name: order-id
           required: true
           schema:
-            type: string
+            type: integer
           description: Die eindeutige ID der Bestellung, für welche die Vergleichsangebote abgerufen werden sollen.
       responses:
         '200':
@@ -770,7 +768,7 @@ paths:
         '201':
           description: OK
           content:
-            '*/*':
+            application/json:
               schema:
                 items:
                   $ref: '#/components/schemas/QuotationResponseDTO'
@@ -810,7 +808,7 @@ paths:
         '500':
           description: Interner Serverfehler.
 
-  /{order-id}/invoices:
+  /orders/{order-id}/invoices:
     get:
       tags:
         - Orders
@@ -955,7 +953,7 @@ paths:
         '500':
           description: Interner Serverfehler.
 
-  /orders/{order-id}/approval:
+  /orders/{order-id}/approvals:
     get:
       description: Gibt die Zustimmungen für die angegebene Bestellung zurück.
       tags:
@@ -1114,7 +1112,7 @@ paths:
           name: order-id
           required: true
           schema:
-            type: string
+            type: integer
           description: Die eindeutige ID der Bestellung, für die das Bestellformular als PDF exportiert wird.
       responses:
         '200':
@@ -1134,7 +1132,7 @@ paths:
         '200':
           description: OK
           content:
-            '*/*':
+            application/json:
               schema:
                 type: array
                 items:
@@ -1153,7 +1151,7 @@ paths:
         '201':
           description: OK
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: '#/components/schemas/CostCenterResponseDTO'
         '409':
@@ -1168,7 +1166,7 @@ paths:
         '200':
           description: OK
           content:
-            '*/*':
+            application/json:
               schema:
                 type: array
                 items:
@@ -1182,7 +1180,7 @@ paths:
         '200':
           description: OK
           content:
-            '*/*':
+            application/json:
               schema:
                 type: array
                 items:
@@ -1197,7 +1195,7 @@ paths:
         '200':
           description: OK
           content:
-            '*/*':
+            application/json:
               schema:
                 type: array
                 items:
@@ -1240,7 +1238,7 @@ paths:
         '200':
           description: OK
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: '#/components/schemas/UserResponseDTO'
   /users/me:
@@ -1260,12 +1258,103 @@ paths:
         '500':
           description: Interner Serverfehler.
 
+
+  /users/{id}/preferences:
+    get:
+      tags:
+        - Users
+      operationId: getUserPreferences
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID des Benutzers
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Erfolgreiche Abfrage der Benutzerpräferenzen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferencesResponseDTO'
+        '404':
+          description: Benutzer nicht gefunden
+        '500':
+          description: Interner Serverfehler
+
+    post:
+      tags:
+        - Users
+      operationId: addUserPreferences
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID des Benutzers
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPreferencesRequestDTO'
+      responses:
+        '200':
+          description: Benutzerpräferenzen erfolgreich hinzugefügt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferencesResponseDTO'
+        '400':
+          description: Ungültige Anfrage
+        '404':
+          description: Benutzer nicht gefunden
+        '500':
+          description: Interner Serverfehler
+
+    delete:
+      tags:
+        - Users
+      operationId: deleteUserPreferences
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID des Benutzers
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPreferencesRequestDTO'
+      responses:
+        '200':
+          description: Benutzerpräferenzen erfolgreich gelöscht
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferencesResponseDTO'
+        '400':
+          description: Ungültige Anfrage
+        '404':
+          description: Benutzer nicht gefunden
+        '500':
+          description: Interner Serverfehler
+
+
   /insy/{order-id}:
     post:
       description: Sendet eine Bestellung anhand der Bestell-ID an das Insy-System.
       operationId: postOrderToInsy
       tags:
-      - Insy
+        - Insy
       parameters:
         - name: order-id
           in: path
@@ -1496,13 +1585,7 @@ components:
         content_description:
           type: string
         status:
-          type: string
-          enum:
-            - ABR
-            - ABS
-            - ARC
-            - DEL
-            - INB
+          $ref: '#/components/schemas/OrderStatus'
         currency:
           $ref: '#/components/schemas/CurrencyResponseDTO'
         comment:
@@ -1902,49 +1985,50 @@ components:
     ApprovalResponseDTO:
       type: object
       properties:
-        orderId:
+        order_id:
           type: integer
           format: int64
-        flagEdvPermission:
+        flag_edv_permission:
           type: boolean
           default: false
-        flagFurniturePermission:
+        flag_furniture_permission:
           type: boolean
           default: false
-        flagFurnitureRoom:
+        flag_furniture_room:
           type: boolean
           default: false
-        flagInvestmentRoom:
+        flag_investment_room:
           type: boolean
           default: false
-        flagInvestmentStructuralMeasures:
+        flag_investment_structural_measures:
           type: boolean
           default: false
-        flagMediaPermission:
+        flag_media_permission:
           type: boolean
           default: false
 
     ApprovalRequestDTO:
       type: object
       properties:
-        flagEdvPermission:
+        flag_edv_permission:
           type: boolean
           default: false
-        flagFurniturePermission:
+        flag_furniture_permission:
           type: boolean
           default: false
-        flagFurnitureRoom:
+        flag_furniture_room:
           type: boolean
           default: false
-        flagInvestmentRoom:
+        flag_investment_room:
           type: boolean
           default: false
-        flagInvestmentStructuralMeasures:
+        flag_investment_structural_measures:
           type: boolean
           default: false
-        flagMediaPermission:
+        flag_media_permission:
           type: boolean
           default: false
+
 
     OrderStatusHistoryResponseDTO:
       properties:
@@ -1991,3 +2075,22 @@ components:
         - price
         - date
 
+    UserPreferencesRequestDTO:
+      type: object
+      properties:
+        orderFilterPreferences:
+          type: array
+          items:
+            type: string
+      required:
+        - orderFilterPreferences
+
+    UserPreferencesResponseDTO:
+      type: object
+      properties:
+        orderFilterPreferences:
+          type: array
+          items:
+            type: string
+      required:
+        - orderFilterPreferences

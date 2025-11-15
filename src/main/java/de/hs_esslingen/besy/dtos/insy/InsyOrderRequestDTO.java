@@ -18,13 +18,17 @@ import java.util.List;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class InsyOrderRequestDTO {
 
-    private Long orderId;
+    private Long besyId;
+
+    private String orderNumber;
+
+    private String description;
 
     private LocalDateTime orderCreatedDate;
 
     private String supplierName;
 
-    private String costCenterName;
+    private String costCenter;
 
     private String userName;
 
