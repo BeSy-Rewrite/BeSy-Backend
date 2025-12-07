@@ -1,5 +1,21 @@
 package de.hs_esslingen.besy.services;
 
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.stereotype.Service;
+
 import de.hs_esslingen.besy.configurations.SpecificationHelper;
 import de.hs_esslingen.besy.configurations.ValidationHelper;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
@@ -14,26 +30,30 @@ import de.hs_esslingen.besy.mappers.OrderCompletedValidationMapper;
 import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
 import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
 import de.hs_esslingen.besy.mappers.response.OrderStatusHistoryResponseMapper;
-import de.hs_esslingen.besy.models.*;
+import de.hs_esslingen.besy.models.Address;
+import de.hs_esslingen.besy.models.CostCenter;
 import de.hs_esslingen.besy.models.Currency;
-import de.hs_esslingen.besy.repositories.*;
+import de.hs_esslingen.besy.models.CustomerId;
+import de.hs_esslingen.besy.models.CustomerIdId;
+import de.hs_esslingen.besy.models.Order;
+import de.hs_esslingen.besy.models.OrderStatusHistory;
+import de.hs_esslingen.besy.models.Person;
+import de.hs_esslingen.besy.models.User;
+import de.hs_esslingen.besy.repositories.AddressRepository;
+import de.hs_esslingen.besy.repositories.CostCenterRepository;
+import de.hs_esslingen.besy.repositories.CurrencyRepository;
+import de.hs_esslingen.besy.repositories.CustomerIdRepository;
+import de.hs_esslingen.besy.repositories.OrderPageableRepository;
+import de.hs_esslingen.besy.repositories.OrderRepository;
+import de.hs_esslingen.besy.repositories.OrderStatusHistoryRepository;
+import de.hs_esslingen.besy.repositories.PersonRepository;
+import de.hs_esslingen.besy.repositories.UserRepository;
 import de.hs_esslingen.besy.security.KeycloakAuthenticationConverter;
 import jakarta.validation.ConstraintViolationException;
-import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
@@ -53,6 +73,8 @@ public class OrderService {
 
     private final ValidationHelper validator;
 
+    @Value("${dekan-role-name}")
+    private String dekanRoleName;
 
     /**
      * Defines valid status transitions for orders.
@@ -291,7 +313,7 @@ public class OrderService {
         }
 
         if(currentStatus.equals(OrderStatus.APPROVALS_RECEIVED) && targetStatus.equals(OrderStatus.APPROVED)) {
-            if(!KeycloakAuthenticationConverter.hasRole(jwt, "dekan")) throw new NotAuthorizedException("Not authorized to modify this order!");
+            if(!KeycloakAuthenticationConverter.hasRole(jwt, dekanRoleName).booleanValue()) throw new NotAuthorizedException("Not authorized to modify this order!");
         }
 
     }
