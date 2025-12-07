@@ -1,5 +1,7 @@
 package de.hs_esslingen.besy.security;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,9 +14,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Profile("production")
 @Configuration
@@ -30,26 +31,26 @@ public class SecurityConfigProd {
     @Value("${keycloak-client-id}")
     private String keycloakClientId;
 
+    @Value("${required-role-name}")
+    private String requiredRoleName;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable()) // No need of CSRF, since using JWT
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests((authorize) -> authorize
-                        .anyRequest().permitAll()
-                )
+                .authorizeHttpRequests(authorize -> authorize
+                        .anyRequest().hasRole(requiredRoleName))
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(Customizer.withDefaults())
-                );
+                        .jwt(Customizer.withDefaults()));
         return http.build();
     }
 
     @Bean
-    UrlBasedCorsConfigurationSource corsConfigurationSource() {
+    CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(besyFrontendUrl));
-        configuration.setAllowedMethods(Arrays.asList("GET","POST", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -69,6 +70,5 @@ public class SecurityConfigProd {
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
         return jwtAuthenticationConverter;
     }
-
 
 }
