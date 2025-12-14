@@ -138,8 +138,20 @@ public class OrderService {
         }
 
 
-        order.setStatus(OrderStatus.IN_PROGRESS); // Override OrderStatus of DTO
-        return ResponseEntity.ok(orderResponseMapper.toDto(orderRepository.save(order)));
+        // Override OrderStatus of DTO
+        order.setStatus(OrderStatus.IN_PROGRESS);
+
+        Order savedOrder = orderRepository.save(order);
+        OrderResponseDTO responseDTO = orderResponseMapper.toDto(savedOrder);
+
+        // Create first OrderStatusHistory entry
+        OrderStatusHistory orderStatusHistory = OrderStatusHistory.builder()
+                .order(savedOrder)
+                .status(OrderStatus.IN_PROGRESS)
+                .build();
+        orderStatusHistoryRepository.save(orderStatusHistory);
+
+        return ResponseEntity.ok(responseDTO);
 
     }
 
