@@ -22,13 +22,13 @@ import java.util.Arrays;
 public class SecurityConfigProd {
 
     @Value("${besy-frontend-url}")
-    private String besyFrontendUrl;
+    private String frontendUrl;
 
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
-    private String issuer;
+    private String issuerUri;
 
     @Value("${keycloak-client-id}")
-    private String keycloakClientId;
+    private String clientId;
 
 
     @Bean
@@ -37,7 +37,8 @@ public class SecurityConfigProd {
                 .csrf(csrf -> csrf.disable()) // No need of CSRF, since using JWT
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests((authorize) -> authorize
-                        .anyRequest().permitAll()
+                        // Add secured routes here
+                        .anyRequest().hasRole("user")
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults())
@@ -48,8 +49,8 @@ public class SecurityConfigProd {
     @Bean
     UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(besyFrontendUrl));
-        configuration.setAllowedMethods(Arrays.asList("GET","POST", "DELETE", "OPTIONS"));
+        configuration.setAllowedOrigins(Arrays.asList(frontendUrl));
+        configuration.setAllowedMethods(Arrays.asList("GET","POST", "DELETE", "OPTIONS", "PUT", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -58,15 +59,13 @@ public class SecurityConfigProd {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        return JwtDecoders.fromIssuerLocation(issuer);
+        return JwtDecoders.fromIssuerLocation(issuerUri);
     }
 
     @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        KeycloakAuthenticationConverter grantedAuthoritiesConverter = new KeycloakAuthenticationConverter();
-
+    public JwtAuthenticationConverter jwtAuthenticationConverter(KeycloakAuthenticationConverter keycloakAuthenticationConverter) {
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(keycloakAuthenticationConverter);
         return jwtAuthenticationConverter;
     }
 
