@@ -30,6 +30,9 @@ public class SecurityConfigProd {
     @Value("${keycloak-client-id}")
     private String clientId;
 
+    @Value("${user-role-name}")
+    private String userRoleName;
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -38,7 +41,7 @@ public class SecurityConfigProd {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests((authorize) -> authorize
                         // Add secured routes here
-                        .anyRequest().hasRole("user")
+                        .anyRequest().hasRole(userRoleName)
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults())
