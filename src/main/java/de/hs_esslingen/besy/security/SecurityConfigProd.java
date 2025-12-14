@@ -31,6 +31,8 @@ public class SecurityConfigProd {
     @Value("${keycloak-client-id}")
     private String clientId;
 
+    // Role name without ROLE_ prefix (e.g., "orderer")
+    // hasRole() automatically prepends "ROLE_" to match authorities from KeycloakAuthenticationConverter
     @Value("${user-role-name}")
     private String userRoleName;
 
@@ -52,7 +54,8 @@ public class SecurityConfigProd {
                                 "/swagger-ui.html"
                         )
                         .permitAll()
-                        // Add secured routes here
+                        // Secure all other routes with the configured role
+                        // hasRole() automatically prepends "ROLE_" to match authorities from KeycloakAuthenticationConverter
                         .anyRequest().hasRole(userRoleName)
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
