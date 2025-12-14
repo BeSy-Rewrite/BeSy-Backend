@@ -28,7 +28,7 @@ public class KeycloakAuthenticationConverter implements Converter<Jwt, Collectio
         Collection<String> rolesCollection = getRoles(jwt);
 
         // Add "ROLE_" prefix to match Spring Security's role-based authorization
-        // This allows using hasRole("roleName") which automatically looks for "ROLE_roleName"
+        // This allows using hasRole("roleName") which automatically prepends "ROLE_" to create "ROLE_roleName"
         return rolesCollection
                 .stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role))

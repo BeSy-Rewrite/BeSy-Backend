@@ -32,7 +32,7 @@ public class SecurityConfigProd {
     private String clientId;
 
     // Role name without ROLE_ prefix (e.g., "orderer")
-    // hasRole() automatically prepends "ROLE_" to match authorities from KeycloakAuthenticationConverter
+    // Spring Security's hasRole() method automatically prepends "ROLE_" when checking against authorities created by KeycloakAuthenticationConverter
     @Value("${user-role-name}")
     private String userRoleName;
 
