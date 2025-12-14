@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Bestellsystem API
-  version: v1.9.0
+  version: v1.10.0
 servers:
   - url: http://localhost:3000/api/v1
     description: Generierte Server-URL
