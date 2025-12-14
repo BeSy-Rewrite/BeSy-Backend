@@ -20,10 +20,11 @@ import de.hs_esslingen.besy.repositories.*;
 import de.hs_esslingen.besy.security.KeycloakAuthenticationConverter;
 import jakarta.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +34,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
@@ -52,6 +53,9 @@ public class OrderService {
     private final OrderStatusHistoryResponseMapper orderStatusHistoryResponseMapper;
 
     private final ValidationHelper validator;
+
+    @Value("${dekan-role-name}")
+    private String dekanRoleName;
 
 
     /**
@@ -138,8 +142,20 @@ public class OrderService {
         }
 
 
-        order.setStatus(OrderStatus.IN_PROGRESS); // Override OrderStatus of DTO
-        return ResponseEntity.ok(orderResponseMapper.toDto(orderRepository.save(order)));
+        // Override OrderStatus of DTO
+        order.setStatus(OrderStatus.IN_PROGRESS);
+
+        Order savedOrder = orderRepository.save(order);
+        OrderResponseDTO responseDTO = orderResponseMapper.toDto(savedOrder);
+
+        // Create first OrderStatusHistory entry
+        OrderStatusHistory orderStatusHistory = OrderStatusHistory.builder()
+                .order(savedOrder)
+                .status(OrderStatus.IN_PROGRESS)
+                .build();
+        orderStatusHistoryRepository.save(orderStatusHistory);
+
+        return ResponseEntity.ok(responseDTO);
 
     }
 
@@ -291,7 +307,7 @@ public class OrderService {
         }
 
         if(currentStatus.equals(OrderStatus.APPROVALS_RECEIVED) && targetStatus.equals(OrderStatus.APPROVED)) {
-            if(!KeycloakAuthenticationConverter.hasRole(jwt, "dekan")) throw new NotAuthorizedException("Not authorized to modify this order!");
+            if(!KeycloakAuthenticationConverter.hasRole(jwt, dekanRoleName)) throw new NotAuthorizedException("Not authorized to modify this order!");
         }
 
     }

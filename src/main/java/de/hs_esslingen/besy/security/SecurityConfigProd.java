@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -22,13 +23,16 @@ import java.util.Arrays;
 public class SecurityConfigProd {
 
     @Value("${besy-frontend-url}")
-    private String besyFrontendUrl;
+    private String frontendUrl;
 
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
-    private String issuer;
+    private String issuerUri;
 
     @Value("${keycloak-client-id}")
-    private String keycloakClientId;
+    private String clientId;
+
+    @Value("${user-role-name}")
+    private String userRoleName;
 
 
     @Bean
@@ -37,7 +41,19 @@ public class SecurityConfigProd {
                 .csrf(csrf -> csrf.disable()) // No need of CSRF, since using JWT
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests((authorize) -> authorize
-                        .anyRequest().permitAll()
+                        .requestMatchers(
+                                "/v3/api-docs",
+                                "/v3/api-docs/**",
+                                "/swagger-resources",
+                                "/swagger-resources/**",
+                                "/configuration/ui",
+                                "/configuration/security",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        )
+                        .permitAll()
+                        // Add secured routes here
+                        .anyRequest().hasRole(userRoleName)
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults())
@@ -48,9 +64,21 @@ public class SecurityConfigProd {
     @Bean
     UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(besyFrontendUrl));
-        configuration.setAllowedMethods(Arrays.asList("GET","POST", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedOrigins(Arrays.asList(frontendUrl));
+        configuration.setAllowedMethods(Arrays.asList(
+                "GET",
+                "POST",
+                "DELETE",
+                "OPTIONS",
+                "PUT",
+                "PATCH"
+        ));
+        configuration.setAllowedHeaders(Arrays.asList(
+                HttpHeaders.ORIGIN,
+                HttpHeaders.CONTENT_TYPE,
+                HttpHeaders.ACCEPT,
+                HttpHeaders.AUTHORIZATION
+        ));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -58,15 +86,13 @@ public class SecurityConfigProd {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        return JwtDecoders.fromIssuerLocation(issuer);
+        return JwtDecoders.fromIssuerLocation(issuerUri);
     }
 
     @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        KeycloakAuthenticationConverter grantedAuthoritiesConverter = new KeycloakAuthenticationConverter();
-
+    public JwtAuthenticationConverter jwtAuthenticationConverter(KeycloakAuthenticationConverter keycloakAuthenticationConverter) {
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(keycloakAuthenticationConverter);
         return jwtAuthenticationConverter;
     }
 
