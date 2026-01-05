@@ -26,7 +26,7 @@ public class InsyController {
     @PostMapping("{order-id}")
     public ResponseEntity<String> postOrderToInsy(@PathVariable("order-id") Long orderId) {
         if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
-        if(!orderService.isOrderStatusEqual(orderId, List.of(OrderStatus.COMPLETED, OrderStatus.ARCHIVED))) throw new BadRequestException("Bestellstatus befindet sich nicht auf fertiggestellt!");
+        if(!orderService.isOrderStatusEqual(orderId, List.of(OrderStatus.SETTLED, OrderStatus.ARCHIVED))) throw new BadRequestException("Bestellstatus befindet sich nicht auf fertiggestellt!");
         return insyService.createOrder(orderId);
     }
 }

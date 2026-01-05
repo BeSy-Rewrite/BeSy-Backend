@@ -72,7 +72,8 @@ public class InsyService {
         requestOrder.setOrderNumber(OrderPDFService.generateOrderNumber(order.getPrimaryCostCenterId(), order.getBookingYear(), order.getAutoIndex()));
         requestOrder.setOrderCreatedDate(order.getCreatedDate());
         requestOrder.setSupplierName(supplier.getName());
-        requestOrder.setCostCenter(costCenter.getName());
+        requestOrder.setDescription(order.getContentDescription());
+        requestOrder.setCostCenter(costCenter.getId() + " - " + costCenter.getName());
         requestOrder.setUserName(user.getName() + " " + user.getSurname());
         requestOrder.setOrderQuotePrice(order.getQuotePrice());
         requestOrder.setItems(requestItems);
