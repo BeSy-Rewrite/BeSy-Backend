@@ -39,7 +39,7 @@ public class UserController {
     @GetMapping("/me/preferences")
     public ResponseEntity<List<UserPreferencesResponseDTO>> getUserPreferences(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestParam("type") PreferenceType type
+            @RequestParam(value = "type", required = false) PreferenceType type
             ) {
         return userService.getUserPreferencesByPreferenceType(jwt, type);
     }
