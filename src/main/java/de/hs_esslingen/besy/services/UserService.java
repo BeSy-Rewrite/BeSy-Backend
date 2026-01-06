@@ -3,13 +3,16 @@ package de.hs_esslingen.besy.services;
 import de.hs_esslingen.besy.dtos.request.UserPreferencesRequestDTO;
 import de.hs_esslingen.besy.dtos.response.UserPreferencesResponseDTO;
 import de.hs_esslingen.besy.dtos.response.UserResponseDTO;
+import de.hs_esslingen.besy.enums.PreferenceType;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
+import de.hs_esslingen.besy.mappers.request.UserPreferencesRequestMapper;
 import de.hs_esslingen.besy.mappers.response.UserPreferencesResponseMapper;
 import de.hs_esslingen.besy.mappers.response.UserResponseMapper;
 import de.hs_esslingen.besy.models.User;
+import de.hs_esslingen.besy.models.UserPreferences;
+import de.hs_esslingen.besy.repositories.UserPreferencesRepository;
 import de.hs_esslingen.besy.repositories.UserRepository;
 import lombok.AllArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -23,7 +26,10 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserResponseMapper userResponseMapper;
+    private final UserPreferencesRepository userPreferencesRepository;
     private final UserPreferencesResponseMapper userPreferencesResponseMapper;
+    private final UserPreferencesRequestMapper userPreferencesRequestMapper;
+
 
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
         List<User> users = userRepository.findAll();
@@ -43,34 +49,28 @@ public class UserService {
     }
 
 
-    public ResponseEntity<UserPreferencesResponseDTO> getUserPreferences(Integer id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("Benutzer mit id " + id + " nicht gefunden."));
+    public ResponseEntity<List<UserPreferencesResponseDTO>> getUserPreferencesByPreferenceType(Jwt jwt, PreferenceType preferenceType) {
 
-        UserPreferencesResponseDTO responseDTO = userPreferencesResponseMapper.toDto(user);
-        return ResponseEntity.ok(responseDTO);
+        User user = userRepository.findOptionalByKeycloakUUID(jwt.getSubject()).orElseThrow(() -> new NotFoundException("Benutzer existiert nicht."));
+        List<UserPreferences> userPreferences = userPreferencesRepository.getUserPreferencesByUser_IdAndPreferenceType(user.getId(), preferenceType);
+        List<UserPreferencesResponseDTO> response = userPreferencesResponseMapper.toDto(userPreferences);
+        return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<UserPreferencesResponseDTO> addUserPreferences(Integer id, UserPreferencesRequestDTO requestDTO) {
-        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("Benutzer mit id " + id + " nicht gefunden."));
+    public ResponseEntity<UserPreferencesResponseDTO> addUserPreference(Jwt jwt, UserPreferencesRequestDTO requestDTO) {
+        User user = userRepository.findOptionalByKeycloakUUID(jwt.getSubject()).orElseThrow(() -> new NotFoundException("Benutzer existiert nicht."));
 
-        Set<String> currentUserOrderFilterPreferences = user.getOrderFilterPreferences();
-        currentUserOrderFilterPreferences.addAll(requestDTO.getOrderFilterPreferences());
-        user.setOrderFilterPreferences(currentUserOrderFilterPreferences);
-        User savedUser = userRepository.save(user);
-
-        UserPreferencesResponseDTO responseDTO = userPreferencesResponseMapper.toDto(savedUser);
-        return ResponseEntity.ok(responseDTO);
+        UserPreferences preferences = userPreferencesRequestMapper.toEntity(requestDTO);
+        preferences.setUser(user);
+        UserPreferences savedPreferences = userPreferencesRepository.save(preferences);
+        return ResponseEntity.ok(userPreferencesResponseMapper.toDto(savedPreferences));
     }
 
-    public ResponseEntity<UserPreferencesResponseDTO> deleteUserPreferences(Integer id, UserPreferencesRequestDTO requestDTO) {
-        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("Benutzer mit id " + id + " nicht gefunden."));
+    public ResponseEntity<Void> deleteUserPreferences(Jwt jwt, Integer preferenceId) {
+        User user = userRepository.findOptionalByKeycloakUUID(jwt.getSubject()).orElseThrow(() -> new NotFoundException("Benutzer existiert nicht."));
 
-        Set<String> currentUserOrderFilterPreferences = user.getOrderFilterPreferences();
-        currentUserOrderFilterPreferences.removeAll(requestDTO.getOrderFilterPreferences());
-        user.setOrderFilterPreferences(currentUserOrderFilterPreferences);
-
-        User savedUser = userRepository.save(user);
-        return ResponseEntity.ok(userPreferencesResponseMapper.toDto(savedUser));
+        userPreferencesRepository.deleteByIdAndUser(preferenceId, user);
+        return ResponseEntity.noContent().build();
     }
 
 }
