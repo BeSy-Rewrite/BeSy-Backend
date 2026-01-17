@@ -14,6 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 
+import static org.springframework.security.oauth2.client.web.client.RequestAttributeClientRegistrationIdResolver.clientRegistrationId;
+
 @Service
 public class InsyService {
 
@@ -36,6 +38,12 @@ public class InsyService {
     @Value("${insy.api.orders.username}")
     private String username;
 
+    @Value("${insy.api.client.name}")
+    private String insyClientName;
+
+    @Value("${insy.api.client.authorization.protocol}")
+    private String authProtocol;
+
     // Do not use @ALlArgsConstructor, since this will break insyBaseUrl & insyOrdersUrl
     public InsyService(@Qualifier("plainRestClient")RestClient restClient, OrderRepository orderRepository, SupplierRepository supplierRepository, CostCenterRepository costCenterRepository, UserRepository userRepository, ItemRepository itemRepository) {
         this.restClient = restClient;
@@ -45,6 +53,7 @@ public class InsyService {
         this.userRepository = userRepository;
         this.itemRepository = itemRepository;
     }
+
 
     public ResponseEntity<String> createOrder(Long orderId) {
 
@@ -82,7 +91,8 @@ public class InsyService {
         String response = restClient
                 .post()
                 .uri(insyBaseUrl + insyOrdersUrl)
-                .header("Authorization", getAuthHeader())
+                .attributes(authProtocol.equals("oauth2") ? clientRegistrationId(insyClientName) : clientRegistrationId("NULL"))
+                .header("Authorization", authProtocol.equals("basic") ? getAuthHeader() : null)
                 .header("Content-Type", "application/json")
                 .body(List.of(requestOrder))
                 .retrieve()
