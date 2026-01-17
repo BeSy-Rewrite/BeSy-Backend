@@ -65,6 +65,17 @@ public class UserService {
         return ResponseEntity.ok(userPreferencesResponseMapper.toDto(savedPreferences));
     }
 
+    public ResponseEntity<UserPreferencesResponseDTO> updateUserPreferences(Jwt jwt, UserPreferencesRequestDTO requestDTO, Integer id) {
+        User user = userRepository.findOptionalByKeycloakUUID(jwt.getSubject()).orElseThrow(() -> new NotFoundException("Benutzer existiert nicht."));
+
+
+        UserPreferences preferences = userPreferencesRepository.findByIdAndUser(id, user);
+        if(preferences == null) throw new NotFoundException("Präferenz existiert nicht.");
+
+        userPreferencesRequestMapper.partialUpdate(preferences, requestDTO);
+        return ResponseEntity.ok(userPreferencesResponseMapper.toDto(preferences));
+    }
+
     @Transactional
     public ResponseEntity<Void> deleteUserPreferences(Jwt jwt, Integer preferenceId) {
         User user = userRepository.findOptionalByKeycloakUUID(jwt.getSubject()).orElseThrow(() -> new NotFoundException("Benutzer existiert nicht."));
@@ -72,5 +83,6 @@ public class UserService {
         userPreferencesRepository.deleteByIdAndUser(preferenceId, user);
         return ResponseEntity.noContent().build();
     }
+
 
 }

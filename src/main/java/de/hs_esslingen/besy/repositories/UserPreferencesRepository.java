@@ -10,4 +10,8 @@ public interface UserPreferencesRepository extends JpaRepository<UserPreferences
     List<UserPreferences> getUserPreferencesByUser_IdAndPreferenceType(Integer userId, String preferenceType);
 
     void deleteByIdAndUser(Integer id, User user);
+
+    Boolean existsByIdAndUser_Id(Integer id, Integer userId);
+
+    UserPreferences findByIdAndUser(Integer id, User user);
 }

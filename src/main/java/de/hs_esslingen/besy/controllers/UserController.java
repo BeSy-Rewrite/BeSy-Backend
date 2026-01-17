@@ -47,8 +47,15 @@ public class UserController {
     public ResponseEntity<UserPreferencesResponseDTO> addUserPreferences(
             @AuthenticationPrincipal Jwt jwt,
             @RequestBody UserPreferencesRequestDTO requestDTO) {
-        System.out.println(requestDTO);
         return userService.addUserPreference(jwt, requestDTO);
+    }
+
+    @PutMapping("/me/preferences/{id}")
+    public ResponseEntity<UserPreferencesResponseDTO> updateUserPreferences(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("id") Integer id,
+            @RequestBody UserPreferencesRequestDTO requestDTO) {
+        return userService.updateUserPreferences(jwt, requestDTO, id);
     }
 
     @DeleteMapping("/me/preferences/{id}")
