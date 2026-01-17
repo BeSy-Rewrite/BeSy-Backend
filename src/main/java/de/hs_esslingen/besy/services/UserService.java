@@ -3,7 +3,6 @@ package de.hs_esslingen.besy.services;
 import de.hs_esslingen.besy.dtos.request.UserPreferencesRequestDTO;
 import de.hs_esslingen.besy.dtos.response.UserPreferencesResponseDTO;
 import de.hs_esslingen.besy.dtos.response.UserResponseDTO;
-import de.hs_esslingen.besy.enums.PreferenceType;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.UserPreferencesRequestMapper;
 import de.hs_esslingen.besy.mappers.response.UserPreferencesResponseMapper;
@@ -16,9 +15,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -49,7 +48,7 @@ public class UserService {
     }
 
 
-    public ResponseEntity<List<UserPreferencesResponseDTO>> getUserPreferencesByPreferenceType(Jwt jwt, PreferenceType preferenceType) {
+    public ResponseEntity<List<UserPreferencesResponseDTO>> getUserPreferencesByPreferenceType(Jwt jwt, String preferenceType) {
 
         User user = userRepository.findOptionalByKeycloakUUID(jwt.getSubject()).orElseThrow(() -> new NotFoundException("Benutzer existiert nicht."));
         List<UserPreferences> userPreferences = userPreferencesRepository.getUserPreferencesByUser_IdAndPreferenceType(user.getId(), preferenceType);
@@ -66,6 +65,7 @@ public class UserService {
         return ResponseEntity.ok(userPreferencesResponseMapper.toDto(savedPreferences));
     }
 
+    @Transactional
     public ResponseEntity<Void> deleteUserPreferences(Jwt jwt, Integer preferenceId) {
         User user = userRepository.findOptionalByKeycloakUUID(jwt.getSubject()).orElseThrow(() -> new NotFoundException("Benutzer existiert nicht."));
 

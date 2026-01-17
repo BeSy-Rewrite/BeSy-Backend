@@ -3,7 +3,6 @@ package de.hs_esslingen.besy.controllers;
 import de.hs_esslingen.besy.dtos.request.UserPreferencesRequestDTO;
 import de.hs_esslingen.besy.dtos.response.UserPreferencesResponseDTO;
 import de.hs_esslingen.besy.dtos.response.UserResponseDTO;
-import de.hs_esslingen.besy.enums.PreferenceType;
 import de.hs_esslingen.besy.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +38,7 @@ public class UserController {
     @GetMapping("/me/preferences")
     public ResponseEntity<List<UserPreferencesResponseDTO>> getUserPreferences(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestParam(value = "type", required = false) PreferenceType type
+            @RequestParam(value = "type", required = false) String type
             ) {
         return userService.getUserPreferencesByPreferenceType(jwt, type);
     }
@@ -48,6 +47,7 @@ public class UserController {
     public ResponseEntity<UserPreferencesResponseDTO> addUserPreferences(
             @AuthenticationPrincipal Jwt jwt,
             @RequestBody UserPreferencesRequestDTO requestDTO) {
+        System.out.println(requestDTO);
         return userService.addUserPreference(jwt, requestDTO);
     }
 

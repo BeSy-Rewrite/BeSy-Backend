@@ -1,6 +1,5 @@
 package de.hs_esslingen.besy.models;
 
-import de.hs_esslingen.besy.enums.PreferenceType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -24,9 +23,8 @@ public class UserPreferences {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Enumerated(EnumType.STRING)
     @NotNull
-    private PreferenceType preferenceType;
+    private String preferenceType;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")

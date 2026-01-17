@@ -1,6 +1,5 @@
 package de.hs_esslingen.besy.dtos.response;
 
-import de.hs_esslingen.besy.enums.PreferenceType;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -12,6 +11,6 @@ import java.util.Map;
 @Value
 public class UserPreferencesResponseDTO implements Serializable {
     Integer id;
-    PreferenceType preferenceType;
+    String preferenceType;
     Map<String, Object> preferences;
 }
