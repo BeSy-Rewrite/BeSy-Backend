@@ -13,4 +13,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT u FROM User u WHERE u.keycloakUUID = :keycloakUUID")
     Optional<User> findOptionalByKeycloakUUID(@Param("keycloakUUID") String keycloakUUID);
+
+    Optional<User> findOptionalByEmail(String email);
 }
