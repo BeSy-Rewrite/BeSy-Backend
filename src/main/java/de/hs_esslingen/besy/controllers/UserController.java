@@ -35,24 +35,35 @@ public class UserController {
         return userService.getUserByKeycloakUUID(jwt);
     }
 
-    @GetMapping("/{id}/preferences")
-    public ResponseEntity<UserPreferencesResponseDTO> getUserPreferences(@PathVariable("id") Integer id) {
-        return userService.getUserPreferences(id);
+    @GetMapping("/me/preferences")
+    public ResponseEntity<List<UserPreferencesResponseDTO>> getUserPreferences(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(value = "type", required = false) String type
+            ) {
+        return userService.getUserPreferencesByPreferenceType(jwt, type);
     }
 
-    @PostMapping("/{id}/preferences")
+    @PostMapping("/me/preferences")
     public ResponseEntity<UserPreferencesResponseDTO> addUserPreferences(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestBody UserPreferencesRequestDTO requestDTO) {
+        return userService.addUserPreference(jwt, requestDTO);
+    }
+
+    @PutMapping("/me/preferences/{id}")
+    public ResponseEntity<UserPreferencesResponseDTO> updateUserPreferences(
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable("id") Integer id,
             @RequestBody UserPreferencesRequestDTO requestDTO) {
-        return userService.addUserPreferences(id, requestDTO);
+        return userService.updateUserPreferences(jwt, requestDTO, id);
     }
 
-    @DeleteMapping("/{id}/preferences")
-    public ResponseEntity<UserPreferencesResponseDTO> deleteUserPreferences(
-            @PathVariable("id") Integer id,
-            @RequestBody UserPreferencesRequestDTO requestDTO
+    @DeleteMapping("/me/preferences/{id}")
+    public ResponseEntity<Void> deleteUserPreferences(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("id") Integer id
     ){
-        return userService.deleteUserPreferences(id, requestDTO);
+        return userService.deleteUserPreferences(jwt, id);
     }
 
 }

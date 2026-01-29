@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -31,12 +31,8 @@ public class User {
     @Column(name = "legacy_user_name", nullable = true)
     private String legacyUserName;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(
-            name = "user_order_filter_preferences",
-            joinColumns = @JoinColumn(name = "user_id")
-    )
-    @Column(name = "order_filter_preferences", columnDefinition = "TEXT")
-    private Set<String> orderFilterPreferences;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<UserPreferences> preferences;
+
 
 }

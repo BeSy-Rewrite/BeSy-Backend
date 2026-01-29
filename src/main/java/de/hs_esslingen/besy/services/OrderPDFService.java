@@ -66,8 +66,7 @@ public class OrderPDFService {
         if (orderOpt.isEmpty()) throw new NotFoundException("Order with id " + orderId + " does not exist.");
 
         Order orderDAO = orderOpt.get();
-        Supplier supplierDAO = supplierRepository.findById(orderDAO.getSupplierId())
-                .orElseThrow(() -> new NotFoundException("Supplier with id " + orderDAO.getSupplierId() + " does not exist."));
+        Optional<Supplier> supplierDAO = supplierRepository.findById(orderDAO.getSupplierId());
 
         Approval approvals = orderDAO.getApproval();
 
@@ -75,7 +74,6 @@ public class OrderPDFService {
         Optional<Invoice> invoiceOpt = invoiceRepository.findByOrderId(Long.valueOf(orderId));
         Optional<Person> deliveryPersonOpt = personRepository.findById(Long.valueOf(orderDAO.getDeliveryPersonId()));
         Optional<Person> invoicePersonOpt = personRepository.findById(Long.valueOf(orderDAO.getInvoicePersonId()));
-        Address supplierAddress = supplierDAO.getAddress();
         List<Quotation> quotations = quotationRepository.getQuotationByOrderId(Long.valueOf(orderId));
 
         Address deliveryAddress = orderDAO.getDeliveryAddress();
@@ -89,15 +87,25 @@ public class OrderPDFService {
         // nach VOL/UVgO (Liefer-/Dienstleistung)
         order.setDeliveryAndServiceFlag(true);
 
-        order.setCompanyAddress("""
-        %s
-        %s %s
-        %s %s
-        """.formatted(
-                supplierDAO.getName(),
-                supplierAddress.getStreet(), supplierAddress.getBuildingNumber() != null ? supplierAddress.getBuildingNumber() : "",
-                supplierAddress.getPostalCode(), supplierAddress.getTown())
-        );
+        if(supplierDAO.isPresent()) {
+            Supplier supplier = supplierDAO.get();
+            Address supplierAddress = supplier.getAddress();
+
+                order.setCompanyAddress("""
+            %s
+            %s %s
+            %s %s
+            """.formatted(
+                        supplier.getName(),
+                        supplierAddress.getStreet(), supplierAddress.getBuildingNumber() != null ? supplierAddress.getBuildingNumber() : "",
+                        supplierAddress.getPostalCode(), supplierAddress.getTown())
+                );
+            // Fax-Nr./E-Mail:
+            order.setSupplierEmail(supplier.getEmail());
+
+        }
+
+
 
         // Bestell-Nr.
         order.setOrderNumber(OrderPDFService.generateOrderNumber(orderDAO.getPrimaryCostCenterId(), orderDAO.getBookingYear(), orderDAO.getAutoIndex()));
@@ -105,8 +113,7 @@ public class OrderPDFService {
         order.setDate(orderDAO.getCreatedDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)));
         // Besteller:in
         order.setOrderer(orderDAO.getOwner().getName() + " " + orderDAO.getOwner().getSurname());
-        // Fax-Nr./E-Mail:
-        order.setSupplierEmail(supplierDAO.getEmail());
+
         // Angebots-Nr.:
         if(invoiceOpt.isPresent()) order.setInvoiceId(invoiceOpt.get().getId());
 
