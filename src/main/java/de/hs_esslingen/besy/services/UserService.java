@@ -1,5 +1,14 @@
 package de.hs_esslingen.besy.services;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import de.hs_esslingen.besy.dtos.request.UserPreferencesRequestDTO;
 import de.hs_esslingen.besy.dtos.response.UserPreferencesResponseDTO;
 import de.hs_esslingen.besy.dtos.response.UserResponseDTO;
@@ -11,24 +20,22 @@ import de.hs_esslingen.besy.models.User;
 import de.hs_esslingen.besy.models.UserPreferences;
 import de.hs_esslingen.besy.repositories.UserPreferencesRepository;
 import de.hs_esslingen.besy.repositories.UserRepository;
-import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
+import de.hs_esslingen.besy.security.KeycloakAuthenticationConverter;
+import lombok.RequiredArgsConstructor;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Transactional
 public class UserService {
+
+    @Value("${user-role-name}")
+    private String userRoleName;
 
     private final UserRepository userRepository;
     private final UserResponseMapper userResponseMapper;
     private final UserPreferencesRepository userPreferencesRepository;
     private final UserPreferencesResponseMapper userPreferencesResponseMapper;
     private final UserPreferencesRequestMapper userPreferencesRequestMapper;
-
 
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
         List<User> users = userRepository.findAll();
@@ -42,22 +49,23 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Benutzer mit id " + id + " nicht gefunden."));
     }
 
-    public ResponseEntity<UserResponseDTO> getUserByKeycloakUUID(Jwt jwt){
-        User user = userRepository.findByKeycloakUUID(jwt.getSubject());
+    public ResponseEntity<UserResponseDTO> getUserByKeycloakUUID(Jwt jwt) {
+        User user = this.resolveUserFromJwt(jwt);
         return ResponseEntity.ok(userResponseMapper.toDto(user));
     }
 
+    public ResponseEntity<List<UserPreferencesResponseDTO>> getUserPreferencesByPreferenceType(Jwt jwt,
+            String preferenceType) {
 
-    public ResponseEntity<List<UserPreferencesResponseDTO>> getUserPreferencesByPreferenceType(Jwt jwt, String preferenceType) {
-
-        User user = userRepository.findOptionalByKeycloakUUID(jwt.getSubject()).orElseThrow(() -> new NotFoundException("Benutzer existiert nicht."));
-        List<UserPreferences> userPreferences = userPreferencesRepository.getUserPreferencesByUser_IdAndPreferenceType(user.getId(), preferenceType);
+        User user = this.resolveUserFromJwt(jwt);
+        List<UserPreferences> userPreferences = userPreferencesRepository
+                .getUserPreferencesByUser_IdAndPreferenceType(user.getId(), preferenceType);
         List<UserPreferencesResponseDTO> response = userPreferencesResponseMapper.toDto(userPreferences);
         return ResponseEntity.ok(response);
     }
 
     public ResponseEntity<UserPreferencesResponseDTO> addUserPreference(Jwt jwt, UserPreferencesRequestDTO requestDTO) {
-        User user = userRepository.findOptionalByKeycloakUUID(jwt.getSubject()).orElseThrow(() -> new NotFoundException("Benutzer existiert nicht."));
+        User user = this.resolveUserFromJwt(jwt);
 
         UserPreferences preferences = userPreferencesRequestMapper.toEntity(requestDTO);
         preferences.setUser(user);
@@ -65,12 +73,13 @@ public class UserService {
         return ResponseEntity.ok(userPreferencesResponseMapper.toDto(savedPreferences));
     }
 
-    public ResponseEntity<UserPreferencesResponseDTO> updateUserPreferences(Jwt jwt, UserPreferencesRequestDTO requestDTO, Integer id) {
-        User user = userRepository.findOptionalByKeycloakUUID(jwt.getSubject()).orElseThrow(() -> new NotFoundException("Benutzer existiert nicht."));
-
+    public ResponseEntity<UserPreferencesResponseDTO> updateUserPreferences(Jwt jwt,
+            UserPreferencesRequestDTO requestDTO, Integer id) {
+        User user = this.resolveUserFromJwt(jwt);
 
         UserPreferences preferences = userPreferencesRepository.findByIdAndUser(id, user);
-        if(preferences == null) throw new NotFoundException("Präferenz existiert nicht.");
+        if (preferences == null)
+            throw new NotFoundException("Präferenz existiert nicht.");
 
         userPreferencesRequestMapper.partialUpdate(preferences, requestDTO);
         return ResponseEntity.ok(userPreferencesResponseMapper.toDto(preferences));
@@ -78,11 +87,35 @@ public class UserService {
 
     @Transactional
     public ResponseEntity<Void> deleteUserPreferences(Jwt jwt, Integer preferenceId) {
-        User user = userRepository.findOptionalByKeycloakUUID(jwt.getSubject()).orElseThrow(() -> new NotFoundException("Benutzer existiert nicht."));
+        User user = this.resolveUserFromJwt(jwt);
 
         userPreferencesRepository.deleteByIdAndUser(preferenceId, user);
         return ResponseEntity.noContent().build();
     }
 
-
+    @Transactional
+    public User resolveUserFromJwt(Jwt jwt) {
+        return userRepository.findOptionalByKeycloakUUID(jwt.getSubject())
+                .or(() -> {
+                    Optional<User> user = userRepository.findOptionalByEmail(jwt.getClaimAsString("email"));
+                    user.ifPresent(u -> {
+                        u.setKeycloakUUID(jwt.getSubject());
+                        u = userRepository.save(u);
+                    });
+                    return user;
+                })
+                .orElseGet(() -> {
+                    if (KeycloakAuthenticationConverter.hasRole(jwt, userRoleName)) {
+                        User newUser = new User();
+                        newUser.setKeycloakUUID(jwt.getSubject());
+                        newUser.setEmail(jwt.getClaimAsString("email"));
+                        newUser.setName(jwt.getClaimAsString("given_name"));
+                        newUser.setSurname(jwt.getClaimAsString("family_name"));
+                        return userRepository.save(newUser);
+                    } else {
+                        throw new NotFoundException("Benutzer mit Keycloak UUID " + jwt.getSubject()
+                                + " konnte nicht gefunden oder erstellt werden.");
+                    }
+                });
+    }
 }

@@ -11,6 +11,7 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -39,7 +40,7 @@ public class OrderPDFService {
 
     private final ItemResponseMapper itemResponseMapper;
 
-    static final String FORMULAR_URI = "src/main/resources/static/Bestellformular_V01_empty.pdf";
+    static final String FORMULAR_URI = "static/Bestellformular_V01_empty.pdf";
 
     static final String ANSCHRIFT_FAKULTAET_DEFAULT = "IT";
     static final String ANSCHRIFT_STRASSE_DEFAULT = "Flandernstraße 101";
@@ -52,7 +53,7 @@ public class OrderPDFService {
     public ResponseEntity<byte[]> generateOrderPDF(Long orderId) throws IOException {
 
         // Parse empty Order PDF's acro form elements
-        PDDocument document = Loader.loadPDF(new File(FORMULAR_URI));
+        PDDocument document = Loader.loadPDF(new ClassPathResource(FORMULAR_URI).getFile());
         PDAcroForm acroForm = document.getDocumentCatalog().getAcroForm();
         PDFOrder order = new PDFOrder();
         order.parseOrder(acroForm);
@@ -91,12 +92,12 @@ public class OrderPDFService {
             Supplier supplier = supplierDAO.get();
             Address supplierAddress = supplier.getAddress();
 
-                order.setCompanyAddress("""
-            %s
-            %s %s
-            %s %s
-            """.formatted(
-                        supplier.getName(),
+            order.setCompanyAddress("""
+                    %s
+                    %s %s
+                    %s %s
+                    """.formatted(
+                    supplier.getName(),
                         supplierAddress.getStreet(), supplierAddress.getBuildingNumber() != null ? supplierAddress.getBuildingNumber() : "",
                         supplierAddress.getPostalCode(), supplierAddress.getTown())
                 );
@@ -204,8 +205,8 @@ public class OrderPDFService {
 
     public static String generateOrderNumber(String primaryCostCenterId, String bookingYear, Short autoIndex) {
         return ("""
-        IT%s_%s_%s
-        """.formatted(
+                IT%s_%s_%s
+                """.formatted(
                 primaryCostCenterId, bookingYear, autoIndex)
         ).trim();
     }

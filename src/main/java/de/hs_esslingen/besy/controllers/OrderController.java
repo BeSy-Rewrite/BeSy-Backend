@@ -159,7 +159,7 @@ public class OrderController {
     ){
         if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
         if(invoiceService.existsInvoiceById(dto.getId())) throw new EntityAlreadyExistsException("Rechnung existiert bereits.");
-        if(!orderService.isOrderStatusEqual(orderId, OrderStatus.IN_PROGRESS)) throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
+        //if(!orderService.isOrderStatusEqual(orderId, OrderStatus.IN_PROGRESS)) throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
         if(!costCenterService.existsById(dto.getCostCenterId())) throw new NotFoundException("Kostenstelle nicht gefunden.");
         return this.invoiceService.createInvoice(dto, orderId);
     }
