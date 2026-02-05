@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.Builder;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
@@ -15,6 +16,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Embeddable
+@Builder
 public class CustomerIdId implements java.io.Serializable {
     private static final long serialVersionUID = -7933214224856243084L;
     @Column(name = "customer_id", nullable = false)

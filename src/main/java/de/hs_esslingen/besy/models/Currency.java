@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.Builder;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -11,6 +12,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "currency")
+@Builder
 public class Currency {
     @Id
     @Column(name = "code", nullable = false, length = 3)

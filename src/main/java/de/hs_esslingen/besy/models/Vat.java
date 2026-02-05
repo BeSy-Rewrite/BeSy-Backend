@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.Builder;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -14,6 +15,7 @@ import java.math.BigDecimal;
 @Setter
 @Entity
 @Table(name = "vat")
+@Builder
 public class Vat {
     @Id
     @Column(name = "value", nullable = false, precision = 2)

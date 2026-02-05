@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.Builder;
 import de.hs_esslingen.besy.enums.PreferredList;
 import de.hs_esslingen.besy.enums.VatType;
 import jakarta.persistence.*;
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
 @Setter
 @Entity
 @Table(name = "item")
+@Builder
 public class Item {
 
     /**

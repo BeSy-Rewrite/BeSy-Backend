@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.Builder;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @Table(name = "supplier")
+@Builder
 public class Supplier {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

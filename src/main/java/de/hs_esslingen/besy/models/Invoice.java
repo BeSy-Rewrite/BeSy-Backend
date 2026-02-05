@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.Builder;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import java.time.OffsetDateTime;
 @Setter
 @Entity
 @Table(name = "invoice")
+@Builder
 public class Invoice {
     @Id
     @Column(name = "id", nullable = false)
