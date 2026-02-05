@@ -62,9 +62,16 @@ public class AddressService {
     }
 
     public ResponseEntity<AddressResponseDTO> getAddressOfSupplier(Integer supplierId) {
-        Supplier supplier = supplierRepository.findById(supplierId).get();
+        Supplier supplier = supplierRepository.findById(supplierId)
+                .orElseThrow(() -> new NotFoundException("Lieferant nicht gefunden."));
+
         if(supplier.getAddressId() == null || !existsById(supplier.getAddressId())) throw new NotFoundException("Dieser Lieferant besitzt keine Adresse.");
         Address address = supplier.getAddress();
+
+        if (address.getOwnerType() != AddressOwnerType.Supplier) {
+            throw new NotFoundException("Dieser Lieferant besitzt keine gültige Adresse.");
+        }
+
         return ResponseEntity.ok(addressResponseMapper.toDto(address));
     }
 
@@ -74,9 +81,16 @@ public class AddressService {
     }
 
     public ResponseEntity<AddressResponseDTO> getAddressOfPerson(Long personId) {
-        Person person = personRepository.findById(personId).get();
+        Person person = personRepository.findById(personId)
+                .orElseThrow(() -> new NotFoundException("Person nicht gefunden."));
+
         if(person.getAddressId() == null || !existsById(person.getAddressId())) throw new NotFoundException("Diese Person besitzt keine Adresse.");
         Address address = person.getAddress();
+
+        if (address.getOwnerType() != AddressOwnerType.Person) {
+            throw new NotFoundException("Diese Person besitzt keine gültige Adresse.");
+        }
+
         return ResponseEntity.ok(addressResponseMapper.toDto(address));
     }
 
