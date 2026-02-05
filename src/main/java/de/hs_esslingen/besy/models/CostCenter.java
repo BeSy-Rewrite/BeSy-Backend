@@ -1,5 +1,7 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Builder;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,6 +17,8 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "cost_center")
 @Builder
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class CostCenter {
     @Id
     @Column(name = "id", nullable = false, length = 20)
@@ -33,3 +37,5 @@ public class CostCenter {
     private String comment;
 
 }
+
+

@@ -4,8 +4,8 @@ import lombok.Builder;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.Hibernate;
 
@@ -14,7 +14,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
+@RequiredArgsConstructor
 @Embeddable
 @Builder
 public class ItemId implements java.io.Serializable {
@@ -41,3 +41,5 @@ public class ItemId implements java.io.Serializable {
     }
 
 }
+
+

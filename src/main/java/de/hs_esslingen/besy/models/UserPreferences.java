@@ -1,5 +1,7 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Builder;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -15,6 +17,8 @@ import java.util.Map;
 @Entity
 @Table(name = "user_preferences")
 @Builder
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserPreferences {
     @Id
     @Column(name = "id")
@@ -33,4 +37,6 @@ public class UserPreferences {
     @NotNull
     private Map<String, Object> preferences;
 }
+
+
 

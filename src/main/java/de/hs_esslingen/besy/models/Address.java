@@ -1,5 +1,7 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Builder;
 import de.hs_esslingen.besy.enums.AddressOwnerType;
 import jakarta.persistence.*;
@@ -13,6 +15,8 @@ import lombok.ToString;
 @ToString
 @Table(name = "address")
 @Builder
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class Address {
 
     @Id
@@ -55,3 +59,5 @@ public class Address {
     private AddressOwnerType ownerType;
 
 }
+
+

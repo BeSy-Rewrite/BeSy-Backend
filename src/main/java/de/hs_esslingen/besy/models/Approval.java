@@ -1,5 +1,6 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -12,6 +13,7 @@ import lombok.Setter;
 @Table(name = "approvals")
 @Builder
 @RequiredArgsConstructor
+@AllArgsConstructor
 public class Approval {
 
     @Id
@@ -42,4 +44,6 @@ public class Approval {
     private Boolean flagMediaPermission = false;
 
 }
+
+
 

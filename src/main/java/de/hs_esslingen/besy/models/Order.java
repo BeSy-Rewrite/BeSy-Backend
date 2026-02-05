@@ -1,5 +1,7 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.*;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import jakarta.persistence.*;
@@ -20,6 +22,7 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @Builder
 @RequiredArgsConstructor
+@AllArgsConstructor
 public class Order {
 
     @Id
@@ -205,3 +208,5 @@ public class Order {
     }
 
 }
+
+

@@ -1,5 +1,7 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Builder;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -12,6 +14,8 @@ import java.util.List;
 @Entity
 @Table(name = "\"user\"")
 @Builder
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class User {
     @Id
     @Column(name = "id")
@@ -38,3 +42,5 @@ public class User {
 
 
 }
+
+

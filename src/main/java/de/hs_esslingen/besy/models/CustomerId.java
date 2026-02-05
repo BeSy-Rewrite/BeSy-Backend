@@ -1,5 +1,7 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Builder;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -10,6 +12,8 @@ import lombok.Setter;
 @Entity
 @Table(name = "customer_id")
 @Builder
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class CustomerId {
 
     @Column(name = "customer_id", insertable = false, updatable = false)
@@ -30,3 +34,5 @@ public class CustomerId {
     private String comment;
 
 }
+
+
