@@ -1,10 +1,11 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.Builder;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.Hibernate;
 
@@ -12,9 +13,10 @@ import java.util.Objects;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@RequiredArgsConstructor
 @Embeddable
+@Builder
 public class QuotationId implements java.io.Serializable {
     private static final long serialVersionUID = -8150342973464107154L;
     @Column(name = "order_id", nullable = false)
@@ -38,3 +40,5 @@ public class QuotationId implements java.io.Serializable {
     }
 
 }
+
+

@@ -1,5 +1,8 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Builder;
 import de.hs_esslingen.besy.enums.PreferredList;
 import de.hs_esslingen.besy.enums.VatType;
 import jakarta.persistence.*;
@@ -13,6 +16,9 @@ import java.math.BigDecimal;
 @Setter
 @Entity
 @Table(name = "item")
+@Builder
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class Item {
 
     /**
@@ -123,3 +129,5 @@ public class Item {
         return id != null ? id.getOrderId() : null;
     }
 }
+
+

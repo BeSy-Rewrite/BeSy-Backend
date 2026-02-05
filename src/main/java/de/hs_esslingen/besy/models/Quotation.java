@@ -1,5 +1,8 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Builder;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +14,9 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @Table(name = "quotation")
+@Builder
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class Quotation {
 
     @EmbeddedId
@@ -78,3 +84,5 @@ public class Quotation {
         return id != null ? id.getOrderId() : null;
     }
 }
+
+

@@ -1,9 +1,10 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.*;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -19,6 +20,9 @@ import java.util.List;
 @Entity
 @Table(name = "\"order\"")
 @EntityListeners(AuditingEntityListener.class)
+@Builder
+@RequiredArgsConstructor
+@AllArgsConstructor
 public class Order {
 
     @Id
@@ -51,7 +55,7 @@ public class Order {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "owner_user_id",referencedColumnName = "id", nullable = true)
-    private de.hs_esslingen.besy.models.User owner;
+    private User owner;
 
     @Column(name = "content_description", nullable = false)
     private String contentDescription;
@@ -91,21 +95,21 @@ public class Order {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "delivery_person_id", nullable = true)
-    private de.hs_esslingen.besy.models.Person deliveryPerson;
+    private Person deliveryPerson;
 
     @Column(name = "invoice_person_id", insertable = false, updatable = false)
     private Long invoicePersonId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "invoice_person_id", nullable = true)
-    private de.hs_esslingen.besy.models.Person invoicePerson;
+    private Person invoicePerson;
 
     @Column(name = "queries_person_id", insertable = false, updatable = false)
     private Long queriesPersonId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "queries_person_id", nullable = true)
-    private de.hs_esslingen.besy.models.Person queriesPerson;
+    private Person queriesPerson;
 
     @Column(name = "customer_id", insertable = false, updatable = false)
     private String customerId;
@@ -204,3 +208,5 @@ public class Order {
     }
 
 }
+
+
