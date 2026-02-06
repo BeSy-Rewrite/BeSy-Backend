@@ -2,7 +2,9 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.request.PersonRequestDTO;
 import de.hs_esslingen.besy.dtos.response.PersonResponseDTO;
+import de.hs_esslingen.besy.enums.AddressOwnerType;
 import de.hs_esslingen.besy.enums.Gender;
+import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.PersonRequestMapper;
 import de.hs_esslingen.besy.mappers.response.PersonResponseMapper;
@@ -69,6 +71,7 @@ class PersonServiceTest {
 
         address = new Address();
         address.setId(10);
+        address.setOwnerType(AddressOwnerType.Person);
 
         requestDtoNoAddress = new PersonRequestDTO(
                 "Jane",
@@ -182,6 +185,23 @@ class PersonServiceTest {
     }
 
     @Test
+    void should_reject_create_person_with_non_person_address() {
+        Address nonPersonAddress = new Address();
+        nonPersonAddress.setId(20);
+        nonPersonAddress.setOwnerType(AddressOwnerType.Supplier);
+
+        when(personRequestMapper.toEntity(requestDtoWithAddress)).thenReturn(person);
+        when(addressRepository.getReferenceById(10)).thenReturn(nonPersonAddress);
+
+        BadRequestException ex = assertThrows(BadRequestException.class,
+                () -> personService.createPerson(requestDtoWithAddress));
+
+        assertTrue(ex.getMessage().contains("Adresse"));
+        verify(addressRepository).getReferenceById(10);
+        verify(personRepository, never()).save(any(Person.class));
+    }
+
+    @Test
     void should_update_person_without_address() {
         when(personRepository.findById(1L)).thenReturn(Optional.of(person));
         when(personRepository.save(any(Person.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -214,6 +234,23 @@ class PersonServiceTest {
         ArgumentCaptor<Person> captor = ArgumentCaptor.forClass(Person.class);
         verify(personRepository).save(captor.capture());
         assertSame(address, captor.getValue().getAddress());
+    }
+
+    @Test
+    void should_reject_update_person_with_non_person_address() {
+        Address nonPersonAddress = new Address();
+        nonPersonAddress.setId(20);
+        nonPersonAddress.setOwnerType(AddressOwnerType.Supplier);
+
+        when(personRepository.findById(1L)).thenReturn(Optional.of(person));
+        when(addressRepository.getReferenceById(10)).thenReturn(nonPersonAddress);
+
+        BadRequestException ex = assertThrows(BadRequestException.class,
+                () -> personService.updatePerson(1L, requestDtoWithAddress));
+
+        assertTrue(ex.getMessage().contains("Adresse"));
+        verify(addressRepository).getReferenceById(10);
+        verify(personRepository, never()).save(any(Person.class));
     }
 
     @Test
