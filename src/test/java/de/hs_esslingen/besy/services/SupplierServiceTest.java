@@ -6,6 +6,7 @@ import de.hs_esslingen.besy.dtos.response.AddressResponseDTO;
 import de.hs_esslingen.besy.dtos.response.CreateSupplierResponseDTO;
 import de.hs_esslingen.besy.dtos.response.SupplierResponseDTO;
 import de.hs_esslingen.besy.enums.AddressOwnerType;
+import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.AddressRequestMapper;
 import de.hs_esslingen.besy.mappers.request.SupplierRequestMapper;
@@ -197,6 +198,7 @@ class SupplierServiceTest {
         verify(createSupplierResponseMapper).toDto(saved);
     }
 
+
     @Test
     void should_update_supplier_and_update_address() {
         when(supplierRepository.findById(1)).thenReturn(Optional.of(supplier));
@@ -215,6 +217,24 @@ class SupplierServiceTest {
         assertSame(AddressOwnerType.Supplier, captor.getValue().getAddress().getOwnerType());
     }
 
+    @Test
+    void should_reject_update_supplier_with_non_supplier_address() {
+        Address nonSupplierAddress = new Address();
+        nonSupplierAddress.setId(20);
+        nonSupplierAddress.setOwnerType(AddressOwnerType.Person);
+
+        Supplier existing = new Supplier();
+        existing.setId(1);
+        existing.setAddress(nonSupplierAddress);
+
+        when(supplierRepository.findById(1)).thenReturn(Optional.of(existing));
+
+        BadRequestException ex = assertThrows(BadRequestException.class,
+                () -> supplierService.updateSupplier(1, requestDto));
+
+        assertEquals(true, ex.getMessage().contains("Adresse"));
+        verify(supplierRepository, never()).save(any(Supplier.class));
+    }
     @Test
     void should_exists_supplier_by_id() {
         when(supplierRepository.existsById(1)).thenReturn(true);
