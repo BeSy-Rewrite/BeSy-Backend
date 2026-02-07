@@ -4,6 +4,7 @@ import de.hs_esslingen.besy.dtos.request.SupplierRequestDTO;
 import de.hs_esslingen.besy.dtos.response.CreateSupplierResponseDTO;
 import de.hs_esslingen.besy.dtos.response.SupplierResponseDTO;
 import de.hs_esslingen.besy.enums.AddressOwnerType;
+import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.AddressRequestMapper;
 import de.hs_esslingen.besy.mappers.request.SupplierRequestMapper;
@@ -43,7 +44,9 @@ public class SupplierService {
 
     public ResponseEntity<CreateSupplierResponseDTO> createSupplier(SupplierRequestDTO supplierRequestDTO) {
         Supplier supplier = supplierRequestMapper.toEntity(supplierRequestDTO);
-        supplier.getAddress().setOwnerType(AddressOwnerType.Supplier);
+        if (supplier.getAddress() != null) {
+            supplier.getAddress().setOwnerType(AddressOwnerType.Supplier);
+        }
         Supplier supplierPersisted = supplierRepository.save(supplier);
         return ResponseEntity.ok(createSupplierResponseMapper.toDto(supplierPersisted));
     }
@@ -55,6 +58,9 @@ public class SupplierService {
         supplierRequestMapper.partialUpdate(supplier, dto);
 
         if(supplier.getAddress() != null) {
+            if (supplier.getAddress().getOwnerType() != AddressOwnerType.Supplier) {
+                throw new BadRequestException("Adresse ist keinem Lieferanten zugeordnet.");
+            }
             addressRequestMapper.partialUpdate(address, dto.getAddress());
             supplier.setAddress(address);
         }

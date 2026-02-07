@@ -2,6 +2,8 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.request.PersonRequestDTO;
 import de.hs_esslingen.besy.dtos.response.PersonResponseDTO;
+import de.hs_esslingen.besy.enums.AddressOwnerType;
+import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.PersonRequestMapper;
 import de.hs_esslingen.besy.mappers.response.PersonResponseMapper;
@@ -41,6 +43,9 @@ public class PersonService {
 
         if(personDTO.getAddressId() != null){
             Address address = addressRepository.getReferenceById(personDTO.getAddressId());
+            if(address.getOwnerType() != AddressOwnerType.Person) {
+                throw new BadRequestException("Adresse ist keiner Person zugeordnet.");
+            }
             person.setAddress(address);
         }
 
@@ -55,6 +60,9 @@ public class PersonService {
 
         if(personDTO.getAddressId() != null){
             Address address = addressRepository.getReferenceById(personDTO.getAddressId());
+            if(address.getOwnerType() != AddressOwnerType.Person) {
+                throw new BadRequestException("Adresse ist keiner Person zugeordnet.");
+            }
             person.setAddress(address);
         }
 

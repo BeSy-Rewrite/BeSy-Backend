@@ -22,11 +22,6 @@ public class InvoiceService {
     private final InvoiceResponseMapper invoiceResponseMapper;
     private final InvoiceRequestMapper invoiceRequestMapper;
 
-    public ResponseEntity<InvoiceResponseDTO> getInvoiceOfOrder(Long orderId) {
-        Invoice invoice = invoiceRepository.findByOrderId(orderId).orElseThrow(() -> new NotFoundException("Invoice with order id " + orderId + " not found."));
-        InvoiceResponseDTO invoiceResponseDTO = invoiceResponseMapper.toDto(invoice);
-        return ResponseEntity.ok(invoiceResponseDTO);
-    }
 
     public ResponseEntity<List<InvoiceResponseDTO>> getAllInvoices(Long orderId) {
         List<Invoice> invoices = invoiceRepository.findAllByOrderId(orderId);

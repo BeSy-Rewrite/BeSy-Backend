@@ -1,5 +1,8 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Builder;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +15,9 @@ import java.time.OffsetDateTime;
 @Setter
 @Entity
 @Table(name = "invoice")
+@Builder
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class Invoice {
     @Id
     @Column(name = "id", nullable = false)
@@ -39,3 +45,5 @@ public class Invoice {
     private Long paperlessId;
 
 }
+
+

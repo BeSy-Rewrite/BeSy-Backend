@@ -27,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -191,10 +192,17 @@ public class OrderService {
      * @throws BadRequestException        if the transition from the current to the new status is not allowed
      * @throws ConstraintViolationException if the updated order violates validation constraints
      */
+    @Transactional
     public ResponseEntity<OrderStatus> updateOrderStatus(Long id, OrderStatus newStatus, Jwt jwt) {
         Order order = orderRepository.findById(id).get();
 
         this.validateStatusTransition(order, newStatus, jwt);
+
+        if(newStatus == OrderStatus.COMPLETED) {
+            // Order got validated and is completed: set autoIndex
+            short index = generateOrderAutoIndex(order);
+            order.setAutoIndex(index);
+        }
 
         order.setStatus(newStatus);
         Order savedOrder = orderRepository.save(order);
@@ -202,12 +210,6 @@ public class OrderService {
         OrderStatusHistory orderStatusHistory = new OrderStatusHistory();
         orderStatusHistory.setOrder(savedOrder);
         orderStatusHistory.setStatus(savedOrder.getStatus());
-
-        if(isOrderStatusEqual(id, OrderStatus.COMPLETED)) {
-            // Order got validated and is completed: set autoIndex
-            generateOrderAutoIndex(order);
-            if(order.getAutoIndex() == null) throw new RuntimeException("Fehler beim Generieren des Bestellnummer (autoIndex)!");
-        }
 
         orderStatusHistoryRepository.save(orderStatusHistory);
 
@@ -369,14 +371,13 @@ public class OrderService {
     }
 
 
-    private void generateOrderAutoIndex(Order order) {
+    private short generateOrderAutoIndex(Order order) {
         Order latestAutoIndexOrder = orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(order.getPrimaryCostCenterId(), order.getBookingYear());
-        Short latestAutoIndex = latestAutoIndexOrder.getAutoIndex();
-
-        if(latestAutoIndex != null) {
-            order.setAutoIndex(++latestAutoIndex);
+        if(latestAutoIndexOrder == null) {
+            return 1;
         } else{
-            order.setAutoIndex((short) 1);
+            Short latestAutoIndex = latestAutoIndexOrder.getAutoIndex();
+            return (short) (latestAutoIndex + 1);
         }
     }
 

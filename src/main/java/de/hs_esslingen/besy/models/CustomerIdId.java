@@ -1,10 +1,11 @@
 package de.hs_esslingen.besy.models;
 
+import lombok.Builder;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.Hibernate;
 
@@ -13,8 +14,9 @@ import java.util.Objects;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
+@RequiredArgsConstructor
 @Embeddable
+@Builder
 public class CustomerIdId implements java.io.Serializable {
     private static final long serialVersionUID = -7933214224856243084L;
     @Column(name = "customer_id", nullable = false)
@@ -38,3 +40,5 @@ public class CustomerIdId implements java.io.Serializable {
     }
 
 }
+
+
