@@ -156,8 +156,10 @@ class UserServiceTest {
     void should_throw_not_found_when_user_missing_for_preferences() {
         when(userRepository.findOptionalByKeycloakUUID("kc-123")).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> userService.getUserPreferencesByPreferenceType(jwt, "table"));
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> userService.getUserPreferencesByPreferenceType(jwt, "table"));
 
+        assertEquals(true, ex.getMessage().contains("Benutzer"));
         verify(userRepository).findOptionalByKeycloakUUID("kc-123");
         verify(userPreferencesRepository, never()).getUserPreferencesByUser_IdAndPreferenceType(any(), any());
     }
@@ -184,6 +186,18 @@ class UserServiceTest {
     }
 
     @Test
+    void should_throw_not_found_when_user_missing_for_add_preference() {
+        when(userRepository.findOptionalByKeycloakUUID("kc-123")).thenReturn(Optional.empty());
+
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> userService.addUserPreference(jwt, preferencesRequestDTO));
+
+        assertEquals(true, ex.getMessage().contains("Benutzer"));
+        verify(userRepository).findOptionalByKeycloakUUID("kc-123");
+        verify(userPreferencesRepository, never()).save(any(UserPreferences.class));
+    }
+
+    @Test
     void should_update_user_preferences_when_exists() {
         when(userRepository.findOptionalByKeycloakUUID("kc-123")).thenReturn(Optional.of(user));
         when(userPreferencesRepository.findByIdAndUser(10, user)).thenReturn(preferences);
@@ -202,10 +216,24 @@ class UserServiceTest {
         when(userRepository.findOptionalByKeycloakUUID("kc-123")).thenReturn(Optional.of(user));
         when(userPreferencesRepository.findByIdAndUser(10, user)).thenReturn(null);
 
-        assertThrows(NotFoundException.class, () -> userService.updateUserPreferences(jwt, preferencesRequestDTO, 10));
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> userService.updateUserPreferences(jwt, preferencesRequestDTO, 10));
 
+        assertEquals(true, ex.getMessage().contains("Präferenz"));
         verify(userPreferencesRepository).findByIdAndUser(10, user);
         verify(userPreferencesRequestMapper, never()).partialUpdate(any(UserPreferences.class), any(UserPreferencesRequestDTO.class));
+    }
+
+    @Test
+    void should_throw_not_found_when_user_missing_for_update_preference() {
+        when(userRepository.findOptionalByKeycloakUUID("kc-123")).thenReturn(Optional.empty());
+
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> userService.updateUserPreferences(jwt, preferencesRequestDTO, 10));
+
+        assertEquals(true, ex.getMessage().contains("Benutzer"));
+        verify(userRepository).findOptionalByKeycloakUUID("kc-123");
+        verify(userPreferencesRepository, never()).findByIdAndUser(any(), any(User.class));
     }
 
     @Test
@@ -216,5 +244,17 @@ class UserServiceTest {
 
         assertEquals(204, response.getStatusCode().value());
         verify(userPreferencesRepository).deleteByIdAndUser(10, user);
+    }
+
+    @Test
+    void should_throw_not_found_when_user_missing_for_delete_preference() {
+        when(userRepository.findOptionalByKeycloakUUID("kc-123")).thenReturn(Optional.empty());
+
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> userService.deleteUserPreferences(jwt, 10));
+
+        assertEquals(true, ex.getMessage().contains("Benutzer"));
+        verify(userRepository).findOptionalByKeycloakUUID("kc-123");
+        verify(userPreferencesRepository, never()).deleteByIdAndUser(any(), any(User.class));
     }
 }
