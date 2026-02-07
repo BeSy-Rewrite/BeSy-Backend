@@ -1,4 +1,4 @@
-name: Build, docker & push to Docker Hub
+name: Run service tests
 
 on:
   push:
