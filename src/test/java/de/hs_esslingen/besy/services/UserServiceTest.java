@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -84,6 +85,9 @@ class UserServiceTest {
         jwt = Jwt.withTokenValue("token")
                 .header("alg", "none")
                 .subject("kc-123")
+            .claim("email", "jane.doe@example.com")
+            .claim("given_name", "Jane")
+            .claim("family_name", "Doe")
                 .build();
     }
 
@@ -125,14 +129,14 @@ class UserServiceTest {
 
     @Test
     void should_get_user_by_keycloak_uuid() {
-        when(userRepository.findByKeycloakUUID("kc-123")).thenReturn(user);
+        when(userRepository.findOptionalByKeycloakUUID("kc-123")).thenReturn(Optional.of(user));
         when(userResponseMapper.toDto(user)).thenReturn(userResponseDTO);
 
         ResponseEntity<UserResponseDTO> response = userService.getUserByKeycloakUUID(jwt);
 
         assertEquals(200, response.getStatusCode().value());
         assertSame(userResponseDTO, response.getBody());
-        verify(userRepository).findByKeycloakUUID("kc-123");
+        verify(userRepository).findOptionalByKeycloakUUID("kc-123");
         verify(userResponseMapper).toDto(user);
     }
 
@@ -155,6 +159,7 @@ class UserServiceTest {
     @Test
     void should_throw_not_found_when_user_missing_for_preferences() {
         when(userRepository.findOptionalByKeycloakUUID("kc-123")).thenReturn(Optional.empty());
+        when(userRepository.findOptionalByEmail(anyString())).thenReturn(Optional.empty());
 
         NotFoundException ex = assertThrows(NotFoundException.class,
                 () -> userService.getUserPreferencesByPreferenceType(jwt, "table"));
@@ -188,6 +193,7 @@ class UserServiceTest {
     @Test
     void should_throw_not_found_when_user_missing_for_add_preference() {
         when(userRepository.findOptionalByKeycloakUUID("kc-123")).thenReturn(Optional.empty());
+        when(userRepository.findOptionalByEmail(anyString())).thenReturn(Optional.empty());
 
         NotFoundException ex = assertThrows(NotFoundException.class,
                 () -> userService.addUserPreference(jwt, preferencesRequestDTO));
@@ -227,6 +233,7 @@ class UserServiceTest {
     @Test
     void should_throw_not_found_when_user_missing_for_update_preference() {
         when(userRepository.findOptionalByKeycloakUUID("kc-123")).thenReturn(Optional.empty());
+        when(userRepository.findOptionalByEmail(anyString())).thenReturn(Optional.empty());
 
         NotFoundException ex = assertThrows(NotFoundException.class,
                 () -> userService.updateUserPreferences(jwt, preferencesRequestDTO, 10));
@@ -249,6 +256,7 @@ class UserServiceTest {
     @Test
     void should_throw_not_found_when_user_missing_for_delete_preference() {
         when(userRepository.findOptionalByKeycloakUUID("kc-123")).thenReturn(Optional.empty());
+        when(userRepository.findOptionalByEmail(anyString())).thenReturn(Optional.empty());
 
         NotFoundException ex = assertThrows(NotFoundException.class,
                 () -> userService.deleteUserPreferences(jwt, 10));
