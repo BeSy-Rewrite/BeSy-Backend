@@ -45,8 +45,8 @@ public class InsyService {
     private String authProtocol;
 
     // Do not use @ALlArgsConstructor, since this will break insyBaseUrl & insyOrdersUrl
-    public InsyService(@Qualifier("plainRestClient")RestClient restClient, OrderRepository orderRepository, SupplierRepository supplierRepository, CostCenterRepository costCenterRepository, UserRepository userRepository, ItemRepository itemRepository) {
-        this.restClient = restClient;
+    public InsyService(@Qualifier("plainRestClient")RestClient plainRestClient, @Qualifier("oauthRestClient") RestClient oauthRestClient, OrderRepository orderRepository, SupplierRepository supplierRepository, CostCenterRepository costCenterRepository, UserRepository userRepository, ItemRepository itemRepository) {
+        this.restClient = authProtocol.equals("oauth2") ? oauthRestClient : plainRestClient;
         this.orderRepository = orderRepository;
         this.supplierRepository = supplierRepository;
         this.costCenterRepository = costCenterRepository;
