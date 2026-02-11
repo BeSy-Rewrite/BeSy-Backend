@@ -24,15 +24,11 @@ import de.hs_esslingen.besy.repositories.ItemRepository;
 import de.hs_esslingen.besy.repositories.OrderRepository;
 import de.hs_esslingen.besy.repositories.SupplierRepository;
 import de.hs_esslingen.besy.repositories.UserRepository;
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class InsyService {
 
-    @Qualifier("oauthRestClient")
     private final RestClient oAuthRestClient;
-    @Qualifier("plainRestClient")
     private final RestClient plainRestClient;
     private final OrderRepository orderRepository;
     private final SupplierRepository supplierRepository;
@@ -57,6 +53,23 @@ public class InsyService {
 
     @Value("${insy.api.client.authorization.protocol}")
     private String authProtocol;
+
+    // Constructor with @Qualifier annotations to specify which RestClient bean to
+    // inject
+    // Lombok's @RequiredArgsConstructor cannot be used here due to the need for
+    // @Qualifier, so we define the constructor manually
+    public InsyService(@Qualifier("oauthRestClient") RestClient oAuthRestClient,
+            @Qualifier("plainRestClient") RestClient plainRestClient, OrderRepository orderRepository,
+            SupplierRepository supplierRepository, CostCenterRepository costCenterRepository,
+            UserRepository userRepository, ItemRepository itemRepository) {
+        this.oAuthRestClient = oAuthRestClient;
+        this.plainRestClient = plainRestClient;
+        this.orderRepository = orderRepository;
+        this.supplierRepository = supplierRepository;
+        this.costCenterRepository = costCenterRepository;
+        this.userRepository = userRepository;
+        this.itemRepository = itemRepository;
+    }
 
     public ResponseEntity<String> createOrder(Long orderId) {
 
