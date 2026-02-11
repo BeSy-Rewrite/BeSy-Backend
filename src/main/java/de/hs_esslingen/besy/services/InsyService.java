@@ -1,25 +1,39 @@
 package de.hs_esslingen.besy.services;
 
-import de.hs_esslingen.besy.dtos.insy.InsyItemRequestDTO;
-import de.hs_esslingen.besy.dtos.insy.InsyOrderRequestDTO;
-import de.hs_esslingen.besy.models.*;
-import de.hs_esslingen.besy.repositories.*;
+import static org.springframework.security.oauth2.client.web.client.RequestAttributeClientRegistrationIdResolver.clientRegistrationId;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.List;
-
-import static org.springframework.security.oauth2.client.web.client.RequestAttributeClientRegistrationIdResolver.clientRegistrationId;
+import de.hs_esslingen.besy.dtos.insy.InsyItemRequestDTO;
+import de.hs_esslingen.besy.dtos.insy.InsyOrderRequestDTO;
+import de.hs_esslingen.besy.models.CostCenter;
+import de.hs_esslingen.besy.models.Item;
+import de.hs_esslingen.besy.models.Order;
+import de.hs_esslingen.besy.models.Supplier;
+import de.hs_esslingen.besy.models.User;
+import de.hs_esslingen.besy.repositories.CostCenterRepository;
+import de.hs_esslingen.besy.repositories.ItemRepository;
+import de.hs_esslingen.besy.repositories.OrderRepository;
+import de.hs_esslingen.besy.repositories.SupplierRepository;
+import de.hs_esslingen.besy.repositories.UserRepository;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class InsyService {
 
-    private final RestClient restClient;
+    @Qualifier("oauthRestClient")
+    private final RestClient oAuthRestClient;
+    @Qualifier("plainRestClient")
+    private final RestClient plainRestClient;
     private final OrderRepository orderRepository;
     private final SupplierRepository supplierRepository;
     private final CostCenterRepository costCenterRepository;
@@ -44,17 +58,6 @@ public class InsyService {
     @Value("${insy.api.client.authorization.protocol}")
     private String authProtocol;
 
-    // Do not use @ALlArgsConstructor, since this will break insyBaseUrl & insyOrdersUrl
-    public InsyService(@Qualifier("plainRestClient")RestClient plainRestClient, @Qualifier("oauthRestClient") RestClient oauthRestClient, OrderRepository orderRepository, SupplierRepository supplierRepository, CostCenterRepository costCenterRepository, UserRepository userRepository, ItemRepository itemRepository) {
-        this.restClient = authProtocol.equals("oauth2") ? oauthRestClient : plainRestClient;
-        this.orderRepository = orderRepository;
-        this.supplierRepository = supplierRepository;
-        this.costCenterRepository = costCenterRepository;
-        this.userRepository = userRepository;
-        this.itemRepository = itemRepository;
-    }
-
-
     public ResponseEntity<String> createOrder(Long orderId) {
 
         Order order = orderRepository.findById(orderId).get();
@@ -72,13 +75,13 @@ public class InsyService {
                             requestItem.setItemPricePerUnit(item.getPricePerUnit());
                             requestItem.setItemName(item.getName());
                             return requestItem;
-                        })
-                )
+                        }))
                 .toList();
 
         InsyOrderRequestDTO requestOrder = new InsyOrderRequestDTO();
         requestOrder.setBesyId(orderId);
-        requestOrder.setOrderNumber(OrderPDFService.generateOrderNumber(order.getPrimaryCostCenterId(), order.getBookingYear(), order.getAutoIndex()));
+        requestOrder.setOrderNumber(OrderPDFService.generateOrderNumber(order.getPrimaryCostCenterId(),
+                order.getBookingYear(), order.getAutoIndex()));
         requestOrder.setOrderCreatedDate(order.getCreatedDate());
         requestOrder.setSupplierName(supplier.getName());
         requestOrder.setDescription(order.getContentDescription());
@@ -87,11 +90,11 @@ public class InsyService {
         requestOrder.setOrderQuotePrice(order.getQuotePrice());
         requestOrder.setItems(requestItems);
 
-
-        String response = restClient
+        String response = (authProtocol.equals("oauth2") ? oAuthRestClient : plainRestClient)
                 .post()
                 .uri(insyBaseUrl + insyOrdersUrl)
-                .attributes(authProtocol.equals("oauth2") ? clientRegistrationId(insyClientName) : clientRegistrationId("NULL"))
+                .attributes(authProtocol.equals("oauth2") ? clientRegistrationId(insyClientName)
+                        : clientRegistrationId("NULL"))
                 .header("Authorization", authProtocol.equals("basic") ? getAuthHeader() : null)
                 .header("Content-Type", "application/json")
                 .body(List.of(requestOrder))
@@ -106,7 +109,6 @@ public class InsyService {
 
         return ResponseEntity.ok(response);
     }
-
 
     public String getAuthHeader() {
         String auth = username + ":" + password;
