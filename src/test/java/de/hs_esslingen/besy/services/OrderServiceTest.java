@@ -388,7 +388,7 @@ class OrderServiceTest {
                     ));
                 }
 
-                Jwt jwt = (current == OrderStatus.APPROVALS_RECEIVED && target == OrderStatus.APPROVED)
+                Jwt jwt = (current == OrderStatus.COMPLETED && target == OrderStatus.APPROVED)
                         ? jwtWithRole
                         : null;
 
@@ -425,7 +425,7 @@ class OrderServiceTest {
 
     @Test
     void should_throw_not_authorized_when_approving_without_role() {
-        order.setStatus(OrderStatus.APPROVALS_RECEIVED);
+        order.setStatus(OrderStatus.COMPLETED);
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
 
         assertThrows(NotAuthorizedException.class, () -> orderService.updateOrderStatus(1L, OrderStatus.APPROVED, jwtWithoutRole));
@@ -479,7 +479,7 @@ class OrderServiceTest {
     @Test
     void should_get_statuses_allowing_transition_to() {
         Set<OrderStatus> result = orderService.getStatusesAllowingTransitionTo(OrderStatus.APPROVED);
-        assertEquals(Set.of(OrderStatus.COMPLETED, OrderStatus.APPROVALS_RECEIVED), result);
+        assertEquals(Set.of(OrderStatus.COMPLETED), result);
     }
 
     @Test
@@ -603,9 +603,9 @@ class OrderServiceTest {
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
         when(orderRepository.save(order)).thenReturn(order);
 
-        ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, OrderStatus.APPROVALS_RECEIVED, null);
+        ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, OrderStatus.IN_PROGRESS, null);
 
-        assertEquals(OrderStatus.APPROVALS_RECEIVED, response.getBody());
+        assertEquals(OrderStatus.IN_PROGRESS, response.getBody());
         verify(orderStatusHistoryRepository).save(any(OrderStatusHistory.class));
     }
 

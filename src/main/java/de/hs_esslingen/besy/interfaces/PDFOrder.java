@@ -304,7 +304,10 @@ public class PDFOrder {
                     ItemResponseDTO itemDTO = items.get(i);
                     PDFItem pdfItem = this.items.get(i);
                     pdfItem.setPosition(String.valueOf(itemDTO.getItemId()));
-                    pdfItem.setDescription(itemDTO.getName());
+                    String description = (itemDTO.getArticleNumber() != null && !itemDTO.getArticleNumber().isBlank())
+                            ? itemDTO.getArticleNumber() + " " + itemDTO.getName()
+                            : itemDTO.getName();
+                    pdfItem.setDescription(description);
                     pdfItem.setQuantity(String.valueOf(itemDTO.getQuantity()));
                     pdfItem.setPrice((itemDTO.getPricePerUnit() + " €").replace('.', ','));
                     pdfItem.setAmount((BigDecimal.valueOf(itemDTO.getQuantity()).multiply(itemDTO.getPricePerUnit()) + " €").replace('.', ','));

@@ -172,9 +172,9 @@ class OrderPDFServiceTest {
         Item item2 = itemWithVat(orderId, 2, BigDecimal.valueOf(5), 4L, BigDecimal.valueOf(19));
         List<Item> items = List.of(item1, item2);
 
-        ItemResponseDTO itemDto1 = new ItemResponseDTO(1, "Item A", BigDecimal.valueOf(10), 2L, "pcs", "A-1", "",
+        ItemResponseDTO itemDto1 = new ItemResponseDTO(1, "Item A", BigDecimal.valueOf(10), 2L, "pcs", "A-1", null, "",
                 new VatResponseDTO(BigDecimal.valueOf(19), "VAT"), PreferredList.RZ, "", VatType.netto);
-        ItemResponseDTO itemDto2 = new ItemResponseDTO(2, "Item B", BigDecimal.valueOf(5), 4L, "pcs", "B-1", "",
+        ItemResponseDTO itemDto2 = new ItemResponseDTO(2, "Item B", BigDecimal.valueOf(5), 4L, "pcs", "B-1", null, "",
                 new VatResponseDTO(BigDecimal.valueOf(19), "VAT"), PreferredList.RZ, "", VatType.netto);
 
         Invoice invoice = new Invoice();
@@ -232,7 +232,7 @@ class OrderPDFServiceTest {
         Item item1 = itemWithVat(orderId, 1, BigDecimal.valueOf(0), 1L, BigDecimal.valueOf(7));
         List<Item> items = List.of(item1);
 
-        ItemResponseDTO itemDto1 = new ItemResponseDTO(1, "Item A", BigDecimal.valueOf(0), 1L, "pcs", "A-1", "",
+        ItemResponseDTO itemDto1 = new ItemResponseDTO(1, "Item A", BigDecimal.valueOf(0), 1L, "pcs", "A-1", null, "",
                 new VatResponseDTO(BigDecimal.valueOf(7), "VAT"), PreferredList.RZ, "", VatType.netto);
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
@@ -275,7 +275,7 @@ class OrderPDFServiceTest {
         Item item1 = itemWithVat(orderId, 1, BigDecimal.valueOf(0), 0L, BigDecimal.valueOf(100));
         List<Item> items = List.of(item1);
 
-        ItemResponseDTO itemDto1 = new ItemResponseDTO(1, "Item Zero", BigDecimal.valueOf(0), 0L, "pcs", "Z-1", "",
+        ItemResponseDTO itemDto1 = new ItemResponseDTO(1, "Item Zero", BigDecimal.valueOf(0), 0L, "pcs", "Z-1", null, "",
                 new VatResponseDTO(BigDecimal.valueOf(100), "VAT"), PreferredList.RZ, "", VatType.netto);
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));

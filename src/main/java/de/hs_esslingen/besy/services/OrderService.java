@@ -65,8 +65,7 @@ public class OrderService {
      */
     private static final Map<OrderStatus, Set<OrderStatus>> ORDER_STATUS_MATRIX = Map.of(
             OrderStatus.IN_PROGRESS, Set.of(OrderStatus.COMPLETED, OrderStatus.DELETED),
-            OrderStatus.COMPLETED, Set.of(OrderStatus.APPROVALS_RECEIVED, OrderStatus.IN_PROGRESS, OrderStatus.DELETED, OrderStatus.APPROVED),
-            OrderStatus.APPROVALS_RECEIVED, Set.of(OrderStatus.APPROVED, OrderStatus.DELETED),
+            OrderStatus.COMPLETED, Set.of(OrderStatus.IN_PROGRESS, OrderStatus.DELETED, OrderStatus.APPROVED),
             OrderStatus.APPROVED, Set.of(OrderStatus.SENT),
             OrderStatus.REJECTED, Set.of(),
             OrderStatus.SENT, Set.of(OrderStatus.SETTLED),
@@ -233,6 +232,16 @@ public class OrderService {
         return orderRepository.existsByIdAndStatusNot(id, OrderStatus.DELETED);
     }
 
+    /**
+     * Checks if an order with the given ID exists, regardless of its status (including deleted).
+     *
+     * @param id the ID of the order to check
+     * @return true if such an order exists, false otherwise
+     */
+    public boolean existsOrderByIdIncludingDeleted(Long id) {
+        return orderRepository.existsById(id);
+    }
+
 
 
     /**
@@ -308,7 +317,7 @@ public class OrderService {
             validator.validateOrThrow(orderToBeValidated);
         }
 
-        if(currentStatus.equals(OrderStatus.APPROVALS_RECEIVED) && targetStatus.equals(OrderStatus.APPROVED)) {
+        if(currentStatus.equals(OrderStatus.COMPLETED) && targetStatus.equals(OrderStatus.APPROVED)) {
             if(!KeycloakAuthenticationConverter.hasRole(jwt, dekanRoleName)) throw new NotAuthorizedException("Not authorized to modify this order!");
         }
 

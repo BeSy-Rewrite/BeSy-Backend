@@ -8,7 +8,6 @@ import lombok.Getter;
 public enum OrderStatus {
     IN_PROGRESS,
     COMPLETED,
-    APPROVALS_RECEIVED,
     APPROVED,
     REJECTED,
     SENT,

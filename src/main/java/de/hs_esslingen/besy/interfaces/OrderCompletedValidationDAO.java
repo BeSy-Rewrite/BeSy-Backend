@@ -64,10 +64,8 @@ public class OrderCompletedValidationDAO {
     @NotNull
     Long queriesPersonId;
 
-    @NotNull
     String customerId;
 
-    @NotNull
     Integer supplierId;
 
     @NotNull

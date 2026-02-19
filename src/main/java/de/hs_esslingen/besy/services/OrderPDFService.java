@@ -25,7 +25,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @AllArgsConstructor
@@ -111,7 +114,7 @@ public class OrderPDFService {
         // Bestell-Nr.
         order.setOrderNumber(OrderPDFService.generateOrderNumber(orderDAO.getPrimaryCostCenterId(), orderDAO.getBookingYear(), orderDAO.getAutoIndex()));
         // Datum:
-        order.setDate(orderDAO.getCreatedDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)));
+        order.setDate(orderDAO.getCreatedDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(Locale.GERMAN)));
         // Besteller:in
         order.setOrderer(orderDAO.getOwner().getName() + " " + orderDAO.getOwner().getSurname());
 
@@ -151,7 +154,14 @@ public class OrderPDFService {
         BigDecimal total = netTotal.multiply((BigDecimal.valueOf(100).add(itemsDAO.get(0).getVatValue())).divide(BigDecimal.valueOf(100))).setScale(2, RoundingMode.HALF_UP);
         order.setTotal(String.valueOf(total).replace('.', ',').concat(" €"));
 
-        order.setCommentForSupplier(orderDAO.getCommentForSupplier());
+        String customerIdNote = (orderDAO.getCustomerId() != null && !orderDAO.getCustomerId().isBlank())
+                ? "Kundennummer: " + orderDAO.getCustomerId()
+                : "";
+        String existingComment = orderDAO.getCommentForSupplier() != null ? orderDAO.getCommentForSupplier() : "";
+        String fullComment = Stream.of(customerIdNote, existingComment)
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.joining("\n"));
+        order.setCommentForSupplier(fullComment);
         order.setPercentageDiscount(String.valueOf(orderDAO.getPercentageDiscount()));
         order.setVat(MEHRWERTSTEUER_DEFAULT);
         order.setCostCenter(orderDAO.getPrimaryCostCenterId());

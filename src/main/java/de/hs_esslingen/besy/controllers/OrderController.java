@@ -67,7 +67,7 @@ public class OrderController {
             @RequestParam(name = "lastUpdatedTimeBefore", required = false) OffsetDateTime lastUpdatedTimeBefore,
             @RequestParam(name = "autoIndexGTE", required = false) Short autoIndexGTE,
             @RequestParam(name = "autoIndexLTE", required = false) Short autoIndexLTE,
-            @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.ASC) Pageable pageable
+            @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable
             ) {
         return orderService.getAllOrders(
                 primaryCostCenterIds,
@@ -121,8 +121,14 @@ public class OrderController {
     }
 
     @GetMapping("{order-id}/items")
-    public ResponseEntity<List<ItemResponseDTO>> getItemsOfOrder(@PathVariable("order-id") Long id) {
-        if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+    public ResponseEntity<List<ItemResponseDTO>> getItemsOfOrder(
+            @PathVariable("order-id") Long id,
+            @RequestParam(name = "includeDeleted", required = false, defaultValue = "false") boolean includeDeleted) {
+        if (includeDeleted) {
+            if (!orderService.existsOrderByIdIncludingDeleted(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        } else {
+            if (!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+        }
         return itemService.getItemsOfOrder(id);
     }
 
@@ -224,7 +230,6 @@ public class OrderController {
             @RequestBody ApprovalRequestDTO dto
     ){
         if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
-        if(!orderService.isOrderStatusEqual(orderId, OrderStatus.COMPLETED)) throw new BadRequestException("Bestellstatus befindet sich nicht auf fertiggestellt!");
         return this.approvalService.updateApprovalOfOrder(orderId, dto);
     }
 

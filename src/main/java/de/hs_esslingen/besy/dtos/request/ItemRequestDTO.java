@@ -17,6 +17,7 @@ public class ItemRequestDTO implements Serializable {
     Long quantity;
     String quantityUnit;
     String articleId;
+    String articleNumber;
     String comment;
     BigDecimal vatValue;
     PreferredList preferredList;
