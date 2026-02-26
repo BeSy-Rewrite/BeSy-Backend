@@ -1,12 +1,17 @@
 package de.hs_esslingen.besy.services;
 
-import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
-import de.hs_esslingen.besy.exceptions.NotFoundException;
-import de.hs_esslingen.besy.interfaces.PDFOrder;
-import de.hs_esslingen.besy.mappers.response.ItemResponseMapper;
-import de.hs_esslingen.besy.models.*;
-import de.hs_esslingen.besy.repositories.*;
-import lombok.AllArgsConstructor;
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
@@ -16,16 +21,25 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
+import de.hs_esslingen.besy.exceptions.NotFoundException;
+import de.hs_esslingen.besy.interfaces.PDFOrder;
+import de.hs_esslingen.besy.mappers.response.ItemResponseMapper;
+import de.hs_esslingen.besy.models.Address;
+import de.hs_esslingen.besy.models.Approval;
+import de.hs_esslingen.besy.models.Invoice;
+import de.hs_esslingen.besy.models.Item;
+import de.hs_esslingen.besy.models.Order;
+import de.hs_esslingen.besy.models.Person;
+import de.hs_esslingen.besy.models.Quotation;
+import de.hs_esslingen.besy.models.Supplier;
+import de.hs_esslingen.besy.repositories.InvoiceRepository;
+import de.hs_esslingen.besy.repositories.ItemRepository;
+import de.hs_esslingen.besy.repositories.OrderRepository;
+import de.hs_esslingen.besy.repositories.PersonRepository;
+import de.hs_esslingen.besy.repositories.QuotationRepository;
+import de.hs_esslingen.besy.repositories.SupplierRepository;
+import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
@@ -48,143 +62,160 @@ public class OrderPDFService {
     static final String LAUFENDE_NUMMER_DEFAULT = "1";
     static final String MEHRWERTSTEUER_DEFAULT = "19";
 
-
-    // TODO: Ensure that this method is only called when the Order is in a state where all necessary constraints and relationships are satisfied
+    // TODO: Ensure that this method is only called when the Order is in a state
+    // where all necessary constraints and relationships are satisfied
     public ResponseEntity<byte[]> generateOrderPDF(Long orderId) throws IOException {
 
-        // Parse empty Order PDF's acro form elements
-        PDDocument document = Loader.loadPDF(new ClassPathResource(FORMULAR_URI).getFile());
-        PDAcroForm acroForm = document.getDocumentCatalog().getAcroForm();
-        PDFOrder order = new PDFOrder();
-        order.parseOrder(acroForm);
-        acroForm.setXFA(null);
-
-        // Print form fields for debugging
-        // printFormFields(acroForm);
-
-        // Retrieve Order and necessary relations for PDF
-        Optional<Order> orderOpt = orderRepository.findById(Long.valueOf(orderId));
-        if (orderOpt.isEmpty()) throw new NotFoundException("Order with id " + orderId + " does not exist.");
-
-        Order orderDAO = orderOpt.get();
-        Optional<Supplier> supplierDAO = supplierRepository.findById(orderDAO.getSupplierId());
-
-        Approval approvals = orderDAO.getApproval();
-
-        List<Item> itemsDAO = itemRepository.findByOrder_Id(orderDAO.getId());
-        Optional<Invoice> invoiceOpt = invoiceRepository.findByOrderId(Long.valueOf(orderId));
-        Optional<Person> deliveryPersonOpt = personRepository.findById(Long.valueOf(orderDAO.getDeliveryPersonId()));
-        Optional<Person> invoicePersonOpt = personRepository.findById(Long.valueOf(orderDAO.getInvoicePersonId()));
-        List<Quotation> quotations = quotationRepository.getQuotationByOrderId(Long.valueOf(orderId));
-
-        Address deliveryAddress = orderDAO.getDeliveryAddress();
-        Address invoiceAddress = orderDAO.getInvoiceAddress();
-
-
-        // Write to PDF
-
-        // nach VOB (Bau-/Montageleistung)
-        order.setConstructionAndAssemblyFlag(false);
-        // nach VOL/UVgO (Liefer-/Dienstleistung)
-        order.setDeliveryAndServiceFlag(true);
-
-        if(supplierDAO.isPresent()) {
-            Supplier supplier = supplierDAO.get();
-            Address supplierAddress = supplier.getAddress();
-
-            order.setCompanyAddress("""
-                    %s
-                    %s %s
-                    %s %s
-                    """.formatted(
-                    supplier.getName(),
-                        supplierAddress.getStreet(), supplierAddress.getBuildingNumber() != null ? supplierAddress.getBuildingNumber() : "",
-                        supplierAddress.getPostalCode(), supplierAddress.getTown())
-                );
-            // Fax-Nr./E-Mail:
-            order.setSupplierEmail(supplier.getEmail());
-
+        // Parse empty Order PDF's acro form elements (load from classpath stream for
+        // jar compatibility)
+        ClassPathResource pdfResource = new ClassPathResource(FORMULAR_URI);
+        if (!pdfResource.exists()) {
+            throw new FileNotFoundException("Order PDF template not found at classpath: " + FORMULAR_URI);
         }
 
+        PDDocument document = null;
+        try (InputStream pdfStream = pdfResource.getInputStream()) {
+            document = Loader.loadPDF(pdfStream.readAllBytes());
+            PDAcroForm acroForm = document.getDocumentCatalog().getAcroForm();
+            PDFOrder order = new PDFOrder();
+            order.parseOrder(acroForm);
+            acroForm.setXFA(null);
 
+            // Print form fields for debugging
+            // printFormFields(acroForm);
 
-        // Bestell-Nr.
-        order.setOrderNumber(OrderPDFService.generateOrderNumber(orderDAO.getPrimaryCostCenterId(), orderDAO.getBookingYear(), orderDAO.getAutoIndex()));
-        // Datum:
-        order.setDate(orderDAO.getCreatedDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)));
-        // Besteller:in
-        order.setOrderer(orderDAO.getOwner().getName() + " " + orderDAO.getOwner().getSurname());
+            // Retrieve Order and necessary relations for PDF
+            Optional<Order> orderOpt = orderRepository.findById(Long.valueOf(orderId));
+            if (orderOpt.isEmpty())
+                throw new NotFoundException("Order with id " + orderId + " does not exist.");
 
-        // Angebots-Nr.:
-        if(invoiceOpt.isPresent()) order.setInvoiceId(invoiceOpt.get().getId());
+            Order orderDAO = orderOpt.get();
+            Optional<Supplier> supplierDAO = supplierRepository.findById(orderDAO.getSupplierId());
 
-        // Lieferanschrift
-        order.setDeliveryFaculty(ANSCHRIFT_FAKULTAET_DEFAULT);
-        if(deliveryPersonOpt.isPresent()) order.setDeliveryOrderer(deliveryPersonOpt.get().getName());
-        order.setDeliveryStreet(deliveryAddress.getStreet());
-        order.setDeliveryAddress(deliveryAddress.getPostalCode() + " " + deliveryAddress.getTown());
+            Approval approvals = orderDAO.getApproval();
 
-        // Rechnungsanschrift
-        order.setInvoiceFaculty(ANSCHRIFT_FAKULTAET_DEFAULT);
-        if(invoicePersonOpt.isPresent()) order.setInvoiceOrderer(invoicePersonOpt.get().getName());
-        order.setInvoiceStreet(invoiceAddress.getStreet());
-        order.setInvoiceDeliveryAddress(invoiceAddress.getPostalCode() + " " + invoiceAddress.getTown());
+            List<Item> itemsDAO = itemRepository.findByOrder_Id(orderDAO.getId());
+            Optional<Invoice> invoiceOpt = invoiceRepository.findByOrderId(Long.valueOf(orderId));
+            Optional<Person> deliveryPersonOpt = personRepository
+                    .findById(Long.valueOf(orderDAO.getDeliveryPersonId()));
+            Optional<Person> invoicePersonOpt = personRepository.findById(Long.valueOf(orderDAO.getInvoicePersonId()));
+            List<Quotation> quotations = quotationRepository.getQuotationByOrderId(Long.valueOf(orderId));
 
-        List<ItemResponseDTO> itemResponseDTOS = itemResponseMapper.toDto(itemsDAO);
-        order.setItems(itemResponseDTOS);
+            Address deliveryAddress = orderDAO.getDeliveryAddress();
+            Address invoiceAddress = orderDAO.getInvoiceAddress();
 
-        BigDecimal subTotal = itemResponseDTOS
-                .stream()
-                .map(item -> item.getPricePerUnit().multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            // Write to PDF
 
-        order.setSubTotal(String.valueOf(
-                subTotal)
-                .replace('.', ',')
-                .concat(" €")
-        );
+            // nach VOB (Bau-/Montageleistung)
+            order.setConstructionAndAssemblyFlag(false);
+            // nach VOL/UVgO (Liefer-/Dienstleistung)
+            order.setDeliveryAndServiceFlag(true);
 
-        BigDecimal netTotal = subTotal.multiply((BigDecimal.valueOf(100).subtract(orderDAO.getPercentageDiscount())).divide(BigDecimal.valueOf(100))).setScale(2, RoundingMode.HALF_UP);
-        order.setNetTotal(String.valueOf(netTotal).replace('.', ',').concat(" €"));
+            if (supplierDAO.isPresent()) {
+                Supplier supplier = supplierDAO.get();
+                Address supplierAddress = supplier.getAddress();
 
-        // TODO: VAT should be stored by the order itself
-        BigDecimal total = netTotal.multiply((BigDecimal.valueOf(100).add(itemsDAO.get(0).getVatValue())).divide(BigDecimal.valueOf(100))).setScale(2, RoundingMode.HALF_UP);
-        order.setTotal(String.valueOf(total).replace('.', ',').concat(" €"));
+                order.setCompanyAddress("""
+                        %s
+                        %s %s
+                        %s %s
+                        """.formatted(
+                        supplier.getName(),
+                        supplierAddress.getStreet(),
+                        supplierAddress.getBuildingNumber() != null ? supplierAddress.getBuildingNumber() : "",
+                        supplierAddress.getPostalCode(), supplierAddress.getTown()));
+                // Fax-Nr./E-Mail:
+                order.setSupplierEmail(supplier.getEmail());
 
-        order.setCommentForSupplier(orderDAO.getCommentForSupplier());
-        order.setPercentageDiscount(String.valueOf(orderDAO.getPercentageDiscount()));
-        order.setVat(MEHRWERTSTEUER_DEFAULT);
-        order.setCostCenter(orderDAO.getPrimaryCostCenterId());
-        order.setCostCenterSecondary(orderDAO.getSecondaryCostCenterId());
-        order.setDfgKey(orderDAO.getDfgKey());
+            }
 
-        order.setQuotations(quotations);
+            // Bestell-Nr.
+            order.setOrderNumber(OrderPDFService.generateOrderNumber(orderDAO.getPrimaryCostCenterId(),
+                    orderDAO.getBookingYear(), orderDAO.getAutoIndex()));
+            // Datum:
+            order.setDate(orderDAO.getCreatedDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)));
+            // Besteller:in
+            order.setOrderer(orderDAO.getOwner().getName() + " " + orderDAO.getOwner().getSurname());
 
-        // lfd.Nr.
-        order.setLfdNr(LAUFENDE_NUMMER_DEFAULT);
+            // Angebots-Nr.:
+            if (invoiceOpt.isPresent())
+                order.setInvoiceId(invoiceOpt.get().getId());
 
-        order.setFlagDecisionCheapestOffer(orderDAO.getFlagDecisionCheapestOffer());
-        order.setFlagDecisionMostEconomicalOffer(orderDAO.getFlagDecisionMostEconomicalOffer());
-        order.setFlagDecisionSoleSupplier(orderDAO.getFlagDecisionSoleSupplier());
-        order.setFlagDecisionContractPartner(orderDAO.getFlagDecisionContractPartner());
-        order.setFlagDecisionPreferredSupplierList(orderDAO.getFlagDecisionPreferredSupplierList());
-        order.setFlagDecisionOtherReasons(orderDAO.getFlagDecisionOtherReasons());
-        order.setFlagDecisionOtherReasonsDescription(orderDAO.getDecisionOtherReasonsDescription());
+            // Lieferanschrift
+            order.setDeliveryFaculty(ANSCHRIFT_FAKULTAET_DEFAULT);
+            if (deliveryPersonOpt.isPresent())
+                order.setDeliveryOrderer(deliveryPersonOpt.get().getName());
+            order.setDeliveryStreet(deliveryAddress.getStreet());
+            order.setDeliveryAddress(deliveryAddress.getPostalCode() + " " + deliveryAddress.getTown());
 
-        order.setOrderFlagEdvPermission(approvals.getFlagEdvPermission());
-        order.setOrderFlagFurniturePermission(approvals.getFlagFurniturePermission());
-        order.setOrderFlagFurnitureRoom(approvals.getFlagFurnitureRoom());
-        order.setOrderFlagInvestmentRoom(approvals.getFlagInvestmentRoom());
-        order.setOrderFlagInvestmentStructuralMeasures(approvals.getFlagInvestmentStructuralMeasures());
-        order.setOrderFlagMediaPermission(approvals.getFlagMediaPermission());
+            // Rechnungsanschrift
+            order.setInvoiceFaculty(ANSCHRIFT_FAKULTAET_DEFAULT);
+            if (invoicePersonOpt.isPresent())
+                order.setInvoiceOrderer(invoicePersonOpt.get().getName());
+            order.setInvoiceStreet(invoiceAddress.getStreet());
+            order.setInvoiceDeliveryAddress(invoiceAddress.getPostalCode() + " " + invoiceAddress.getTown());
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        document.save(baos);
-        document.close();
-        return ResponseEntity
-                .ok()
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(baos.toByteArray());
+            List<ItemResponseDTO> itemResponseDTOS = itemResponseMapper.toDto(itemsDAO);
+            order.setItems(itemResponseDTOS);
+
+            BigDecimal subTotal = itemResponseDTOS
+                    .stream()
+                    .map(item -> item.getPricePerUnit().multiply(BigDecimal.valueOf(item.getQuantity())))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            order.setSubTotal(String.valueOf(
+                    subTotal)
+                    .replace('.', ',')
+                    .concat(" €"));
+
+            BigDecimal netTotal = subTotal.multiply((BigDecimal.valueOf(100).subtract(orderDAO.getPercentageDiscount()))
+                    .divide(BigDecimal.valueOf(100))).setScale(2, RoundingMode.HALF_UP);
+            order.setNetTotal(String.valueOf(netTotal).replace('.', ',').concat(" €"));
+
+            // TODO: VAT should be stored by the order itself
+            BigDecimal total = netTotal.multiply(
+                    (BigDecimal.valueOf(100).add(itemsDAO.get(0).getVatValue())).divide(BigDecimal.valueOf(100)))
+                    .setScale(2, RoundingMode.HALF_UP);
+            order.setTotal(String.valueOf(total).replace('.', ',').concat(" €"));
+
+            order.setCommentForSupplier(orderDAO.getCommentForSupplier());
+            order.setPercentageDiscount(String.valueOf(orderDAO.getPercentageDiscount()));
+            order.setVat(MEHRWERTSTEUER_DEFAULT);
+            order.setCostCenter(orderDAO.getPrimaryCostCenterId());
+            order.setCostCenterSecondary(orderDAO.getSecondaryCostCenterId());
+            order.setDfgKey(orderDAO.getDfgKey());
+
+            order.setQuotations(quotations);
+
+            // lfd.Nr.
+            order.setLfdNr(LAUFENDE_NUMMER_DEFAULT);
+
+            order.setFlagDecisionCheapestOffer(orderDAO.getFlagDecisionCheapestOffer());
+            order.setFlagDecisionMostEconomicalOffer(orderDAO.getFlagDecisionMostEconomicalOffer());
+            order.setFlagDecisionSoleSupplier(orderDAO.getFlagDecisionSoleSupplier());
+            order.setFlagDecisionContractPartner(orderDAO.getFlagDecisionContractPartner());
+            order.setFlagDecisionPreferredSupplierList(orderDAO.getFlagDecisionPreferredSupplierList());
+            order.setFlagDecisionOtherReasons(orderDAO.getFlagDecisionOtherReasons());
+            order.setFlagDecisionOtherReasonsDescription(orderDAO.getDecisionOtherReasonsDescription());
+
+            order.setOrderFlagEdvPermission(approvals.getFlagEdvPermission());
+            order.setOrderFlagFurniturePermission(approvals.getFlagFurniturePermission());
+            order.setOrderFlagFurnitureRoom(approvals.getFlagFurnitureRoom());
+            order.setOrderFlagInvestmentRoom(approvals.getFlagInvestmentRoom());
+            order.setOrderFlagInvestmentStructuralMeasures(approvals.getFlagInvestmentStructuralMeasures());
+            order.setOrderFlagMediaPermission(approvals.getFlagMediaPermission());
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            document.save(baos);
+            return ResponseEntity
+                    .ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(baos.toByteArray());
+        } finally {
+            if (document != null) {
+                document.close();
+            }
+        }
     }
 
     private void printFormFields(PDAcroForm acroForm) {
@@ -207,7 +238,6 @@ public class OrderPDFService {
         return ("""
                 IT%s_%s_%s
                 """.formatted(
-                primaryCostCenterId, bookingYear, autoIndex)
-        ).trim();
+                primaryCostCenterId, bookingYear, autoIndex)).trim();
     }
 }
