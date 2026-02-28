@@ -9,6 +9,7 @@ public enum OrderStatus {
     IN_PROGRESS,
     COMPLETED,
     APPROVALS_RECEIVED,
+    DEKAN_PENDING,
     APPROVED,
     REJECTED,
     SENT,
