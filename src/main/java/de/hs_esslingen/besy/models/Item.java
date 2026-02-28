@@ -73,6 +73,9 @@ public class Item {
     @Column(name = "article_id")
     private String articleId;
 
+    @Column(name = "article_number")
+    private String articleNumber;
+
     @ColumnDefault("''")
     @Column(name = "comment")
     private String comment;

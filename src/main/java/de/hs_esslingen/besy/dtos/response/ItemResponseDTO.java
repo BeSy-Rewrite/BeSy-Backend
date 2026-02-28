@@ -19,6 +19,7 @@ public class ItemResponseDTO implements Serializable {
     Long quantity;
     String quantityUnit;
     String articleId;
+    String articleNumber;
     String comment;
     VatResponseDTO vat;
     PreferredList preferredList;

@@ -68,6 +68,7 @@ class ItemServiceTest {
                 2L,
                 "pcs",
                 "A-1",
+                "AN-001",
                 "Comment",
                 BigDecimal.valueOf(19),
                 PreferredList.RZ,
@@ -81,6 +82,7 @@ class ItemServiceTest {
         item.setQuantity(2L);
         item.setQuantityUnit("pcs");
         item.setArticleId("A-1");
+        item.setArticleNumber("AN-001");
         item.setComment("Comment");
         item.setVatValue(BigDecimal.valueOf(19));
         item.setVatType(VatType.netto);
@@ -94,6 +96,7 @@ class ItemServiceTest {
                 2L,
                 "pcs",
                 "A-1",
+                "AN-001",
                 "Comment",
                 null,
                 PreferredList.RZ,
@@ -136,6 +139,7 @@ class ItemServiceTest {
         item2.setQuantity(1L);
         item2.setQuantityUnit("pcs");
         item2.setArticleId("B-1");
+        item2.setArticleNumber("AN-002");
         item2.setComment("Comment 2");
         item2.setVatValue(BigDecimal.valueOf(19));
         item2.setVatType(VatType.netto);
@@ -208,5 +212,28 @@ class ItemServiceTest {
 
         assertFalse(result);
         verify(itemRepository).existsByItemIdAndOrderId(2, 100L);
+    }
+
+    @Test
+    void should_persist_article_number_when_creating_item() {
+        Long orderId = 100L;
+        List<ItemRequestDTO> requestDtos = List.of(requestDto);
+        List<Item> mappedItems = List.of(item);
+
+        when(itemRequestMapper.toEntity(requestDtos)).thenReturn(mappedItems);
+        when(orderRepository.getReferenceById(orderId)).thenReturn(order);
+        when(itemRepository.findByOrder_Id(orderId)).thenReturn(List.of());
+        when(vatRepository.getReferenceById(item.getVatValue())).thenReturn(vat);
+        when(itemRepository.saveAll(mappedItems)).thenReturn(mappedItems);
+        when(itemResponseMapper.toDto(mappedItems)).thenReturn(List.of(responseDto));
+
+        itemService.createItemsOfOrder(orderId, requestDtos);
+
+        ArgumentCaptor<List<Item>> captor = ArgumentCaptor.forClass(List.class);
+        verify(itemRepository).saveAll(captor.capture());
+        Item saved = captor.getValue().get(0);
+
+        assertEquals("AN-001", saved.getArticleNumber());
+        assertEquals("A-1", saved.getArticleId());
     }
 }

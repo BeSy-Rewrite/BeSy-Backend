@@ -1464,6 +1464,8 @@ components:
           type: string
         article_id:
           type: string
+        article_number:
+          type: string
         comment:
           type: string
         vat_value:
@@ -1734,6 +1736,8 @@ components:
         quantity_unit:
           type: string
         article_id:
+          type: string
+        article_number:
           type: string
         comment:
           type: string
