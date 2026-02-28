@@ -235,6 +235,30 @@ paths:
           description: Lieferant nicht gefunden.
         '500':
           description: Interner Serverfehler.
+  /suppliers/{supplier-id}/customer_ids:
+    get:
+      tags:
+        - Suppliers
+      operationId: getCustomerIdsOfSupplier
+      parameters:
+        - name: supplier-id
+          in: path
+          required: true
+          description: Die eindeutige ID des Lieferanten, für welchen die Kundennummern abgerufen werden sollen.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Liste der Kundennummern eines Lieferanten.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerIdResponseDTO'
+        '404':
+          description: Lieferant nicht gefunden.
   /suppliers/addresses:
     get:
       tags:
@@ -1836,6 +1860,16 @@ components:
         customer_number:
           type: string
           description: Optionale Kundennummer beim Lieferanten
+    CustomerIdResponseDTO:
+      type: object
+      properties:
+        supplier_id:
+          type: integer
+          format: int32
+          description: ID des zugehörigen Lieferanten
+        customer_id:
+          type: string
+          description: Kundennummer des Lieferanten
     OrderStatus:
       type: string
       enum:

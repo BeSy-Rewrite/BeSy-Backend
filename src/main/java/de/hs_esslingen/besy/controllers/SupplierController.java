@@ -3,6 +3,7 @@ package de.hs_esslingen.besy.controllers;
 import de.hs_esslingen.besy.dtos.request.SupplierRequestDTO;
 import de.hs_esslingen.besy.dtos.response.AddressResponseDTO;
 import de.hs_esslingen.besy.dtos.response.CreateSupplierResponseDTO;
+import de.hs_esslingen.besy.dtos.response.CustomerIdResponseDTO;
 import de.hs_esslingen.besy.dtos.response.SupplierResponseDTO;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.services.AddressService;
@@ -42,6 +43,11 @@ public class SupplierController {
             @RequestBody SupplierRequestDTO supplierRequestDTO) {
         if(!supplierService.existsSupplierById(id)) throw new NotFoundException("Lieferant nicht gefunden.");
         return supplierService.updateSupplier(id, supplierRequestDTO);
+    }
+
+    @GetMapping("/{supplier-id}/customer_ids")
+    public ResponseEntity<List<CustomerIdResponseDTO>> getCustomerIds(@PathVariable("supplier-id") Integer id) {
+        return supplierService.getCustomerIds(id);
     }
 
     @GetMapping("/addresses")

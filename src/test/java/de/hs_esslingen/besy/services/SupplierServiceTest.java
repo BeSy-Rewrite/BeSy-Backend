@@ -4,6 +4,7 @@ import de.hs_esslingen.besy.dtos.request.AddressRequestDTO;
 import de.hs_esslingen.besy.dtos.request.SupplierRequestDTO;
 import de.hs_esslingen.besy.dtos.response.AddressResponseDTO;
 import de.hs_esslingen.besy.dtos.response.CreateSupplierResponseDTO;
+import de.hs_esslingen.besy.dtos.response.CustomerIdResponseDTO;
 import de.hs_esslingen.besy.dtos.response.SupplierResponseDTO;
 import de.hs_esslingen.besy.enums.AddressOwnerType;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
@@ -246,5 +247,36 @@ class SupplierServiceTest {
 
         assertEquals(true, result);
         verify(supplierRepository).existsById(1);
+    }
+
+    @Test
+    void should_get_customer_ids_with_customer_number() {
+        supplier.setCustomerNumber("CUST-1");
+        when(supplierRepository.findById(1)).thenReturn(Optional.of(supplier));
+
+        ResponseEntity<List<CustomerIdResponseDTO>> response = supplierService.getCustomerIds(1);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals(1, response.getBody().size());
+        assertEquals("CUST-1", response.getBody().get(0).getCustomerId());
+        assertEquals(1, response.getBody().get(0).getSupplierId());
+    }
+
+    @Test
+    void should_get_empty_customer_ids_when_no_customer_number() {
+        supplier.setCustomerNumber(null);
+        when(supplierRepository.findById(1)).thenReturn(Optional.of(supplier));
+
+        ResponseEntity<List<CustomerIdResponseDTO>> response = supplierService.getCustomerIds(1);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals(0, response.getBody().size());
+    }
+
+    @Test
+    void should_throw_not_found_when_supplier_missing_for_customer_ids() {
+        when(supplierRepository.findById(99)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> supplierService.getCustomerIds(99));
     }
 }
