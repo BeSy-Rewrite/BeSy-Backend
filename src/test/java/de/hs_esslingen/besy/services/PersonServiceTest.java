@@ -82,7 +82,8 @@ class PersonServiceTest {
                 "Dr.",
                 "Comment",
                 null,
-                Gender.f
+                Gender.f,
+                null
         );
 
         requestDtoWithAddress = new PersonRequestDTO(
@@ -94,7 +95,8 @@ class PersonServiceTest {
                 "Dr.",
                 "Comment",
                 10,
-                Gender.f
+                Gender.f,
+                null
         );
 
         responseDto = new PersonResponseDTO(
@@ -107,7 +109,8 @@ class PersonServiceTest {
                 "Dr.",
                 "Comment",
                 10,
-                Gender.f
+                Gender.f,
+                true
         );
     }
 
@@ -116,15 +119,42 @@ class PersonServiceTest {
         List<Person> persons = List.of(person);
         List<PersonResponseDTO> dtos = List.of(responseDto);
 
-        when(personRepository.findAll()).thenReturn(persons);
+        when(personRepository.findAllByActive(true)).thenReturn(persons);
         when(personResponseMapper.toDto(persons)).thenReturn(dtos);
 
-        ResponseEntity<List<PersonResponseDTO>> response = personService.getAllPersons();
+        ResponseEntity<List<PersonResponseDTO>> response = personService.getAllPersons(true);
 
         assertEquals(200, response.getStatusCode().value());
         assertSame(dtos, response.getBody());
-        verify(personRepository).findAll();
+        verify(personRepository).findAllByActive(true);
         verify(personResponseMapper).toDto(persons);
+    }
+
+    @Test
+    void should_get_inactive_persons_when_active_false() {
+        Person inactivePerson = new Person();
+        inactivePerson.setId(2L);
+        inactivePerson.setName("Old");
+        inactivePerson.setSurname("Colleague");
+        inactivePerson.setGender(Gender.m);
+        inactivePerson.setActive(false);
+
+        PersonResponseDTO inactiveDto = new PersonResponseDTO(
+                2L, "Old", "Colleague", null, null, null, null, null, null, Gender.m, false
+        );
+
+        List<Person> inactivePersons = List.of(inactivePerson);
+        List<PersonResponseDTO> inactiveDtos = List.of(inactiveDto);
+
+        when(personRepository.findAllByActive(false)).thenReturn(inactivePersons);
+        when(personResponseMapper.toDto(inactivePersons)).thenReturn(inactiveDtos);
+
+        ResponseEntity<List<PersonResponseDTO>> response = personService.getAllPersons(false);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertSame(inactiveDtos, response.getBody());
+        verify(personRepository).findAllByActive(false);
+        verify(personResponseMapper).toDto(inactivePersons);
     }
 
     @Test

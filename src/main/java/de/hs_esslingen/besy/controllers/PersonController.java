@@ -23,8 +23,9 @@ public class PersonController {
     private final AddressService addressService;
 
     @GetMapping
-    public ResponseEntity<List<PersonResponseDTO>> getAllPersons() {
-        return personService.getAllPersons();
+    public ResponseEntity<List<PersonResponseDTO>> getAllPersons(
+            @RequestParam(required = false, defaultValue = "true") Boolean active) {
+        return personService.getAllPersons(active);
     }
 
     @GetMapping("/{id}")

@@ -20,4 +20,5 @@ public class PersonResponseDTO implements Serializable {
     String comment;
     Integer addressId;
     Gender gender;
+    Boolean active;
 }

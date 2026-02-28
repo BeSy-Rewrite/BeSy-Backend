@@ -12,6 +12,14 @@ paths:
         - Persons
 
       operationId: getAllPersons
+      parameters:
+        - name: active
+          in: query
+          required: false
+          description: Filtert Personen nach ihrem Aktivstatus. Standardmäßig werden nur aktive Personen zurückgegeben.
+          schema:
+            type: boolean
+            default: true
       responses:
         '200':
           description: OK
@@ -1417,6 +1425,8 @@ components:
             - m
             - f
             - d
+        active:
+          type: boolean
     PersonResponseDTO:
       type: object
       properties:
@@ -1444,6 +1454,8 @@ components:
           enum:
             - m
             - f
+        active:
+          type: boolean
     ItemRequestDTO:
       type: object
       required:

@@ -26,8 +26,8 @@ public class PersonService {
     private final PersonResponseMapper personResponseMapper;
     private final PersonRequestMapper personRequestMapper;
 
-    public ResponseEntity<List<PersonResponseDTO>> getAllPersons() {
-        List<Person> persons = personRepository.findAll();
+    public ResponseEntity<List<PersonResponseDTO>> getAllPersons(boolean active) {
+        List<Person> persons = personRepository.findAllByActive(active);
         List<PersonResponseDTO> personResponseDTOS = personResponseMapper.toDto(persons);
         return ResponseEntity.ok(personResponseDTOS);
     }

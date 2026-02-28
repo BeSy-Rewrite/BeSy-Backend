@@ -19,4 +19,5 @@ public class PersonRequestDTO implements Serializable {
     String comment;
     Integer addressId;
     Gender gender;
+    Boolean active;
 }

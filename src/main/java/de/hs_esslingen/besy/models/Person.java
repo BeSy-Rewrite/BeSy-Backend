@@ -7,6 +7,7 @@ import de.hs_esslingen.besy.enums.Gender;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Setter
@@ -53,6 +54,10 @@ public class Person {
     @Column(name = "gender", nullable = false)
     @Enumerated(EnumType.STRING)
     private Gender gender;
+
+    @ColumnDefault("true")
+    @Column(name = "active", nullable = false)
+    private Boolean active = true;
 
 }
 
