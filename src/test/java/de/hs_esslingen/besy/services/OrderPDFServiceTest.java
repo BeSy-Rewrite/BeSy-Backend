@@ -27,7 +27,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +36,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -73,7 +73,6 @@ class OrderPDFServiceTest {
     @Mock
     private ItemResponseMapper itemResponseMapper;
 
-    @InjectMocks
     private OrderPDFService orderPDFService;
 
     private Order order;
@@ -88,6 +87,9 @@ class OrderPDFServiceTest {
 
     @BeforeEach
     void setUp() {
+        orderPDFService = new OrderPDFService(orderRepository, supplierRepository, itemRepository,
+                invoiceRepository, personRepository, quotationRepository, itemResponseMapper, Locale.GERMANY);
+
         owner = new User();
         owner.setName("Jane");
         owner.setSurname("Doe");
@@ -162,6 +164,38 @@ class OrderPDFServiceTest {
     void should_generate_order_number_format() {
         String orderNumber = OrderPDFService.generateOrderNumber("CC1", "25", (short) 7);
         assertEquals("ITCC1_25_7", orderNumber);
+    }
+
+    @Test
+    void should_format_date_in_german_locale() throws IOException {
+        Long orderId = 100L;
+
+        // Order created on 2025-01-15 — should render as "15.01.2025" in German format
+        order.setCreatedDate(LocalDateTime.of(2025, 1, 15, 10, 30));
+
+        Item item1 = itemWithVat(orderId, 1, BigDecimal.valueOf(10), 2L, BigDecimal.valueOf(19));
+        List<Item> items = List.of(item1);
+
+        ItemResponseDTO itemDto1 = new ItemResponseDTO(1, "Item A", BigDecimal.valueOf(10), 2L, "pcs", "A-1", "",
+                new VatResponseDTO(BigDecimal.valueOf(19), "VAT"), PreferredList.RZ, "", VatType.netto);
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(supplierRepository.findById(order.getSupplierId())).thenReturn(Optional.of(supplier));
+        when(itemRepository.findByOrder_Id(orderId)).thenReturn(items);
+        when(invoiceRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
+        when(personRepository.findById(order.getDeliveryPersonId())).thenReturn(Optional.of(deliveryPerson));
+        when(personRepository.findById(order.getInvoicePersonId())).thenReturn(Optional.of(invoicePerson));
+        when(quotationRepository.getQuotationByOrderId(orderId)).thenReturn(List.of());
+        when(itemResponseMapper.toDto(items)).thenReturn(List.of(itemDto1));
+
+        ResponseEntity<byte[]> response = orderPDFService.generateOrderPDF(orderId);
+
+        assertNotNull(response.getBody());
+        try (PDDocument document = Loader.loadPDF(response.getBody())) {
+            PDAcroForm form = document.getDocumentCatalog().getAcroForm();
+            String date = fieldValue(form, "Formular1[0].#subform[0].Header[0].Rechnungsdatum[0]");
+            assertEquals("15.01.2025", date);
+        }
     }
 
     @Test
