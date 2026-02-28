@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -32,7 +33,8 @@ public class CustomerIdService {
     }
 
     public ResponseEntity<CustomerIdResponseDTO> createCustomerId(Integer supplierId, CustomerIdRequestDTO dto) {
-        CustomerIdId customerIdId = new CustomerIdId(dto.getCustomerId(), supplierId);
+        String customerIdValue = dto.getCustomerId() != null ? dto.getCustomerId() : UUID.randomUUID().toString();
+        CustomerIdId customerIdId = new CustomerIdId(customerIdValue, supplierId);
         if(customerIdRepository.existsById(customerIdId)) throw new EntityAlreadyExistsException("Lieferanten-ID existiert bereits.");
 
         Supplier supplier = supplierRepository.getReferenceById(supplierId);

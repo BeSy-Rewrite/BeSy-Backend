@@ -1902,8 +1902,6 @@ components:
           type: string
     CustomerIdRequestDTO:
       type: object
-      required:
-        - customer_id
       properties:
         customer_id:
           type: string

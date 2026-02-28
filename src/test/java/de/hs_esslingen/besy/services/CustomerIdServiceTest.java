@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -132,5 +133,34 @@ class CustomerIdServiceTest {
         verify(customerIdRepository, never()).delete(any(CustomerId.class));
         verify(customerIdRepository, never()).deleteById(any(CustomerIdId.class));
         verify(customerIdRepository, never()).deleteAll();
+    }
+
+    @Test
+    void should_create_customer_id_with_generated_id_when_customer_id_is_null() {
+        Integer supplierId = 4;
+        CustomerIdRequestDTO requestDtoWithNullId = new CustomerIdRequestDTO(null, "Comment");
+
+        when(customerIdRepository.existsById(any(CustomerIdId.class))).thenReturn(false);
+        when(supplierRepository.getReferenceById(supplierId)).thenReturn(supplier);
+        when(customerIdRequestMapper.toEntity(requestDtoWithNullId)).thenReturn(customerId);
+        when(customerIdRepository.save(customerId)).thenReturn(customerId);
+        when(customerIdResponseMapper.toDto(customerId)).thenReturn(responseDto);
+
+        ResponseEntity<CustomerIdResponseDTO> response = customerIdService.createCustomerId(supplierId, requestDtoWithNullId);
+
+        assertSame(responseDto, response.getBody());
+
+        ArgumentCaptor<CustomerIdId> idCaptor = ArgumentCaptor.forClass(CustomerIdId.class);
+        verify(customerIdRepository).existsById(idCaptor.capture());
+        CustomerIdId capturedId = idCaptor.getValue();
+        assertNotNull(capturedId.getCustomerId());
+        assertEquals(supplierId, capturedId.getSupplierId());
+
+        ArgumentCaptor<CustomerId> entityCaptor = ArgumentCaptor.forClass(CustomerId.class);
+        verify(customerIdRepository).save(entityCaptor.capture());
+        CustomerId savedEntity = entityCaptor.getValue();
+        assertNotNull(savedEntity.getId());
+        assertNotNull(savedEntity.getId().getCustomerId());
+        assertEquals(supplierId, savedEntity.getId().getSupplierId());
     }
 }
