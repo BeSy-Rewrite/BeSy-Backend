@@ -66,7 +66,7 @@ public class OrderService {
     private static final Map<OrderStatus, Set<OrderStatus>> ORDER_STATUS_MATRIX = Map.ofEntries(
             Map.entry(OrderStatus.IN_PROGRESS, Set.of(OrderStatus.COMPLETED, OrderStatus.DELETED)),
             Map.entry(OrderStatus.COMPLETED, Set.of(OrderStatus.DEKAN_PENDING, OrderStatus.IN_PROGRESS, OrderStatus.DELETED, OrderStatus.APPROVED)),
-            Map.entry(OrderStatus.DEKAN_PENDING, Set.of(OrderStatus.APPROVED, OrderStatus.REJECTED, OrderStatus.COMPLETED)),
+            Map.entry(OrderStatus.DEKAN_PENDING, Set.of(OrderStatus.APPROVED, OrderStatus.COMPLETED)),
             Map.entry(OrderStatus.APPROVED, Set.of(OrderStatus.SENT)),
             Map.entry(OrderStatus.REJECTED, Set.of()),
             Map.entry(OrderStatus.SENT, Set.of(OrderStatus.SETTLED)),
@@ -308,7 +308,7 @@ public class OrderService {
             validator.validateOrThrow(orderToBeValidated);
         }
 
-        if(currentStatus.equals(OrderStatus.DEKAN_PENDING) && (targetStatus.equals(OrderStatus.APPROVED) || targetStatus.equals(OrderStatus.REJECTED))) {
+        if(currentStatus.equals(OrderStatus.DEKAN_PENDING) && (targetStatus.equals(OrderStatus.APPROVED) || targetStatus.equals(OrderStatus.COMPLETED))) {
             if(!KeycloakAuthenticationConverter.hasRole(jwt, dekanRoleName)) throw new NotAuthorizedException("Not authorized to modify this order!");
         }
 

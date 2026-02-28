@@ -388,7 +388,7 @@ class OrderServiceTest {
                     ));
                 }
 
-                Jwt jwt = (current == OrderStatus.DEKAN_PENDING && (target == OrderStatus.APPROVED || target == OrderStatus.REJECTED))
+                Jwt jwt = (current == OrderStatus.DEKAN_PENDING && (target == OrderStatus.APPROVED || target == OrderStatus.COMPLETED))
                         ? jwtWithRole
                         : null;
 
@@ -432,11 +432,11 @@ class OrderServiceTest {
     }
 
     @Test
-    void should_throw_not_authorized_when_rejecting_without_role() {
+    void should_throw_not_authorized_when_returning_to_completed_without_role() {
         order.setStatus(OrderStatus.DEKAN_PENDING);
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
 
-        assertThrows(NotAuthorizedException.class, () -> orderService.updateOrderStatus(1L, OrderStatus.REJECTED, jwtWithoutRole));
+        assertThrows(NotAuthorizedException.class, () -> orderService.updateOrderStatus(1L, OrderStatus.COMPLETED, jwtWithoutRole));
     }
 
     @Test
@@ -452,24 +452,12 @@ class OrderServiceTest {
     }
 
     @Test
-    void should_reject_from_dekan_pending_with_dekan_role() {
+    void should_return_to_completed_from_dekan_pending_with_dekan_role() {
         order.setStatus(OrderStatus.DEKAN_PENDING);
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
         when(orderRepository.save(order)).thenReturn(order);
 
-        ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, OrderStatus.REJECTED, jwtWithRole);
-
-        assertEquals(OrderStatus.REJECTED, response.getBody());
-        verify(orderStatusHistoryRepository).save(any(OrderStatusHistory.class));
-    }
-
-    @Test
-    void should_return_to_completed_from_dekan_pending() {
-        order.setStatus(OrderStatus.DEKAN_PENDING);
-        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
-        when(orderRepository.save(order)).thenReturn(order);
-
-        ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, OrderStatus.COMPLETED, null);
+        ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, OrderStatus.COMPLETED, jwtWithRole);
 
         assertEquals(OrderStatus.COMPLETED, response.getBody());
         verify(orderStatusHistoryRepository).save(any(OrderStatusHistory.class));
