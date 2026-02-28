@@ -43,6 +43,9 @@ public class Supplier {
     @Column(name = "vat_id", length = 20)
     private String vatId;
 
+    @Column(name = "customer_number")
+    private String customerNumber;
+
     @ColumnDefault("false")
     @Column(name = "flag_preferred", nullable = false)
     private Boolean flagPreferred = false;

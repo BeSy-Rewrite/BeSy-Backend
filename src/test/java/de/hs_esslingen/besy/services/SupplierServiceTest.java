@@ -97,6 +97,7 @@ class SupplierServiceTest {
                 "https://example.com",
                 "VAT-1",
                 false,
+                null,
                 addressRequestDto
         );
 
@@ -109,6 +110,7 @@ class SupplierServiceTest {
                 "Comment",
                 "https://example.com",
                 "VAT-1",
+                null,
                 false,
                 null
         );
@@ -134,6 +136,7 @@ class SupplierServiceTest {
                 "Comment",
                 "https://example.com",
                 "VAT-1",
+                null,
                 false,
                 null,
                 addressResponseDto
