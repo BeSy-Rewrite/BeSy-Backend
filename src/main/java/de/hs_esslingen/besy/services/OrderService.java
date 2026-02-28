@@ -233,6 +233,16 @@ public class OrderService {
         return orderRepository.existsByIdAndStatusNot(id, OrderStatus.DELETED);
     }
 
+    /**
+     * Checks if an order with the given ID exists, including orders with status 'DELETED'.
+     *
+     * @param id the ID of the order to check
+     * @return true if such an order exists (regardless of status), false otherwise
+     */
+    public boolean existsDeletedOrderById(Long id) {
+        return orderRepository.existsById(id);
+    }
+
 
 
     /**

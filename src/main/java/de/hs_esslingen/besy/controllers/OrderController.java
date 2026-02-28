@@ -121,8 +121,11 @@ public class OrderController {
     }
 
     @GetMapping("{order-id}/items")
-    public ResponseEntity<List<ItemResponseDTO>> getItemsOfOrder(@PathVariable("order-id") Long id) {
-        if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+    public ResponseEntity<List<ItemResponseDTO>> getItemsOfOrder(
+            @PathVariable("order-id") Long id,
+            @RequestParam(name = "deleted", required = false, defaultValue = "false") boolean deleted) {
+        boolean exists = deleted ? orderService.existsDeletedOrderById(id) : orderService.existsOrderById(id);
+        if(!exists) throw new NotFoundException("Bestellung nicht gefunden.");
         return itemService.getItemsOfOrder(id);
     }
 

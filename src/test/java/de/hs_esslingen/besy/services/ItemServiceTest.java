@@ -2,6 +2,7 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.request.ItemRequestDTO;
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
+import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.enums.PreferredList;
 import de.hs_esslingen.besy.enums.VatType;
 import de.hs_esslingen.besy.mappers.request.ItemRequestMapper;
@@ -124,6 +125,24 @@ class ItemServiceTest {
         verify(itemResponseMapper).toDto(items);
         verify(itemRepository, never()).delete(any(Item.class));
         verify(itemRepository, never()).deleteAll();
+    }
+
+    @Test
+    void should_return_items_of_deleted_order_as_dtos() {
+        Long orderId = 100L;
+        order.setStatus(OrderStatus.DELETED);
+        item.setOrder(order);
+        List<Item> items = List.of(item);
+        List<ItemResponseDTO> dtos = List.of(responseDto);
+
+        when(itemRepository.findByOrder_Id(orderId)).thenReturn(items);
+        when(itemResponseMapper.toDto(items)).thenReturn(dtos);
+
+        ResponseEntity<List<ItemResponseDTO>> response = itemService.getItemsOfOrder(orderId);
+
+        assertSame(dtos, response.getBody());
+        verify(itemRepository).findByOrder_Id(orderId);
+        verify(itemResponseMapper).toDto(items);
     }
 
     @Test

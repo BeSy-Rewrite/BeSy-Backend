@@ -598,6 +598,22 @@ class OrderServiceTest {
     }
 
     @Test
+    void should_return_true_for_deleted_order_when_exists_deleted_order_by_id() {
+        when(orderRepository.existsById(1L)).thenReturn(true);
+
+        assertTrue(orderService.existsDeletedOrderById(1L));
+        verify(orderRepository).existsById(1L);
+    }
+
+    @Test
+    void should_return_false_when_order_not_found_for_exists_deleted_order_by_id() {
+        when(orderRepository.existsById(2L)).thenReturn(false);
+
+        assertFalse(orderService.existsDeletedOrderById(2L));
+        verify(orderRepository).existsById(2L);
+    }
+
+    @Test
     void should_update_status_and_create_history_entry() {
         order.setStatus(OrderStatus.COMPLETED);
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
