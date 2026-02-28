@@ -1,11 +1,13 @@
 package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.request.PersonRequestDTO;
+import de.hs_esslingen.besy.dtos.request.PersonUpdateRequestDTO;
 import de.hs_esslingen.besy.dtos.response.PersonResponseDTO;
 import de.hs_esslingen.besy.enums.AddressOwnerType;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.PersonRequestMapper;
+import de.hs_esslingen.besy.mappers.request.PersonUpdateRequestMapper;
 import de.hs_esslingen.besy.mappers.response.PersonResponseMapper;
 import de.hs_esslingen.besy.models.Address;
 import de.hs_esslingen.besy.models.Person;
@@ -25,6 +27,7 @@ public class PersonService {
     private final AddressRepository addressRepository;
     private final PersonResponseMapper personResponseMapper;
     private final PersonRequestMapper personRequestMapper;
+    private final PersonUpdateRequestMapper personUpdateRequestMapper;
 
     public ResponseEntity<List<PersonResponseDTO>> getAllPersons(boolean active) {
         List<Person> persons = personRepository.findAllByActive(active);
@@ -54,9 +57,9 @@ public class PersonService {
     }
 
 
-    public ResponseEntity<PersonResponseDTO> updatePerson(Long id, PersonRequestDTO personDTO) {
+    public ResponseEntity<PersonResponseDTO> updatePerson(Long id, PersonUpdateRequestDTO personDTO) {
         Person person = personRepository.findById(id).get();
-        personRequestMapper.partialUpdate(person, personDTO);
+        personUpdateRequestMapper.partialUpdate(person, personDTO);
 
         if(personDTO.getAddressId() != null){
             Address address = addressRepository.getReferenceById(personDTO.getAddressId());

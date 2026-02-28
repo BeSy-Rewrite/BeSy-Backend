@@ -16,7 +16,10 @@ paths:
         - name: active
           in: query
           required: false
-          description: Filtert Personen nach ihrem Aktivstatus. Standardmäßig werden nur aktive Personen zurückgegeben.
+          description: >
+            Filtert Personen nach ihrem Aktivstatus. Standardmäßig werden nur aktive Personen zurückgegeben.
+            Es können entweder aktive (active=true) oder inaktive (active=false) Personen abgefragt werden.
+            Um sowohl aktive als auch inaktive Nutzer zu erhalten, sind zwei separate Requests notwendig.
           schema:
             type: boolean
             default: true
@@ -76,11 +79,12 @@ paths:
       tags:
         - Persons
       operationId: updatePersonById
+      description: Aktualisiert eine Person. Das Feld `active` kann genutzt werden, um eine Person als inaktiv zu markieren.
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PersonRequestDTO'
+              $ref: '#/components/schemas/PersonUpdateRequestDTO'
       parameters:
         - name: id
           in: path
@@ -1425,8 +1429,34 @@ components:
             - m
             - f
             - d
+    PersonUpdateRequestDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        surname:
+          type: string
+        email:
+          type: string
+        fax:
+          type: string
+        phone:
+          type: string
+        title:
+          type: string
+        comment:
+          type: string
+        address_id:
+          type: integer
+        gender:
+          type: string
+          enum:
+            - m
+            - f
+            - d
         active:
           type: boolean
+          description: Setzt den Aktivstatus der Person. false markiert die Person als inaktiv.
     PersonResponseDTO:
       type: object
       properties:

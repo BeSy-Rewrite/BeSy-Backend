@@ -87,7 +87,8 @@ INSERT INTO migrated_data.person (
     email,
     name,
     gender,
-    surname
+    surname,
+    active
 )
 SELECT
     p.person_id,
@@ -99,7 +100,8 @@ SELECT
     p.person_email,
     p.person_given_name,
     p.person_gender,
-    p.person_surname
+    p.person_surname,
+    true
 FROM besy.person p
 JOIN migrated_data.address a ON a.legacy_address_name = p.address_name;
 

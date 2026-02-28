@@ -2,6 +2,7 @@ package de.hs_esslingen.besy.controllers;
 
 import de.hs_esslingen.besy.dtos.request.AddressRequestDTO;
 import de.hs_esslingen.besy.dtos.request.PersonRequestDTO;
+import de.hs_esslingen.besy.dtos.request.PersonUpdateRequestDTO;
 import de.hs_esslingen.besy.dtos.response.AddressResponseDTO;
 import de.hs_esslingen.besy.dtos.response.PersonResponseDTO;
 import de.hs_esslingen.besy.enums.AddressOwnerType;
@@ -41,9 +42,9 @@ public class PersonController {
     @PutMapping("/{id}")
     public ResponseEntity<PersonResponseDTO> updatePerson(
             @PathVariable("id") Long id,
-            @RequestBody PersonRequestDTO personRequestDTO) {
+            @RequestBody PersonUpdateRequestDTO personUpdateRequestDTO) {
         if(!personService.existsById(id)) throw new NotFoundException("Person nicht gefunden.");
-        return personService.updatePerson(id, personRequestDTO);
+        return personService.updatePerson(id, personUpdateRequestDTO);
     }
 
     @Deprecated(since = "api-1.8.x")

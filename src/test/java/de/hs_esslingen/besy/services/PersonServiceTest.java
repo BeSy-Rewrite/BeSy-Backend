@@ -1,12 +1,14 @@
 package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.request.PersonRequestDTO;
+import de.hs_esslingen.besy.dtos.request.PersonUpdateRequestDTO;
 import de.hs_esslingen.besy.dtos.response.PersonResponseDTO;
 import de.hs_esslingen.besy.enums.AddressOwnerType;
 import de.hs_esslingen.besy.enums.Gender;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.PersonRequestMapper;
+import de.hs_esslingen.besy.mappers.request.PersonUpdateRequestMapper;
 import de.hs_esslingen.besy.mappers.response.PersonResponseMapper;
 import de.hs_esslingen.besy.models.Address;
 import de.hs_esslingen.besy.models.Person;
@@ -47,6 +49,9 @@ class PersonServiceTest {
     @Mock
     private PersonRequestMapper personRequestMapper;
 
+    @Mock
+    private PersonUpdateRequestMapper personUpdateRequestMapper;
+
     @InjectMocks
     private PersonService personService;
 
@@ -54,6 +59,8 @@ class PersonServiceTest {
     private Address address;
     private PersonRequestDTO requestDtoNoAddress;
     private PersonRequestDTO requestDtoWithAddress;
+    private PersonUpdateRequestDTO updateDtoNoAddress;
+    private PersonUpdateRequestDTO updateDtoWithAddress;
     private PersonResponseDTO responseDto;
 
     @BeforeEach
@@ -82,8 +89,7 @@ class PersonServiceTest {
                 "Dr.",
                 "Comment",
                 null,
-                Gender.f,
-                null
+                Gender.f
         );
 
         requestDtoWithAddress = new PersonRequestDTO(
@@ -95,9 +101,20 @@ class PersonServiceTest {
                 "Dr.",
                 "Comment",
                 10,
-                Gender.f,
-                null
+                Gender.f
         );
+
+        updateDtoNoAddress = PersonUpdateRequestDTO.builder()
+                .name("Jane").surname("Doe").email("jane.doe@example.com")
+                .fax("123").phone("456").title("Dr.").comment("Comment")
+                .addressId(null).gender(Gender.f).active(null)
+                .build();
+
+        updateDtoWithAddress = PersonUpdateRequestDTO.builder()
+                .name("Jane").surname("Doe").email("jane.doe@example.com")
+                .fax("123").phone("456").title("Dr.").comment("Comment")
+                .addressId(10).gender(Gender.f).active(null)
+                .build();
 
         responseDto = new PersonResponseDTO(
                 1L,
@@ -237,11 +254,11 @@ class PersonServiceTest {
         when(personRepository.save(any(Person.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(personResponseMapper.toDto(any(Person.class))).thenReturn(responseDto);
 
-        ResponseEntity<PersonResponseDTO> response = personService.updatePerson(1L, requestDtoNoAddress);
+        ResponseEntity<PersonResponseDTO> response = personService.updatePerson(1L, updateDtoNoAddress);
 
         assertEquals(200, response.getStatusCode().value());
         assertSame(responseDto, response.getBody());
-        verify(personRequestMapper).partialUpdate(person, requestDtoNoAddress);
+        verify(personUpdateRequestMapper).partialUpdate(person, updateDtoNoAddress);
         verify(addressRepository, never()).getReferenceById(anyInt());
         verify(personRepository).save(person);
         verify(personResponseMapper).toDto(person);
@@ -254,11 +271,11 @@ class PersonServiceTest {
         when(personRepository.save(any(Person.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(personResponseMapper.toDto(any(Person.class))).thenReturn(responseDto);
 
-        ResponseEntity<PersonResponseDTO> response = personService.updatePerson(1L, requestDtoWithAddress);
+        ResponseEntity<PersonResponseDTO> response = personService.updatePerson(1L, updateDtoWithAddress);
 
         assertEquals(200, response.getStatusCode().value());
         assertSame(responseDto, response.getBody());
-        verify(personRequestMapper).partialUpdate(person, requestDtoWithAddress);
+        verify(personUpdateRequestMapper).partialUpdate(person, updateDtoWithAddress);
         verify(addressRepository).getReferenceById(10);
 
         ArgumentCaptor<Person> captor = ArgumentCaptor.forClass(Person.class);
@@ -276,11 +293,26 @@ class PersonServiceTest {
         when(addressRepository.getReferenceById(10)).thenReturn(nonPersonAddress);
 
         BadRequestException ex = assertThrows(BadRequestException.class,
-                () -> personService.updatePerson(1L, requestDtoWithAddress));
+                () -> personService.updatePerson(1L, updateDtoWithAddress));
 
         assertTrue(ex.getMessage().contains("Adresse"));
         verify(addressRepository).getReferenceById(10);
         verify(personRepository, never()).save(any(Person.class));
+    }
+
+    @Test
+    void should_update_active_status_to_false() {
+        PersonUpdateRequestDTO deactivateDto = PersonUpdateRequestDTO.builder().active(false).build();
+
+        when(personRepository.findById(1L)).thenReturn(Optional.of(person));
+        when(personRepository.save(any(Person.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(personResponseMapper.toDto(any(Person.class))).thenReturn(responseDto);
+
+        ResponseEntity<PersonResponseDTO> response = personService.updatePerson(1L, deactivateDto);
+
+        assertEquals(200, response.getStatusCode().value());
+        verify(personUpdateRequestMapper).partialUpdate(person, deactivateDto);
+        verify(personRepository).save(person);
     }
 
     @Test
