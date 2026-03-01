@@ -224,13 +224,13 @@ public class OrderService {
 
 
     /**
-     * Checks if an order with the given ID exists and its status is not 'DEL' (deleted).
+     * Checks if an order with the given ID exists
      *
      * @param id the ID of the order to check
-     * @return true if such an order exists and is not marked as deleted, false otherwise
+     * @return true if such an order exists
      */
     public boolean existsOrderById(Long id) {
-        return orderRepository.existsByIdAndStatusNot(id, OrderStatus.DELETED);
+        return orderRepository.existsById(id);
     }
 
 
