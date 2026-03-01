@@ -63,16 +63,16 @@ public class OrderService {
      * Defines valid status transitions for orders.
      * Each entry maps a current {@link OrderStatus} to a set of allowed next statuses.
      */
-    private static final Map<OrderStatus, Set<OrderStatus>> ORDER_STATUS_MATRIX = Map.of(
-            OrderStatus.IN_PROGRESS, Set.of(OrderStatus.COMPLETED, OrderStatus.DELETED),
-            OrderStatus.COMPLETED, Set.of(OrderStatus.APPROVALS_RECEIVED, OrderStatus.IN_PROGRESS, OrderStatus.DELETED, OrderStatus.APPROVED),
-            OrderStatus.APPROVALS_RECEIVED, Set.of(OrderStatus.APPROVED, OrderStatus.DELETED),
-            OrderStatus.APPROVED, Set.of(OrderStatus.SENT),
-            OrderStatus.REJECTED, Set.of(),
-            OrderStatus.SENT, Set.of(OrderStatus.SETTLED),
-            OrderStatus.SETTLED, Set.of(OrderStatus.ARCHIVED),
-            OrderStatus.ARCHIVED, Set.of(),
-            OrderStatus.DELETED, Set.of(OrderStatus.IN_PROGRESS)
+    private static final Map<OrderStatus, Set<OrderStatus>> ORDER_STATUS_MATRIX = Map.ofEntries(
+            Map.entry(OrderStatus.IN_PROGRESS, Set.of(OrderStatus.COMPLETED, OrderStatus.DELETED)),
+            Map.entry(OrderStatus.COMPLETED, Set.of(OrderStatus.DEKAN_PENDING, OrderStatus.IN_PROGRESS, OrderStatus.DELETED, OrderStatus.APPROVED)),
+            Map.entry(OrderStatus.DEKAN_PENDING, Set.of(OrderStatus.APPROVED, OrderStatus.COMPLETED)),
+            Map.entry(OrderStatus.APPROVED, Set.of(OrderStatus.SENT)),
+            Map.entry(OrderStatus.REJECTED, Set.of()),
+            Map.entry(OrderStatus.SENT, Set.of(OrderStatus.SETTLED)),
+            Map.entry(OrderStatus.SETTLED, Set.of(OrderStatus.ARCHIVED)),
+            Map.entry(OrderStatus.ARCHIVED, Set.of()),
+            Map.entry(OrderStatus.DELETED, Set.of(OrderStatus.IN_PROGRESS))
     );
 
 
@@ -308,7 +308,7 @@ public class OrderService {
             validator.validateOrThrow(orderToBeValidated);
         }
 
-        if(currentStatus.equals(OrderStatus.APPROVALS_RECEIVED) && targetStatus.equals(OrderStatus.APPROVED)) {
+        if(currentStatus.equals(OrderStatus.DEKAN_PENDING) && (targetStatus.equals(OrderStatus.APPROVED) || targetStatus.equals(OrderStatus.COMPLETED))) {
             if(!KeycloakAuthenticationConverter.hasRole(jwt, dekanRoleName)) throw new NotAuthorizedException("Not authorized to modify this order!");
         }
 

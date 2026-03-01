@@ -388,7 +388,7 @@ class OrderServiceTest {
                     ));
                 }
 
-                Jwt jwt = (current == OrderStatus.APPROVALS_RECEIVED && target == OrderStatus.APPROVED)
+                Jwt jwt = (current == OrderStatus.DEKAN_PENDING && (target == OrderStatus.APPROVED || target == OrderStatus.COMPLETED))
                         ? jwtWithRole
                         : null;
 
@@ -425,10 +425,53 @@ class OrderServiceTest {
 
     @Test
     void should_throw_not_authorized_when_approving_without_role() {
-        order.setStatus(OrderStatus.APPROVALS_RECEIVED);
+        order.setStatus(OrderStatus.DEKAN_PENDING);
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
 
         assertThrows(NotAuthorizedException.class, () -> orderService.updateOrderStatus(1L, OrderStatus.APPROVED, jwtWithoutRole));
+    }
+
+    @Test
+    void should_throw_not_authorized_when_returning_to_completed_without_role() {
+        order.setStatus(OrderStatus.DEKAN_PENDING);
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+
+        assertThrows(NotAuthorizedException.class, () -> orderService.updateOrderStatus(1L, OrderStatus.COMPLETED, jwtWithoutRole));
+    }
+
+    @Test
+    void should_approve_from_dekan_pending_with_dekan_role() {
+        order.setStatus(OrderStatus.DEKAN_PENDING);
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+        when(orderRepository.save(order)).thenReturn(order);
+
+        ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, OrderStatus.APPROVED, jwtWithRole);
+
+        assertEquals(OrderStatus.APPROVED, response.getBody());
+        verify(orderStatusHistoryRepository).save(any(OrderStatusHistory.class));
+    }
+
+    @Test
+    void should_return_to_completed_from_dekan_pending_with_dekan_role() {
+        order.setStatus(OrderStatus.DEKAN_PENDING);
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+        when(orderRepository.save(order)).thenReturn(order);
+
+        ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, OrderStatus.COMPLETED, jwtWithRole);
+
+        assertEquals(OrderStatus.COMPLETED, response.getBody());
+        verify(orderStatusHistoryRepository).save(any(OrderStatusHistory.class));
+    }
+
+    @Test
+    void should_transition_directly_from_completed_to_approved_without_dekan_role() {
+        order.setStatus(OrderStatus.COMPLETED);
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+        when(orderRepository.save(order)).thenReturn(order);
+
+        ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, OrderStatus.APPROVED, null);
+
+        assertEquals(OrderStatus.APPROVED, response.getBody());
     }
 
     @Test
@@ -479,7 +522,7 @@ class OrderServiceTest {
     @Test
     void should_get_statuses_allowing_transition_to() {
         Set<OrderStatus> result = orderService.getStatusesAllowingTransitionTo(OrderStatus.APPROVED);
-        assertEquals(Set.of(OrderStatus.COMPLETED, OrderStatus.APPROVALS_RECEIVED), result);
+        assertEquals(Set.of(OrderStatus.COMPLETED, OrderStatus.DEKAN_PENDING), result);
     }
 
     @Test
@@ -603,9 +646,9 @@ class OrderServiceTest {
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
         when(orderRepository.save(order)).thenReturn(order);
 
-        ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, OrderStatus.APPROVALS_RECEIVED, null);
+        ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, OrderStatus.DEKAN_PENDING, null);
 
-        assertEquals(OrderStatus.APPROVALS_RECEIVED, response.getBody());
+        assertEquals(OrderStatus.DEKAN_PENDING, response.getBody());
         verify(orderStatusHistoryRepository).save(any(OrderStatusHistory.class));
     }
 
