@@ -250,6 +250,7 @@ class OrderServiceTest {
                 null,
                 null,
                 null,
+                false,
                 pageable
         );
 
@@ -590,6 +591,57 @@ class OrderServiceTest {
     void should_return_false_when_exists_by_id_and_status_not_for_deleted() {
         when(orderRepository.existsByIdAndStatusNot(1L, OrderStatus.DELETED)).thenReturn(false);
         assertFalse(orderService.existsOrderById(1L));
+    }
+
+    @Test
+    void should_exists_order_by_id_including_deleted_when_exists() {
+        when(orderRepository.existsById(1L)).thenReturn(true);
+        assertTrue(orderService.existsOrderByIdIncludingDeleted(1L));
+        verify(orderRepository).existsById(1L);
+    }
+
+    @Test
+    void should_not_exist_order_by_id_including_deleted_when_missing() {
+        when(orderRepository.existsById(2L)).thenReturn(false);
+        assertFalse(orderService.existsOrderByIdIncludingDeleted(2L));
+        verify(orderRepository).existsById(2L);
+    }
+
+    @Test
+    void should_get_all_orders_excluding_deleted_by_default() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Order> page = new PageImpl<>(List.of(order), pageable, 1);
+
+        when(orderPageableRepository.findAll(any(), eq(pageable))).thenReturn(page);
+        when(orderResponseMapper.toDto(order)).thenReturn(responseDto);
+
+        Page<OrderResponseDTO> result = orderService.getAllOrders(
+                null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null,
+                false, pageable
+        );
+
+        assertEquals(1, result.getTotalElements());
+        verify(orderPageableRepository).findAll(any(), eq(pageable));
+    }
+
+    @Test
+    void should_get_all_orders_including_deleted_when_flag_true() {
+        order.setStatus(OrderStatus.DELETED);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Order> page = new PageImpl<>(List.of(order), pageable, 1);
+
+        when(orderPageableRepository.findAll(any(), eq(pageable))).thenReturn(page);
+        when(orderResponseMapper.toDto(order)).thenReturn(responseDto);
+
+        Page<OrderResponseDTO> result = orderService.getAllOrders(
+                null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null,
+                true, pageable
+        );
+
+        assertEquals(1, result.getTotalElements());
+        verify(orderPageableRepository).findAll(any(), eq(pageable));
     }
 
     @Test

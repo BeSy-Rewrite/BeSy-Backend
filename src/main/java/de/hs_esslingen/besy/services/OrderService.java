@@ -94,6 +94,7 @@ public class OrderService {
             OffsetDateTime lastUpdatedTimeBefore,
             Short autoIndexGTE,
             Short autoIndexLTE,
+            boolean includeDeleted,
             Pageable pageable
 
     ) {
@@ -113,6 +114,10 @@ public class OrderService {
                         .and(SpecificationHelper.isBetween(lastUpdatedTimeAfter, lastUpdatedTimeBefore, "lastUpdatedTime"))
                         .and(SpecificationHelper.isBetween(autoIndexGTE, autoIndexLTE, "autoIndex"))
                                 );
+
+        if (!includeDeleted) {
+            spec = spec.and((root, query, cb) -> cb.notEqual(root.get("status"), OrderStatus.DELETED));
+        }
 
         Page<Order> orders = orderPageableRepository.findAll(spec, pageable);
         return orders.map(orderResponseMapper::toDto);
@@ -229,6 +234,16 @@ public class OrderService {
      */
     public boolean existsOrderById(Long id) {
         return orderRepository.existsByIdAndStatusNot(id, OrderStatus.DELETED);
+    }
+
+    /**
+     * Checks if an order with the given ID exists, regardless of its status (including deleted).
+     *
+     * @param id the ID of the order to check
+     * @return true if such an order exists, false otherwise
+     */
+    public boolean existsOrderByIdIncludingDeleted(Long id) {
+        return orderRepository.existsById(id);
     }
 
 

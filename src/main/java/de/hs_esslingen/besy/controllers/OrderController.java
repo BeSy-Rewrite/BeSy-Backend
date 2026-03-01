@@ -66,6 +66,7 @@ public class OrderController {
             @RequestParam(name = "lastUpdatedTimeBefore", required = false) OffsetDateTime lastUpdatedTimeBefore,
             @RequestParam(name = "autoIndexGTE", required = false) Short autoIndexGTE,
             @RequestParam(name = "autoIndexLTE", required = false) Short autoIndexLTE,
+            @RequestParam(name = "includeDeleted", required = false, defaultValue = "false") boolean includeDeleted,
             @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.ASC) Pageable pageable
             ) {
         return orderService.getAllOrders(
@@ -86,6 +87,7 @@ public class OrderController {
                 lastUpdatedTimeBefore,
                 autoIndexGTE,
                 autoIndexLTE,
+                includeDeleted,
                 pageable
         );
     }
@@ -119,8 +121,12 @@ public class OrderController {
     }
 
     @GetMapping("{order-id}/items")
-    public ResponseEntity<List<ItemResponseDTO>> getItemsOfOrder(@PathVariable("order-id") Long id) {
-        if(!orderService.existsOrderById(id)) throw new NotFoundException("Bestellung nicht gefunden.");
+    public ResponseEntity<List<ItemResponseDTO>> getItemsOfOrder(
+            @PathVariable("order-id") Long id,
+            @RequestParam(name = "includeDeleted", required = false, defaultValue = "false") boolean includeDeleted
+    ) {
+        boolean exists = includeDeleted ? orderService.existsOrderByIdIncludingDeleted(id) : orderService.existsOrderById(id);
+        if (!exists) throw new NotFoundException("Bestellung nicht gefunden.");
         return itemService.getItemsOfOrder(id);
     }
 
