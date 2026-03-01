@@ -91,4 +91,30 @@ class ApprovalServiceTest {
         verify(approvalRepository, never()).deleteById(anyLong());
         verify(approvalRepository, never()).deleteAll();
     }
+
+    @Test
+    void should_apply_partial_update_and_save_approval_when_order_is_in_progress() {
+        Long orderId = 12L;
+        ApprovalRequestDTO dto = new ApprovalRequestDTO(false, true, false, true, false, true);
+        Approval approval = new Approval();
+        approval.setOrderId(orderId);
+        Approval persisted = new Approval();
+        persisted.setOrderId(orderId);
+        ApprovalResponseDTO responseDto = new ApprovalResponseDTO(orderId, false, true, false, true, false, true);
+
+        when(approvalRepository.getById(orderId)).thenReturn(approval);
+        when(approvalRepository.saveAndFlush(approval)).thenReturn(persisted);
+        when(approvalResponseMapper.toDto(persisted)).thenReturn(responseDto);
+
+        ResponseEntity<ApprovalResponseDTO> response = approvalService.updateApprovalOfOrder(orderId, dto);
+
+        InOrder inOrder = inOrder(approvalRepository, approvalRequestMapper, approvalResponseMapper);
+        inOrder.verify(approvalRepository).getById(orderId);
+        inOrder.verify(approvalRequestMapper).partialUpdate(approval, dto);
+        inOrder.verify(approvalRepository).saveAndFlush(approval);
+        inOrder.verify(approvalResponseMapper).toDto(persisted);
+
+        assertSame(responseDto, response.getBody());
+        verifyNoInteractions(orderRepository);
+    }
 }
