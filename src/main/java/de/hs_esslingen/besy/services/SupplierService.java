@@ -2,7 +2,6 @@ package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.dtos.request.SupplierRequestDTO;
 import de.hs_esslingen.besy.dtos.response.CreateSupplierResponseDTO;
-import de.hs_esslingen.besy.dtos.response.CustomerIdResponseDTO;
 import de.hs_esslingen.besy.dtos.response.SupplierResponseDTO;
 import de.hs_esslingen.besy.enums.AddressOwnerType;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
@@ -73,16 +72,6 @@ public class SupplierService {
 
     public boolean existsSupplierById(Integer id) {
         return supplierRepository.existsById(id);
-    }
-
-    public ResponseEntity<List<CustomerIdResponseDTO>> getCustomerIds(Integer supplierId) {
-        return supplierRepository.findById(supplierId)
-                .map(supplier -> {
-                    if (supplier.getCustomerNumber() == null) {
-                        return ResponseEntity.ok(List.<CustomerIdResponseDTO>of());
-                    }
-                    return ResponseEntity.ok(List.of(new CustomerIdResponseDTO(supplierId, supplier.getCustomerNumber())));
-                }).orElseThrow(() -> new NotFoundException("Lieferant mit id " + supplierId + " nicht gefunden."));
     }
 
 }

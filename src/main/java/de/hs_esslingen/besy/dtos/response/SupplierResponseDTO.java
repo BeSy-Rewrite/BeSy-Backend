@@ -18,7 +18,6 @@ public class SupplierResponseDTO implements Serializable {
     String comment;
     String website;
     String vatId;
-    String customerNumber;
     Boolean flagPreferred;
     LocalDate deactivatedDate;
 }

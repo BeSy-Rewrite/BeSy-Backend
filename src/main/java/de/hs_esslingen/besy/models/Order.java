@@ -111,12 +111,20 @@ public class Order {
     @JoinColumn(name = "queries_person_id", nullable = true)
     private Person queriesPerson;
 
+    @Column(name = "customer_id", insertable = false, updatable = false)
+    private String customerId;
+
     @Column(name = "supplier_id", insertable = false, updatable = false)
     private Integer supplierId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "supplier_id", referencedColumnName = "id", nullable = true)
-    private Supplier supplier;
+    @JoinColumns({
+            @JoinColumn(name = "customer_id", referencedColumnName = "customer_id", nullable = true),
+            @JoinColumn(name = "supplier_id", referencedColumnName = "supplier_id", nullable = true
+
+            )
+    })
+    private CustomerId customer;
 
     @Column(name = "secondary_cost_center_id", insertable = false, updatable = false)
     private String secondaryCostCenterId;

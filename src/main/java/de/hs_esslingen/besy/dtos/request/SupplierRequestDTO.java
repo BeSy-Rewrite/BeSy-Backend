@@ -17,6 +17,5 @@ public class SupplierRequestDTO implements Serializable {
     String website;
     String vatId;
     Boolean flagPreferred;
-    String customerNumber;
     AddressRequestDTO address;
 }
