@@ -67,7 +67,7 @@ public class OrderController {
             @RequestParam(name = "lastUpdatedTimeBefore", required = false) OffsetDateTime lastUpdatedTimeBefore,
             @RequestParam(name = "autoIndexGTE", required = false) Short autoIndexGTE,
             @RequestParam(name = "autoIndexLTE", required = false) Short autoIndexLTE,
-            @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.ASC) Pageable pageable
+            @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable
             ) {
         return orderService.getAllOrders(
                 primaryCostCenterIds,
