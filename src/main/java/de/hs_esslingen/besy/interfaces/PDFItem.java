@@ -16,22 +16,22 @@ public class PDFItem {
     PDField amount;
 
     public void setPosition(String pos) throws IOException {
-        this.position.setValue(pos);
+        if (this.position != null) this.position.setValue(pos != null ? pos : "");
     }
 
     public void setDescription(String desc) throws IOException {
-        this.description.setValue(desc);
+        if (this.description != null) this.description.setValue(desc != null ? desc : "");
     }
 
     public void setQuantity(String quantity) throws IOException {
-        this.quantity.setValue(quantity);
+        if (this.quantity != null) this.quantity.setValue(quantity != null ? quantity : "");
     }
 
     public void setPrice(String price) throws IOException {
-        this.price.setValue(price);
+        if (this.price != null) this.price.setValue(price != null ? price : "");
     }
 
     public void setAmount(String amount) throws IOException {
-        this.amount.setValue(amount);
+        if (this.amount != null) this.amount.setValue(amount != null ? amount : "");
     }
 }

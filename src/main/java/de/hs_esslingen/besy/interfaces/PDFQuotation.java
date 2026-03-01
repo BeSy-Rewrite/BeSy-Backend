@@ -23,14 +23,14 @@ public class PDFQuotation {
     }
 
     public void setCompanyName(String companyName) throws IOException {
-        this.companyName.setValue(companyName);
+        if (this.companyName != null) this.companyName.setValue(companyName != null ? companyName : "");
     }
 
     public void setDate(String date) throws IOException {
-        this.date.setValue(date);
+        if (this.date != null) this.date.setValue(date != null ? date : "");
     }
 
     public void setPrice(String price) throws IOException {
-        this.price.setValue(price);
+        if (this.price != null) this.price.setValue(price != null ? price : "");
     }
 }

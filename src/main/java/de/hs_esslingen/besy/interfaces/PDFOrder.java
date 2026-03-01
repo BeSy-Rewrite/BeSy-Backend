@@ -223,6 +223,7 @@ public class PDFOrder {
     }
 
     public void setConstructionAndAssemblyFlag(boolean flag) throws IOException {
+        if (this.constructionAndAssemblyFlag == null) return;
         if (flag) {
             this.constructionAndAssemblyFlag.check();
         } else {
@@ -231,6 +232,7 @@ public class PDFOrder {
     }
 
     public void  setDeliveryAndServiceFlag(boolean flag) throws IOException {
+        if (this.deliveryAndServiceFlag == null) return;
         if (flag) {
             this.deliveryAndServiceFlag.check();
         }else {
@@ -239,63 +241,63 @@ public class PDFOrder {
     }
 
     public void setCompanyAddress(String address) throws IOException {
-        this.companyAddress.setValue(address);
+        if (this.companyAddress != null) this.companyAddress.setValue(address != null ? address : "");
     }
 
     public void setInvoiceId(String invoiceId) throws IOException {
-        this.invoiceId.setValue(invoiceId);
+        if (this.invoiceId != null) this.invoiceId.setValue(invoiceId != null ? invoiceId : "");
     }
 
     public void setDate(String date) throws IOException {
-        this.date.setValue(date);
+        if (this.date != null) this.date.setValue(date != null ? date : "");
     }
 
     public void setOrderer(String orderer) throws IOException {
-        this.orderer.setValue(orderer);
+        if (this.orderer != null) this.orderer.setValue(orderer != null ? orderer : "");
     }
 
     public void setPhone(String phone) throws IOException {
-        this.phone.setValue(phone);
+        if (this.phone != null) this.phone.setValue(phone != null ? phone : "");
     }
 
     public void setMobilePhone(String mobilePhone) throws IOException {
-        this.mobilePhone.setValue(mobilePhone);
+        if (this.mobilePhone != null) this.mobilePhone.setValue(mobilePhone != null ? mobilePhone : "");
     }
 
     public void setEmail(String email) throws IOException {
-        this.email.setValue(email);
+        if (this.email != null) this.email.setValue(email != null ? email : "");
     }
 
     public void setDeliveryFaculty(String deliveryFaculty) throws IOException {
-        this.deliveryFaculty.setValue(deliveryFaculty);
+        if (this.deliveryFaculty != null) this.deliveryFaculty.setValue(deliveryFaculty != null ? deliveryFaculty : "");
     }
 
     public void setDeliveryOrderer(String deliveryOrderer) throws IOException {
-        this.deliveryOrderer.setValue(deliveryOrderer);
+        if (this.deliveryOrderer != null) this.deliveryOrderer.setValue(deliveryOrderer != null ? deliveryOrderer : "");
     }
 
     public void setDeliveryStreet(String deliveryStreet) throws IOException {
-        this.deliveryStreet.setValue(deliveryStreet);
+        if (this.deliveryStreet != null) this.deliveryStreet.setValue(deliveryStreet != null ? deliveryStreet : "");
     }
 
     public void setDeliveryAddress(String deliveryAddress) throws IOException {
-        this.deliveryAddress.setValue(deliveryAddress);
+        if (this.deliveryAddress != null) this.deliveryAddress.setValue(deliveryAddress != null ? deliveryAddress : "");
     }
 
     public void setInvoiceFaculty(String invoiceFaculty) throws IOException {
-        this.invoiceFaculty.setValue(invoiceFaculty);
+        if (this.invoiceFaculty != null) this.invoiceFaculty.setValue(invoiceFaculty != null ? invoiceFaculty : "");
     }
 
     public void setInvoiceOrderer(String invoiceOrderer) throws IOException {
-        this.invoiceOrderer.setValue(invoiceOrderer);
+        if (this.invoiceOrderer != null) this.invoiceOrderer.setValue(invoiceOrderer != null ? invoiceOrderer : "");
     }
 
     public void setInvoiceStreet(String invoiceStreet) throws IOException {
-        this.invoiceStreet.setValue(invoiceStreet);
+        if (this.invoiceStreet != null) this.invoiceStreet.setValue(invoiceStreet != null ? invoiceStreet : "");
     }
 
     public void setInvoiceDeliveryAddress(String invoiceDeliveryAddress) throws IOException {
-        this.invoiceDeliveryAddress.setValue(invoiceDeliveryAddress);
+        if (this.invoiceDeliveryAddress != null) this.invoiceDeliveryAddress.setValue(invoiceDeliveryAddress != null ? invoiceDeliveryAddress : "");
     }
 
     public void setItems(List<ItemResponseDTO> items) throws IOException {
@@ -315,15 +317,15 @@ public class PDFOrder {
     }
 
     public void setSubTotal(String subTotal) throws IOException {
-        this.subTotal.setValue(subTotal);
+        if (this.subTotal != null) this.subTotal.setValue(subTotal != null ? subTotal : "");
     }
 
     public void setNetTotal(String netTotal) throws IOException {
-        this.netTotal.setValue(netTotal);
+        if (this.netTotal != null) this.netTotal.setValue(netTotal != null ? netTotal : "");
     }
 
     public void setTotal(String total) throws IOException {
-        this.total.setValue(total);
+        if (this.total != null) this.total.setValue(total != null ? total : "");
     }
 
 
@@ -339,42 +341,43 @@ public class PDFOrder {
     }
 
     public void setPercentageDiscount(String percentageDiscount) throws IOException {
-        this.percentageDiscount.setValue(percentageDiscount);
+        if (this.percentageDiscount != null) this.percentageDiscount.setValue(percentageDiscount != null ? percentageDiscount : "");
     }
 
     public void setVat(String vat) throws IOException {
-        this.vat.setValue(vat);
+        if (this.vat != null) this.vat.setValue(vat != null ? vat : "");
     }
 
     public void setCommentForSupplier(String commentForSupplier) throws IOException {
-        this.commentForSupplier.setValue(commentForSupplier);
+        if (this.commentForSupplier != null) this.commentForSupplier.setValue(commentForSupplier != null ? commentForSupplier : "");
     }
 
     public void setCostCenter(String costCenter) throws IOException {
-        this.costCenter.setValue(costCenter);
+        if (this.costCenter != null) this.costCenter.setValue(costCenter != null ? costCenter : "");
     }
 
     public void setCostCenterSecondary(String costCenterSecondary) throws IOException {
-        this.costCenterSecondary.setValue(costCenterSecondary);
+        if (this.costCenterSecondary != null) this.costCenterSecondary.setValue(costCenterSecondary != null ? costCenterSecondary : "");
     }
 
     public void setDfgKey(String dfgKey) throws IOException {
-        this.dfgKey.setValue(dfgKey);
+        if (this.dfgKey != null) this.dfgKey.setValue(dfgKey != null ? dfgKey : "");
     }
 
     public void setOrderNumber(String orderNumber) throws IOException {
-        this.orderNumber.setValue(orderNumber);
+        if (this.orderNumber != null) this.orderNumber.setValue(orderNumber != null ? orderNumber : "");
     }
 
     public void setSupplierEmail(String supplierEmail) throws IOException {
-        this.supplierEmail.setValue(supplierEmail);
+        if (this.supplierEmail != null) this.supplierEmail.setValue(supplierEmail != null ? supplierEmail : "");
     }
 
     public void setLfdNr(String lfdNr) throws IOException {
-        this.lfdNr.setValue(lfdNr);
+        if (this.lfdNr != null) this.lfdNr.setValue(lfdNr != null ? lfdNr : "");
     }
 
     public void setFlagDecisionCheapestOffer(boolean flag) throws IOException {
+        if (this.flagDecisionCheapestOffer == null) return;
         if (flag) {
             this.flagDecisionCheapestOffer.check();
         } else {
@@ -383,6 +386,7 @@ public class PDFOrder {
     }
 
     public void setFlagDecisionMostEconomicalOffer(boolean flag) throws IOException {
+        if (this.flagDecisionMostEconomicalOffer == null) return;
         if (flag) {
             this.flagDecisionMostEconomicalOffer.check();
         } else {
@@ -391,6 +395,7 @@ public class PDFOrder {
     }
 
     public void setFlagDecisionSoleSupplier(boolean flag) throws IOException {
+        if (this.flagDecisionSoleSupplier == null) return;
         if (flag) {
             this.flagDecisionSoleSupplier.check();
         } else {
@@ -399,6 +404,7 @@ public class PDFOrder {
     }
 
     public void setFlagDecisionContractPartner(boolean flag) throws IOException {
+        if (this.flagDecisionContractPartner == null) return;
         if (flag) {
             this.flagDecisionContractPartner.check();
         } else {
@@ -407,6 +413,7 @@ public class PDFOrder {
     }
 
     public void setFlagDecisionPreferredSupplierList(boolean flag) throws IOException {
+        if (this.flagDecisionPreferredSupplierList == null) return;
         if (flag) {
             this.flagDecisionPreferredSupplierList.check();
         } else {
@@ -415,6 +422,7 @@ public class PDFOrder {
     }
 
     public void setFlagDecisionOtherReasons(boolean flag) throws IOException {
+        if (this.flagDecisionOtherReasons == null) return;
         if (flag) {
             this.flagDecisionOtherReasons.check();
         } else {
@@ -423,10 +431,11 @@ public class PDFOrder {
     }
 
     public void setFlagDecisionOtherReasonsDescription(String description) throws IOException {
-        this.flagDecisionOtherReasonsDescription.setValue(description);
+        if (this.flagDecisionOtherReasonsDescription != null) this.flagDecisionOtherReasonsDescription.setValue(description != null ? description : "");
     }
 
     public void setOrderFlagEdvPermission(boolean flag) throws IOException {
+        if (this.orderFlagEdvPermission == null) return;
         if (flag) {
             this.orderFlagEdvPermission.check();
         } else {
@@ -435,6 +444,7 @@ public class PDFOrder {
     }
 
     public void setOrderFlagFurniturePermission(boolean flag) throws IOException {
+        if (this.orderFlagFurniturePermission == null) return;
         if (flag) {
             this.orderFlagFurniturePermission.check();
         } else {
@@ -443,6 +453,7 @@ public class PDFOrder {
     }
 
     public void setOrderFlagFurnitureRoom(boolean flag) throws IOException {
+        if (this.orderFlagFurnitureRoom == null) return;
         if (flag) {
             this.orderFlagFurnitureRoom.check();
         } else {
@@ -451,6 +462,7 @@ public class PDFOrder {
     }
 
     public void setOrderFlagInvestmentRoom(boolean flag) throws IOException {
+        if (this.orderFlagInvestmentRoom == null) return;
         if (flag) {
             this.orderFlagInvestmentRoom.check();
         } else {
@@ -459,6 +471,7 @@ public class PDFOrder {
     }
 
     public void setOrderFlagInvestmentStructuralMeasures(boolean flag) throws IOException {
+        if (this.orderFlagInvestmentStructuralMeasures == null) return;
         if (flag) {
             this.orderFlagInvestmentStructuralMeasures.check();
         } else {
@@ -467,6 +480,7 @@ public class PDFOrder {
     }
 
     public void setOrderFlagMediaPermission(boolean flag) throws IOException {
+        if (this.orderFlagMediaPermission == null) return;
         if (flag) {
             this.orderFlagMediaPermission.check();
         } else {

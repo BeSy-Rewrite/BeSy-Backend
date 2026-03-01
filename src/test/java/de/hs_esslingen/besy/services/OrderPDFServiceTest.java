@@ -315,6 +315,67 @@ class OrderPDFServiceTest {
         verify(itemResponseMapper).toDto(items);
     }
 
+    @Test
+    void should_generate_pdf_when_order_fields_are_null() throws IOException {
+        Long orderId = 100L;
+
+        // Set critical fields to null to test robustness
+        order.setDeliveryPersonId(null);
+        order.setInvoicePersonId(null);
+        order.setDeliveryAddress(null);
+        order.setInvoiceAddress(null);
+        order.setOwner(null);
+        order.setCreatedDate(null);
+        order.setApproval(null);
+        order.setPercentageDiscount(null);
+        order.setCommentForSupplier(null);
+        order.setDfgKey(null);
+        order.setDecisionOtherReasonsDescription(null);
+        order.setFlagDecisionCheapestOffer(null);
+        order.setFlagDecisionMostEconomicalOffer(null);
+        order.setFlagDecisionSoleSupplier(null);
+        order.setFlagDecisionContractPartner(null);
+        order.setFlagDecisionPreferredSupplierList(null);
+        order.setFlagDecisionOtherReasons(null);
+
+        List<Item> items = List.of();
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(supplierRepository.findById(order.getSupplierId())).thenReturn(Optional.empty());
+        when(itemRepository.findByOrder_Id(orderId)).thenReturn(items);
+        when(invoiceRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
+        when(quotationRepository.getQuotationByOrderId(orderId)).thenReturn(List.of());
+        when(itemResponseMapper.toDto(items)).thenReturn(List.of());
+
+        ResponseEntity<byte[]> response = orderPDFService.generateOrderPDF(orderId);
+
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().length > 0);
+
+        try (PDDocument document = Loader.loadPDF(response.getBody())) {
+            PDAcroForm form = document.getDocumentCatalog().getAcroForm();
+            assertNotNull(form);
+
+            String orderNumber = fieldValue(form, "Formular1[0].#subform[0].Header[0].Rechnungsnummer[0]");
+            assertEquals(OrderPDFService.generateOrderNumber("CC-1", "25", (short) 7), orderNumber);
+
+            String subTotal = fieldValue(form, "Formular1[0].#subform[0].Body[0].Zwischensumme[0]");
+            String netTotal = fieldValue(form, "Formular1[0].#subform[0].Body[0].Nettosumme[1]");
+            String total = fieldValue(form, "Formular1[0].#subform[0].Body[0].Gesamtsumme[0]");
+            assertTrue(subTotal.contains("0"));
+            assertTrue(netTotal.contains("0"));
+            assertTrue(total.contains("0"));
+        }
+
+        verify(orderRepository).findById(orderId);
+        verify(supplierRepository).findById(order.getSupplierId());
+        verify(itemRepository).findByOrder_Id(orderId);
+        verify(invoiceRepository).findByOrderId(orderId);
+        verify(personRepository, never()).findById(anyLong());
+        verify(quotationRepository).getQuotationByOrderId(orderId);
+        verify(itemResponseMapper).toDto(items);
+    }
+
     private static Address address(String street, String buildingNumber, String postalCode, String town) {
         Address address = new Address();
         address.setStreet(street);
