@@ -424,6 +424,25 @@ class OrderServiceTest {
     }
 
     @Test
+    void should_validate_completed_transition_with_null_customer_id() {
+        order.setStatus(OrderStatus.IN_PROGRESS);
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+        when(orderCompletedValidationMapper.toEntity(order)).thenReturn(new OrderCompletedValidationDAO(
+                1L, "CC-1", "25", (short) 1, null, null, 1, "desc", OrderStatus.IN_PROGRESS,
+                "EUR", null, null, null, null, null, null, 1L, 1L, 1L,
+                null, 1, "CC-2", null, null, null, null, null,
+                null, null, null, null, null, null, null, null,
+                null, 1
+        ));
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, OrderStatus.COMPLETED, null);
+
+        assertEquals(OrderStatus.COMPLETED, response.getBody());
+        verify(orderStatusHistoryRepository).save(any(OrderStatusHistory.class));
+    }
+
+    @Test
     void should_throw_not_authorized_when_approving_without_role() {
         order.setStatus(OrderStatus.APPROVALS_RECEIVED);
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
@@ -450,10 +469,10 @@ class OrderServiceTest {
 
     @Test
     void should_exists_order_by_id_when_not_deleted() {
-        when(orderRepository.existsByIdAndStatusNot(1L, OrderStatus.DELETED)).thenReturn(true);
+        when(orderRepository.existsById(1L)).thenReturn(true);
 
         assertTrue(orderService.existsOrderById(1L));
-        verify(orderRepository).existsByIdAndStatusNot(1L, OrderStatus.DELETED);
+        verify(orderRepository).existsById(1L);
     }
 
     @Test
@@ -592,8 +611,14 @@ class OrderServiceTest {
     }
 
     @Test
-    void should_return_false_when_exists_by_id_and_status_not_for_deleted() {
-        when(orderRepository.existsByIdAndStatusNot(1L, OrderStatus.DELETED)).thenReturn(false);
+    void should_return_true_when_exists_by_id_for_deleted_order() {
+        when(orderRepository.existsById(1L)).thenReturn(true);
+        assertTrue(orderService.existsOrderById(1L));
+    }
+
+    @Test
+    void should_return_false_when_order_id_does_not_exist() {
+        when(orderRepository.existsById(1L)).thenReturn(false);
         assertFalse(orderService.existsOrderById(1L));
     }
 
