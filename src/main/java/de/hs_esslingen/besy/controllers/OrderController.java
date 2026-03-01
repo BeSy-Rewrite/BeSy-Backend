@@ -224,7 +224,7 @@ public class OrderController {
             @RequestBody ApprovalRequestDTO dto
     ){
         if(!orderService.existsOrderById(orderId)) throw new NotFoundException("Bestellung nicht gefunden.");
-        if(!orderService.isOrderStatusEqual(orderId, OrderStatus.COMPLETED)) throw new BadRequestException("Bestellstatus befindet sich nicht auf fertiggestellt!");
+        if(!orderService.isOrderStatusEqual(orderId, Set.of(OrderStatus.COMPLETED, OrderStatus.IN_PROGRESS))) throw new BadRequestException("Bestellstatus befindet sich nicht auf fertiggestellt!");
         return this.approvalService.updateApprovalOfOrder(orderId, dto);
     }
 
