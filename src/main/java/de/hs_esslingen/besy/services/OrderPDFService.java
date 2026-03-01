@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import org.apache.pdfbox.Loader;
@@ -53,6 +54,8 @@ public class OrderPDFService {
     private final QuotationRepository quotationRepository;
 
     private final ItemResponseMapper itemResponseMapper;
+
+    private final Locale locale;
 
     static final String FORMULAR_URI = "static/Bestellformular_V01_empty.pdf";
 
@@ -133,7 +136,7 @@ public class OrderPDFService {
             order.setOrderNumber(OrderPDFService.generateOrderNumber(orderDAO.getPrimaryCostCenterId(),
                     orderDAO.getBookingYear(), orderDAO.getAutoIndex()));
             // Datum:
-            order.setDate(orderDAO.getCreatedDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)));
+            order.setDate(orderDAO.getCreatedDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)));
             // Besteller:in
             order.setOrderer(orderDAO.getOwner().getName() + " " + orderDAO.getOwner().getSurname());
 
