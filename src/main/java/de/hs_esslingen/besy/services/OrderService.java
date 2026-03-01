@@ -44,7 +44,7 @@ public class OrderService {
     private final CurrencyRepository currencyRepository;
     private final PersonRepository personRepository;
     private final CostCenterRepository costCenterRepository;
-    private final CustomerIdRepository customerIdRepository;
+    private final SupplierRepository supplierRepository;
     private final AddressRepository addressRepository;
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
 
@@ -88,7 +88,6 @@ public class OrderService {
             List<Long> deliveryPersonIds,
             List<Long> invoicePersonIds,
             List<Long> queriesPersonIds,
-            List<String> customerIds,
             List<Integer> supplierIds,
             List<String> secondaryCostCenterIds,
             OffsetDateTime lastUpdatedTimeAfter,
@@ -109,7 +108,6 @@ public class OrderService {
                         .and(SpecificationHelper.contains(deliveryPersonIds, "deliveryPersonId"))
                         .and(SpecificationHelper.contains(invoicePersonIds, "invoicePersonId"))
                         .and(SpecificationHelper.contains(queriesPersonIds, "queriesPersonId"))
-                        .and(SpecificationHelper.contains(customerIds, "customerId"))
                         .and(SpecificationHelper.contains(supplierIds, "supplierId"))
                         .and(SpecificationHelper.contains(secondaryCostCenterIds, "secondaryCostCenterId"))
                         .and(SpecificationHelper.isBetween(lastUpdatedTimeAfter, lastUpdatedTimeBefore, "lastUpdatedTime"))
@@ -340,11 +338,9 @@ public class OrderService {
             User user = userRepository.getReferenceById(dto.getOwnerId());
             order.setOwner(user);
         }
-        if(dto.getCustomerId() != null) {
-            CustomerId customerId = customerIdRepository.getReferenceById(
-                    new CustomerIdId(dto.getCustomerId(), dto.getSupplierId())
-            );
-            order.setCustomer(customerId);
+        if(dto.getSupplierId() != null) {
+            Supplier supplier = supplierRepository.getReferenceById(dto.getSupplierId());
+            order.setSupplier(supplier);
         }
         if(dto.getDeliveryAddressId() != null) {
             Address deliveryAddress = addressRepository.getReferenceById(dto.getDeliveryAddressId());

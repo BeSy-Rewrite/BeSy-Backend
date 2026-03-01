@@ -144,7 +144,8 @@ INSERT INTO migrated_data.supplier (
     comment,
     website,
     address_id,
-    name
+    name,
+    customer_number
 )
 SELECT
     supplier_deactivated_date,
@@ -156,7 +157,8 @@ SELECT
     supplier_comment,
     supplier_website,
     a.id,
-    supplier_name
+    supplier_name,
+    (SELECT b.customer_id FROM besy.customer_id b WHERE b.supplier_name = s.supplier_name LIMIT 1)
 FROM besy.supplier s
          JOIN migrated_data.address a ON a.legacy_supplier_name = s.supplier_name;
 
@@ -174,21 +176,6 @@ SELECT
     u.user_name
 FROM besy."user" u
          JOIN besy.person p ON u.person_id = p.person_id;
-
-
--- This needs to go after suppliers
-INSERT INTO migrated_data.customer_id (
-    comment,
-    customer_id,
-    supplier_id
-)
-SELECT
-    b.customer_id_comment,
-    b.customer_id,
-    s.id
-FROM besy.customer_id b
-         JOIN migrated_data.supplier s
-              ON s.name = b.supplier_name;
 
 
 INSERT INTO migrated_data."order" (
@@ -215,7 +202,6 @@ INSERT INTO migrated_data."order" (
     comment,
     content_description,
     currency_short,
-    customer_id,
     owner_user_id,
     primary_cost_center_id,
     quote_number,
@@ -256,7 +242,6 @@ SELECT
     o.order_comment,
     o.order_content_description,
     o.currency_short,
-    o.customer_id,
     u.id,
     o.primary_cost_center_id,
     o.order_quote_number,

@@ -15,21 +15,20 @@ import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
 import de.hs_esslingen.besy.mappers.response.OrderStatusHistoryResponseMapper;
 import de.hs_esslingen.besy.models.Address;
 import de.hs_esslingen.besy.models.CostCenter;
-import de.hs_esslingen.besy.models.CustomerId;
-import de.hs_esslingen.besy.models.CustomerIdId;
 import de.hs_esslingen.besy.models.Order;
 import de.hs_esslingen.besy.models.OrderStatusHistory;
 import de.hs_esslingen.besy.models.Person;
+import de.hs_esslingen.besy.models.Supplier;
 import de.hs_esslingen.besy.models.User;
 import de.hs_esslingen.besy.models.Currency;
 import de.hs_esslingen.besy.repositories.AddressRepository;
 import de.hs_esslingen.besy.repositories.CostCenterRepository;
 import de.hs_esslingen.besy.repositories.CurrencyRepository;
-import de.hs_esslingen.besy.repositories.CustomerIdRepository;
 import de.hs_esslingen.besy.repositories.OrderPageableRepository;
 import de.hs_esslingen.besy.repositories.OrderRepository;
 import de.hs_esslingen.besy.repositories.OrderStatusHistoryRepository;
 import de.hs_esslingen.besy.repositories.PersonRepository;
+import de.hs_esslingen.besy.repositories.SupplierRepository;
 import de.hs_esslingen.besy.repositories.UserRepository;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.Ignore;
@@ -94,7 +93,7 @@ class OrderServiceTest {
     private CostCenterRepository costCenterRepository;
 
     @Mock
-    private CustomerIdRepository customerIdRepository;
+    private SupplierRepository supplierRepository;
 
     @Mock
     private AddressRepository addressRepository;
@@ -155,7 +154,6 @@ class OrderServiceTest {
                 10L,
                 11L,
                 12L,
-                "CUST-1",
                 2,
                 "CC-2",
                 BigDecimal.valueOf(0),
@@ -194,7 +192,6 @@ class OrderServiceTest {
                 10L,
                 11L,
                 12L,
-                "CUST-1",
                 2,
                 "CC-2",
                 BigDecimal.valueOf(0),
@@ -247,7 +244,6 @@ class OrderServiceTest {
                 null,
                 null,
                 null,
-                List.of("CUST-1"),
                 List.of(2),
                 List.of("CC-2"),
                 null,
@@ -382,7 +378,7 @@ class OrderServiceTest {
                     when(orderCompletedValidationMapper.toEntity(currentOrder)).thenReturn(new OrderCompletedValidationDAO(
                             1L, "CC-1", "25", (short) 1, null, null, 1, "desc", OrderStatus.IN_PROGRESS,
                             "EUR", null, null, null, null, null, null, 1L, 1L, 1L,
-                            "CUST", 1, "CC-2", null, null, null, null, null,
+                            1, "CC-2", null, null, null, null, null,
                             null, null, null, null, null, null, null, null,
                             null, 1
                     ));
@@ -413,7 +409,7 @@ class OrderServiceTest {
         when(orderCompletedValidationMapper.toEntity(order)).thenReturn(new OrderCompletedValidationDAO(
                 1L, "CC-1", "25", (short) 1, null, null, 1, "desc", OrderStatus.IN_PROGRESS,
                 "EUR", null, null, null, null, null, null, 1L, 1L, 1L,
-                "CUST", 1, "CC-2", null, null, null, null, null,
+                1, "CC-2", null, null, null, null, null,
                 null, null, null, null, null, null, null, null,
                 null, 1
         ));
@@ -499,7 +495,7 @@ class OrderServiceTest {
         when(personRepository.getReferenceById(12L)).thenReturn(new Person());
         when(costCenterRepository.getReferenceById("CC-2")).thenReturn(new CostCenter());
         when(userRepository.getReferenceById(1)).thenReturn(new User());
-        when(customerIdRepository.getReferenceById(new CustomerIdId("CUST-1", 2))).thenReturn(new CustomerId());
+        when(supplierRepository.getReferenceById(2)).thenReturn(new Supplier());
         when(addressRepository.getReferenceById(100)).thenReturn(new Address());
         when(addressRepository.getReferenceById(101)).thenReturn(new Address());
         when(costCenterRepository.getReferenceById("CC-1")).thenReturn(new CostCenter());
@@ -512,7 +508,7 @@ class OrderServiceTest {
         verify(personRepository).getReferenceById(12L);
         verify(costCenterRepository).getReferenceById("CC-2");
         verify(userRepository).getReferenceById(1);
-        verify(customerIdRepository).getReferenceById(new CustomerIdId("CUST-1", 2));
+        verify(supplierRepository).getReferenceById(2);
         verify(addressRepository).getReferenceById(100);
         verify(addressRepository).getReferenceById(101);
         verify(costCenterRepository).getReferenceById("CC-1");
@@ -527,7 +523,6 @@ class OrderServiceTest {
                 null,
                 null,
                 "Content",
-                null,
                 null,
                 null,
                 null,
@@ -576,7 +571,7 @@ class OrderServiceTest {
     void should_not_map_foreign_relationships_when_ids_null() {
         OrderRequestDTO dto = new OrderRequestDTO(
                 null, null, null, null, "Content", null, null, null, null, null, null,
-                null, null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null, null,
                 null, null, null, null, null, null, null, null, null, null
         );
         Order mapped = new Order();
@@ -588,7 +583,7 @@ class OrderServiceTest {
 
         orderService.createOrder(dto, null);
 
-        verifyNoInteractions(currencyRepository, personRepository, costCenterRepository, customerIdRepository, addressRepository, userRepository);
+        verifyNoInteractions(currencyRepository, personRepository, costCenterRepository, supplierRepository, addressRepository, userRepository);
     }
 
     @Test

@@ -239,7 +239,7 @@ paths:
     get:
       tags:
         - Suppliers
-      operationId: getCustomerIdsOfOrder
+      operationId: getCustomerIdsOfSupplier
       parameters:
         - name: supplier-id
           in: path
@@ -259,39 +259,6 @@ paths:
                   $ref: '#/components/schemas/CustomerIdResponseDTO'
         '404':
           description: Lieferant nicht gefunden.
-    post:
-      tags:
-        - Suppliers
-      operationId: createSupplierCustomerId
-      parameters:
-        - name: supplier-id
-          in: path
-          required: true
-          description: Die eindeutige ID des Lieferanten, für welchen die Kundennummern erstellt werden soll.
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CustomerIdRequestDTO'
-      responses:
-        '201':
-          description: Kundennummer erfolgreich erstellt.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomerIdResponseDTO'
-        '404':
-          description: Lieferant nicht gefunden.
-        '409':
-          description: |
-            Lieferantennummer bereits vorhanden für diesen Lieferanten.
-            Verweis auf eine nicht existierende Entität.
-        '500':
-          description: Interner Serverfehler.
   /suppliers/addresses:
     get:
       tags:
@@ -461,15 +428,6 @@ paths:
             items:
               type: integer
               format: int64
-
-        - name: customerIds
-          in: query
-          description: Filter nach Kundennummern.
-          required: false
-          schema:
-            type: array
-            items:
-              type: string
 
         - name: supplierIds
           in: query
@@ -1521,8 +1479,6 @@ components:
         queries_person_id:
           type: integer
           format: int64
-        customer_id:
-          type: string
         supplier_id:
           type: integer
           format: int32
@@ -1626,8 +1582,6 @@ components:
         queries_person_id:
           type: integer
           format: int64
-        customer_id:
-          type: string
         supplier_id:
           type: integer
           format: int32
@@ -1869,6 +1823,9 @@ components:
           type: string
         website:
           type: string
+        customer_number:
+          type: string
+          description: Optionale Kundennummer beim Lieferanten
         address:
           $ref: '#/components/schemas/AddressRequestDTO'
     SupplierResponseDTO:
@@ -1900,30 +1857,19 @@ components:
           type: string
         website:
           type: string
-    CustomerIdRequestDTO:
-      type: object
-      required:
-        - customer_id
-      properties:
-        customer_id:
+        customer_number:
           type: string
-          description: Kundenkennung (extern oder intern)
-        comment:
-          type: string
-          description: Optionaler Kommentar zur Kundenkennung
+          description: Optionale Kundennummer beim Lieferanten
     CustomerIdResponseDTO:
       type: object
       properties:
         supplier_id:
           type: integer
-          format: int64
+          format: int32
           description: ID des zugehörigen Lieferanten
         customer_id:
           type: string
-          description: Kundenkennung (extern oder intern)
-        comment:
-          type: string
-          description: Optionaler Kommentar zur Kundenkennung
+          description: Kundennummer des Lieferanten
     OrderStatus:
       type: string
       enum:
