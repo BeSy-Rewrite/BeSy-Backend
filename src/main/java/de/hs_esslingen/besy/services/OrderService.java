@@ -34,6 +34,7 @@ import de.hs_esslingen.besy.mappers.response.OrderStatusHistoryResponseMapper;
 import de.hs_esslingen.besy.models.Address;
 import de.hs_esslingen.besy.models.CostCenter;
 import de.hs_esslingen.besy.models.Currency;
+import de.hs_esslingen.besy.models.CustomerIdId;
 import de.hs_esslingen.besy.models.Order;
 import de.hs_esslingen.besy.models.OrderStatusHistory;
 import de.hs_esslingen.besy.models.Person;
@@ -42,6 +43,7 @@ import de.hs_esslingen.besy.models.User;
 import de.hs_esslingen.besy.repositories.AddressRepository;
 import de.hs_esslingen.besy.repositories.CostCenterRepository;
 import de.hs_esslingen.besy.repositories.CurrencyRepository;
+import de.hs_esslingen.besy.repositories.CustomerIdRepository;
 import de.hs_esslingen.besy.repositories.OrderPageableRepository;
 import de.hs_esslingen.besy.repositories.OrderRepository;
 import de.hs_esslingen.besy.repositories.OrderStatusHistoryRepository;
@@ -65,6 +67,7 @@ public class OrderService {
     private final AddressRepository addressRepository;
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
     private final SupplierRepository supplierRepository;
+    private final CustomerIdRepository customerIdRepository;
 
     private final UserService userService;
 
@@ -149,7 +152,7 @@ public class OrderService {
     public ResponseEntity<OrderResponseDTO> createOrder(OrderRequestDTO dto, Jwt jwt) {
         Order order = orderRequestMapper.toEntity(dto);
 
-        this.mapForeignRelationships(order, dto, null);
+        this.mapForeignRelationships(order, dto, jwt);
 
         Order latestAutoIndexOrder = orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(
                 dto.getPrimaryCostCenterId(), dto.getBookingYear());
@@ -373,18 +376,17 @@ public class OrderService {
         }
 
         if (dto.getCustomerId() != null) {
-            Integer supplierId = dto.getSupplierId() != null ? dto.getSupplierId() : order.getSupplierId();
+            Integer supplierId = dto.getSupplierId() != null ? dto.getSupplierId() : order.getSupplier().getId();
 
             if (supplierId == null) {
                 throw new BadRequestException("Supplier muss gesetzt sein um eine Customer ID zu setzen");
             }
-
-            try {
-                order.setCustomerId(dto.getCustomerId());
-            } catch (Exception e) {
+            if (!customerIdRepository.existsById(new CustomerIdId(dto.getCustomerId(), supplierId))) {
                 throw new BadRequestException(
                         "Customer ID '" + dto.getCustomerId() + "' ist nicht valide für Supplier ID " + supplierId);
             }
+
+            order.setCustomerId(dto.getCustomerId());
         }
 
         if (dto.getDeliveryAddressId() != null) {
