@@ -1,19 +1,38 @@
 package de.hs_esslingen.besy.models;
 
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.*;
-import de.hs_esslingen.besy.enums.OrderStatus;
-import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
+import de.hs_esslingen.besy.enums.OrderStatus;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinColumns;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -54,7 +73,7 @@ public class Order {
     private Integer ownerId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "owner_user_id",referencedColumnName = "id", nullable = true)
+    @JoinColumn(name = "owner_user_id", referencedColumnName = "id", nullable = true)
     private User owner;
 
     @Column(name = "content_description", nullable = false)
@@ -111,18 +130,20 @@ public class Order {
     @JoinColumn(name = "queries_person_id", nullable = true)
     private Person queriesPerson;
 
-    @Column(name = "customer_id", insertable = false, updatable = false)
-    private String customerId;
-
     @Column(name = "supplier_id", insertable = false, updatable = false)
     private Integer supplierId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumns({
-            @JoinColumn(name = "customer_id", referencedColumnName = "customer_id", nullable = true),
-            @JoinColumn(name = "supplier_id", referencedColumnName = "supplier_id", nullable = true
+    @JoinColumn(name = "supplier_id", referencedColumnName = "id", nullable = true, insertable = true, updatable = true)
+    private Supplier supplier;
 
-            )
+    @Column(name = "customer_id", insertable = false, updatable = true)
+    private String customerId;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumns({
+            @JoinColumn(name = "customer_id", referencedColumnName = "customer_id", nullable = true, insertable = false, updatable = false),
+            @JoinColumn(name = "supplier_id", referencedColumnName = "supplier_id", nullable = true, insertable = false, updatable = false)
     })
     private CustomerId customer;
 
@@ -208,5 +229,3 @@ public class Order {
     }
 
 }
-
-
