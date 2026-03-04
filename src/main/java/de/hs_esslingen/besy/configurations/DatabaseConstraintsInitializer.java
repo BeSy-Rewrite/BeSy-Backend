@@ -29,29 +29,30 @@ public class DatabaseConstraintsInitializer {
      * the schema.
      * Adds composite foreign key constraint for order.customer_id if it doesn't
      * exist.
+     * 
+     * This operation is idempotent and safe for multi-instance deployments.
+     * The PL/pgSQL block catches duplicate constraint exceptions from concurrent
+     * invocations and handles them gracefully.
      */
     @EventListener(ApplicationReadyEvent.class)
     public void addConstraints() {
         try {
-            Integer count = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM pg_constraint WHERE conname = 'fk_order_customer_id_supplier_id'",
-                    Integer.class);
+            logger.info("Attempting to add foreign key constraint fk_order_customer_id_supplier_id (idempotent)...");
 
-            if (count != null && count == 0) {
-                logger.info("Adding foreign key constraint fk_order_customer_id_supplier_id...");
+            String sql = "DO $$ BEGIN\n" +
+                    "  ALTER TABLE migrated_data.\"order\" " +
+                    "  ADD CONSTRAINT fk_order_customer_id_supplier_id " +
+                    "  FOREIGN KEY (customer_id, supplier_id) " +
+                    "  REFERENCES migrated_data.customer_id(customer_id, supplier_id) " +
+                    "  ON UPDATE CASCADE " +
+                    "  ON DELETE SET NULL;\n" +
+                    "EXCEPTION WHEN duplicate_object THEN\n" +
+                    "  NULL;\n" +
+                    "END $$;";
 
-                jdbcTemplate.execute(
-                        "ALTER TABLE migrated_data.\"order\" " +
-                                "ADD CONSTRAINT fk_order_customer_id_supplier_id " +
-                                "FOREIGN KEY (customer_id, supplier_id) " +
-                                "REFERENCES migrated_data.customer_id(customer_id, supplier_id) " +
-                                "ON UPDATE CASCADE " +
-                                "ON DELETE SET NULL");
+            jdbcTemplate.execute(sql);
 
-                logger.info("Successfully added foreign key constraint fk_order_customer_id_supplier_id");
-            } else {
-                logger.debug("Foreign key constraint fk_order_customer_id_supplier_id already exists");
-            }
+            logger.info("Successfully ensured foreign key constraint fk_order_customer_id_supplier_id exists");
         } catch (Exception e) {
             logger.error("Failed to add foreign key constraint: {}", e.getMessage(), e);
         }
