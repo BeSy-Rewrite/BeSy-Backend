@@ -138,7 +138,8 @@ public class OrderPDFService {
             order.setOrderNumber(OrderPDFService.generateOrderNumber(orderDAO.getPrimaryCostCenterId(),
                     orderDAO.getBookingYear(), orderDAO.getAutoIndex()));
             // Datum:
-            order.setDate(orderDAO.getCreatedDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)));
+            order.setDate(orderDAO.getCreatedDate()
+                    .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)));
             // Besteller:in
             order.setOrderer(orderDAO.getOwner().getName() + " " + orderDAO.getOwner().getSurname());
 
@@ -253,4 +254,5 @@ public class OrderPDFService {
                 """.formatted(
                 primaryCostCenterId, bookingYear, autoIndex)).trim();
     }
+
 }
