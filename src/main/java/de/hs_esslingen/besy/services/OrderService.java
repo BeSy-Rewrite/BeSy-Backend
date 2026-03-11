@@ -220,7 +220,7 @@ public class OrderService {
 
         this.validateStatusTransition(order, newStatus, jwt);
 
-        if (newStatus == OrderStatus.COMPLETED) {
+        if (newStatus == OrderStatus.COMPLETED && order.getAutoIndex() == null) {
             // Order got validated and is completed: set autoIndex
             short index = generateOrderAutoIndex(order);
             order.setAutoIndex(index);
