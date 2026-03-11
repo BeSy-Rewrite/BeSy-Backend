@@ -174,6 +174,10 @@ public class OrderPDFService {
 
             String comment = orderDAO.getCommentForSupplier() != null ? orderDAO.getCommentForSupplier() : "";
 
+            if (orderDAO.getCustomer() != null) {
+                comment = "Kundennummer: " + orderDAO.getCustomer().getCustomerId() + "\n" + comment;
+            }
+
             // TODO: VAT should be stored by the order itself
             Set<Vat> vats = itemsDAO.stream()
                     .map(Item::getVat)
