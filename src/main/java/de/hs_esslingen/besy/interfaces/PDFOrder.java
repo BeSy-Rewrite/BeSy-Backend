@@ -10,7 +10,9 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
+import de.hs_esslingen.besy.enums.VatType;
 import de.hs_esslingen.besy.models.Quotation;
+import de.hs_esslingen.besy.services.PriceConversionService;
 
 public class PDFOrder {
 
@@ -150,7 +152,7 @@ public class PDFOrder {
         orderNumber = acroForm.getField("Formular1[0].#subform[0].Header[0].Rechnungsnummer[0]");
         companyAddress = acroForm.getField("Formular1[0].#subform[0].Header[0].Textfeld1[0]");
         supplierEmail = acroForm.getField("Formular1[0].#subform[0].Header[0].Fax[2]");
-        invoiceId = acroForm.getField("Formular1[0].#subform[0].Body[0].Zwischensumme[0]");
+        invoiceId = acroForm.getField("Formular1[0].#subform[0].Body[0].Firma[4]");
         date = acroForm.getField("Formular1[0].#subform[0].Header[0].Rechnungsdatum[0]");
         orderer = acroForm.getField("Formular1[0].#subform[0].Header[0].Firma[1]");
         phone = acroForm.getField("Formular1[0].#subform[0].Header[0].Telefon[1]");
@@ -308,11 +310,16 @@ public class PDFOrder {
             for (int i = 0; i < items.size(); i++) {
                 ItemResponseDTO itemDTO = items.get(i);
                 PDFItem pdfItem = this.items.get(i);
+
+                BigDecimal netPrice = itemDTO.getVatType() == VatType.netto ? itemDTO.getPricePerUnit()
+                        : PriceConversionService.convertGrossPriceToNetPrice(itemDTO.getPricePerUnit(),
+                                itemDTO.getVat());
+
                 pdfItem.setPosition(String.valueOf(itemDTO.getItemId()));
                 pdfItem.setDescription(itemDTO.getName());
                 pdfItem.setQuantity(String.valueOf(itemDTO.getQuantity()));
-                pdfItem.setPrice((itemDTO.getPricePerUnit() + " €").replace('.', ','));
-                pdfItem.setAmount((BigDecimal.valueOf(itemDTO.getQuantity()).multiply(itemDTO.getPricePerUnit()) + " €")
+                pdfItem.setPrice((netPrice + " €").replace('.', ','));
+                pdfItem.setAmount((BigDecimal.valueOf(itemDTO.getQuantity()).multiply(netPrice) + " €")
                         .replace('.', ','));
             }
         } else {
