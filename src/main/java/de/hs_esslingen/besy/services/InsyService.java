@@ -2,6 +2,7 @@ package de.hs_esslingen.besy.services;
 
 import static org.springframework.security.oauth2.client.web.client.RequestAttributeClientRegistrationIdResolver.clientRegistrationId;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
@@ -14,6 +15,7 @@ import org.springframework.web.client.RestClient;
 
 import de.hs_esslingen.besy.dtos.insy.InsyItemRequestDTO;
 import de.hs_esslingen.besy.dtos.insy.InsyOrderRequestDTO;
+import de.hs_esslingen.besy.enums.VatType;
 import de.hs_esslingen.besy.models.CostCenter;
 import de.hs_esslingen.besy.models.Item;
 import de.hs_esslingen.besy.models.Order;
@@ -85,7 +87,10 @@ public class InsyService {
                         .mapToObj(i -> {
                             InsyItemRequestDTO requestItem = new InsyItemRequestDTO();
                             requestItem.setItemId(item.getItemId());
-                            requestItem.setItemPricePerUnit(item.getPricePerUnit());
+                            BigDecimal grossPrice = item.getVatType() == VatType.brutto ? item.getPricePerUnit()
+                                    : PriceConversionService.convertNetPriceToGrossPrice(item.getPricePerUnit(),
+                                            item.getVat());
+                            requestItem.setItemPricePerUnit(grossPrice);
                             requestItem.setItemName(item.getName());
                             return requestItem;
                         }))

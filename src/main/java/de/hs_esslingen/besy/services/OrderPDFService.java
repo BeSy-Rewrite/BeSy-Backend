@@ -25,7 +25,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.enums.VatType;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.interfaces.PDFOrder;
@@ -150,10 +149,9 @@ public class OrderPDFService {
             order.setInvoiceStreet(getStreet(invoiceAddress));
             order.setInvoiceDeliveryAddress(formatPostalAndTown(invoiceAddress));
 
-            List<ItemResponseDTO> itemResponseDTOS = itemResponseMapper.toDto(itemsDAO);
-            order.setItems(itemResponseDTOS);
+            order.setItems(itemsDAO);
 
-            BigDecimal subTotal = itemResponseDTOS
+            BigDecimal subTotal = itemsDAO
                     .stream()
                     .map(item -> {
                         BigDecimal netPrice = item.getVatType() == VatType.netto ? item.getPricePerUnit()
