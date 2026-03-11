@@ -11,6 +11,7 @@ import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.pdfbox.Loader;
@@ -34,6 +35,7 @@ import de.hs_esslingen.besy.models.Order;
 import de.hs_esslingen.besy.models.Person;
 import de.hs_esslingen.besy.models.Quotation;
 import de.hs_esslingen.besy.models.Supplier;
+import de.hs_esslingen.besy.models.Vat;
 import de.hs_esslingen.besy.repositories.InvoiceRepository;
 import de.hs_esslingen.besy.repositories.ItemRepository;
 import de.hs_esslingen.besy.repositories.OrderRepository;
@@ -136,7 +138,7 @@ public class OrderPDFService {
             order.setOrderNumber(OrderPDFService.generateOrderNumber(orderDAO.getPrimaryCostCenterId(),
                     orderDAO.getBookingYear(), orderDAO.getAutoIndex()));
             // Datum:
-            order.setDate(orderDAO.getCreatedDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)));
+            order.setDate(orderDAO.getCreatedDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)));
             // Besteller:in
             order.setOrderer(orderDAO.getOwner().getName() + " " + orderDAO.getOwner().getSurname());
 
@@ -171,19 +173,27 @@ public class OrderPDFService {
                     .replace('.', ',')
                     .concat(" €"));
 
-            BigDecimal netTotal = subTotal.multiply((BigDecimal.valueOf(100).subtract(orderDAO.getPercentageDiscount()))
+            BigDecimal netTotal = subTotal.multiply((BigDecimal.valueOf(100).subtract(
+                    orderDAO.getPercentageDiscount() != null ? orderDAO.getPercentageDiscount() : BigDecimal.ZERO))
                     .divide(BigDecimal.valueOf(100))).setScale(2, RoundingMode.HALF_UP);
             order.setNetTotal(String.valueOf(netTotal).replace('.', ',').concat(" €"));
 
             // TODO: VAT should be stored by the order itself
+            BigDecimal vatValue = itemsDAO.stream()
+                    .map(Item::getVat)
+                    .filter(Objects::nonNull)
+                    .map(Vat::getValue)
+                    .findFirst()
+                    .orElse(BigDecimal.valueOf(Double.parseDouble(MEHRWERTSTEUER_DEFAULT)));
             BigDecimal total = netTotal.multiply(
-                    (BigDecimal.valueOf(100).add(itemsDAO.get(0).getVatValue())).divide(BigDecimal.valueOf(100)))
+                    (BigDecimal.valueOf(100).add(vatValue)).divide(BigDecimal.valueOf(100)))
                     .setScale(2, RoundingMode.HALF_UP);
             order.setTotal(String.valueOf(total).replace('.', ',').concat(" €"));
 
             order.setCommentForSupplier(orderDAO.getCommentForSupplier());
-            order.setPercentageDiscount(String.valueOf(orderDAO.getPercentageDiscount()));
-            order.setVat(MEHRWERTSTEUER_DEFAULT);
+            order.setPercentageDiscount(String.valueOf(
+                    orderDAO.getPercentageDiscount() != null ? orderDAO.getPercentageDiscount() : BigDecimal.ZERO));
+            order.setVat(String.valueOf(vatValue));
             order.setCostCenter(orderDAO.getPrimaryCostCenterId());
             order.setCostCenterSecondary(orderDAO.getSecondaryCostCenterId());
             order.setDfgKey(orderDAO.getDfgKey());
