@@ -1,16 +1,20 @@
 package de.hs_esslingen.besy.interfaces;
 
+import java.io.IOException;
+
+import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 
-import java.io.IOException;
-
-@Getter @Setter @AllArgsConstructor
+@Getter
+@Setter
+@AllArgsConstructor
 public class PDFItem {
     PDField position;
-    PDField description;
+    PDTextField description;
     PDField quantity;
     PDField price;
     PDField amount;

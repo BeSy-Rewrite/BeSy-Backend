@@ -2,19 +2,30 @@ package de.hs_esslingen.besy.interfaces;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.Normalizer;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
+import org.slf4j.Logger;
 
 import de.hs_esslingen.besy.enums.VatType;
+import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.models.Item;
 import de.hs_esslingen.besy.models.Quotation;
 import de.hs_esslingen.besy.services.PriceConversionService;
 
 public class PDFOrder {
+
+    private static final Logger logger = org.slf4j.LoggerFactory.getLogger(PDFOrder.class);
 
     // nach VOB (Bau-/Montageleistung)
     private PDCheckBox constructionAndAssemblyFlag;
@@ -75,6 +86,10 @@ public class PDFOrder {
 
     // Artikel
     private List<PDFItem> items = new ArrayList<>();
+    private PDTextField itemDescription;
+    private PDFont itemDescriptionFont = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+    private float itemDescriptionFontSize = 12f;
+    private float itemDescriptionMaxWidth = 200f;
 
     // Zwischensumme
     private PDField subTotal;
@@ -170,12 +185,14 @@ public class PDFOrder {
         for (int i = 0; i < 14; i++) {
             PDFItem article = new PDFItem(
                     acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Artikel[%d]", i)),
-                    acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Beschreibung[%d]", i)),
+                    (PDTextField) acroForm
+                            .getField(String.format("Formular1[0].#subform[0].Body[0].Beschreibung[%d]", i)),
                     acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Menge[%d]", i)),
                     acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Stückpreis[%d]", i)),
                     acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Betrag[%d]", i)));
             items.add(article);
         }
+        itemDescription = (PDTextField) acroForm.getField("Formular1[0].#subform[0].Body[0].Beschreibung[0]");
 
         subTotal = acroForm.getField("Formular1[0].#subform[0].Body[0].Zwischensumme[0]");
         netTotal = acroForm.getField("Formular1[0].#subform[0].Body[0].Nettosumme[1]");
@@ -226,7 +243,32 @@ public class PDFOrder {
         // 7. Zustimmung bei Bestellung von medientechnischen Einrichtungen und Geräten:
         orderFlagMediaPermission = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[13]");
 
+        retrieveDescriptionFontSize();
+        retrieveItemDescriptionMaxWidth();
+
         return this;
+    }
+
+    private void retrieveItemDescriptionMaxWidth() {
+        itemDescriptionMaxWidth = itemDescription.getWidgets().get(0).getRectangle().getWidth();
+    }
+
+    private void retrieveDescriptionFontSize() {
+        try {
+            // Try to extract font size from default appearance string
+            String daString = itemDescription.getDefaultAppearance();
+            if (daString != null && daString.contains("Tf")) {
+                String[] parts = daString.split(" ");
+                for (int i = 0; i < parts.length - 1; i++) {
+                    if ("Tf".equals(parts[i + 1])) {
+                        itemDescriptionFontSize = Float.parseFloat(parts[i]);
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            itemDescriptionFontSize = 12f;
+        }
     }
 
     public void setConstructionAndAssemblyFlag(Boolean flag) throws IOException {
@@ -306,25 +348,169 @@ public class PDFOrder {
     }
 
     public void setItems(List<Item> items) throws IOException {
+        items = wrapItemLines(items);
         if (items.size() < 14) {
             for (int i = 0; i < items.size(); i++) {
                 Item item = items.get(i);
                 PDFItem pdfItem = this.items.get(i);
 
-                BigDecimal netPrice = item.getVatType() == VatType.netto ? item.getPricePerUnit()
-                        : PriceConversionService.convertGrossPriceToNetPrice(item.getPricePerUnit(),
-                                item.getVat());
+                BigDecimal netPrice;
+                try {
+                    netPrice = item.getVatType() == VatType.netto ? item.getPricePerUnit()
+                            : PriceConversionService.convertGrossPriceToNetPrice(item.getPricePerUnit(),
+                                    item.getVat());
+                } catch (IllegalArgumentException e) {
+                    netPrice = BigDecimal.ZERO;
+                }
 
-                pdfItem.setPosition(String.valueOf(item.getId().getItemId()));
+                if (item.getQuantity() > 0) {
+
+                    pdfItem.setPosition(String.valueOf(item.getId().getItemId()));
+                    pdfItem.setQuantity(String.valueOf(item.getQuantity()));
+                    pdfItem.setPrice((netPrice + " €").replace('.', ','));
+                    pdfItem.setAmount((BigDecimal.valueOf(item.getQuantity()).multiply(netPrice) + " €")
+                            .replace('.', ','));
+                }
                 pdfItem.setDescription(item.getName());
-                pdfItem.setQuantity(String.valueOf(item.getQuantity()));
-                pdfItem.setPrice((netPrice + " €").replace('.', ','));
-                pdfItem.setAmount((BigDecimal.valueOf(item.getQuantity()).multiply(netPrice) + " €")
-                        .replace('.', ','));
             }
         } else {
-            throw new RuntimeException("Number of items must be less than 14.");
+            throw new BadRequestException("Number of items must be less than 14.");
         }
+    }
+
+    private List<Item> wrapItemLines(List<Item> items) {
+        Deque<Item> itemStack = new ArrayDeque<>();
+        List<Item> wrappedItems = new ArrayList<>();
+        List<Item> reversedItems = new ArrayList<>(items);
+        java.util.Collections.reverse(reversedItems);
+        for (Item item : reversedItems) {
+            itemStack.push(item);
+        }
+        while (!itemStack.isEmpty()) {
+            Item item = itemStack.pop();
+            try {
+                float descriptionWidth = getStringWidth(item.getName());
+                if (descriptionWidth <= itemDescriptionMaxWidth) {
+                    wrappedItems.add(item);
+                } else {
+                    // Wrap the description into multiple lines
+                    for (Item wrappedItem : wrapItem(item)) {
+                        wrappedItems.add(wrappedItem);
+                    }
+                }
+            } catch (IOException e) {
+                logger.error("Error measuring item description width for item ID {}: {}", item.getId().getItemId(),
+                        e.getMessage());
+                wrappedItems.add(item);
+            }
+        }
+        if (items.size() <= 14 && wrappedItems.size() > 14) {
+            throw new BadRequestException("After wrapping, number of items exceeds the maximum of 14.");
+        }
+        return wrappedItems;
+    }
+
+    private List<Item> wrapItem(Item item) {
+        List<Item> wrappedItems = new ArrayList<>();
+        String fullDescription = item.getName();
+
+        try {
+            // Calculate how much text fits in the first line (accounting for other columns)
+            // Assume the description column takes up about 90% of available width
+            float availableWidth = itemDescriptionMaxWidth * 0.9f;
+
+            int fitLength = findMaxFittingPrefixLength(fullDescription, availableWidth);
+            fitLength = adjustToWordBoundary(fullDescription, fitLength);
+
+            // If entire description fits, return as is
+            if (fitLength >= fullDescription.length()) {
+                wrappedItems.add(item);
+                return wrappedItems;
+            }
+
+            // Create first item with truncated description
+            Item firstItem = new Item();
+            firstItem.setId(item.getId());
+            firstItem.setName(fullDescription.substring(0, fitLength).trim());
+            firstItem.setQuantity(item.getQuantity());
+            firstItem.setPricePerUnit(item.getPricePerUnit());
+            firstItem.setVat(item.getVat());
+            firstItem.setVatType(item.getVatType());
+            wrappedItems.add(firstItem);
+
+            // Create additional items with remaining description
+            String remainingDescription = fullDescription.substring(fitLength).trim();
+            while (!remainingDescription.isEmpty()) {
+                fitLength = findMaxFittingPrefixLength(remainingDescription, itemDescriptionMaxWidth);
+                fitLength = adjustToWordBoundary(remainingDescription, fitLength);
+
+                if (fitLength == 0) {
+                    fitLength = 1; // Ensure progress even with very long words
+                }
+
+                Item continuationItem = new Item();
+                continuationItem.setId(item.getId());
+                continuationItem.setName(remainingDescription.substring(0, fitLength).trim());
+                continuationItem.setQuantity(0l); // No quantity for continuation items
+                continuationItem.setVat(item.getVat());
+                continuationItem.setVatType(item.getVatType());
+                wrappedItems.add(continuationItem);
+
+                remainingDescription = remainingDescription.substring(fitLength).trim();
+            }
+        } catch (IOException e) {
+            logger.error("Error wrapping item description for item ID {}: {}", item.getId().getItemId(),
+                    e.getMessage());
+            wrappedItems.add(item);
+        }
+
+        return wrappedItems;
+    }
+
+    private int findMaxFittingPrefixLength(String text, float maxWidth) throws IOException {
+        int low = 0;
+        int high = text.length();
+        int bestFit = 0;
+
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            float width = getStringWidth(text.substring(0, mid));
+
+            if (width <= maxWidth) {
+                bestFit = mid;
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+
+        return bestFit;
+    }
+
+    private int adjustToWordBoundary(String text, int fitLength) {
+        if (fitLength <= 0 || fitLength >= text.length()) {
+            return fitLength;
+        }
+
+        int lastWhitespace = -1;
+        for (int i = fitLength - 1; i >= 0; i--) {
+            if (Character.isWhitespace(text.charAt(i))) {
+                lastWhitespace = i;
+                break;
+            }
+        }
+
+        // Keep binary-search split for single long words, otherwise cut at whitespace.
+        return lastWhitespace > 0 ? lastWhitespace : fitLength;
+    }
+
+    private float getStringWidth(String input) throws IOException {
+        String normalized = Normalizer
+                .normalize(input, Normalizer.Form.NFD)
+                .replaceAll("[^\\p{ASCII}]", "");
+        normalized = normalized.replaceAll("[^\\x00-\\x7F]", "");
+        System.out.println("Normalized string: '" + normalized + "'");
+        return itemDescriptionFont.getStringWidth(normalized) * itemDescriptionFontSize / 1000f;
     }
 
     public void setSubTotal(String subTotal) throws IOException {

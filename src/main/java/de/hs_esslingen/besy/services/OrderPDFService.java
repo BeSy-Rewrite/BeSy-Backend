@@ -26,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import de.hs_esslingen.besy.enums.VatType;
+import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.interfaces.PDFOrder;
 import de.hs_esslingen.besy.mappers.response.ItemResponseMapper;
@@ -150,7 +151,11 @@ public class OrderPDFService {
             order.setInvoiceStreet(getStreet(invoiceAddress));
             order.setInvoiceDeliveryAddress(formatPostalAndTown(invoiceAddress));
 
-            order.setItems(itemsDAO);
+            try {
+                order.setItems(itemsDAO);
+            } catch (BadRequestException e) {
+                throw new BadRequestException("Error while mapping order items for PDF generation: " + e.getMessage());
+            }
 
             BigDecimal subTotal = itemsDAO
                     .stream()
@@ -207,7 +212,8 @@ public class OrderPDFService {
             order.setCommentForSupplier(comment);
 
             order.setPercentageDiscount(String.valueOf(
-                    orderDAO.getPercentageDiscount() != null ? orderDAO.getPercentageDiscount() : BigDecimal.ZERO));
+                    orderDAO.getPercentageDiscount() != null ? orderDAO.getPercentageDiscount() : BigDecimal.ZERO)
+                    .replace('.', ','));
             order.setCostCenter(orderDAO.getPrimaryCostCenterId());
             order.setCostCenterSecondary(orderDAO.getSecondaryCostCenterId());
             order.setDfgKey(orderDAO.getDfgKey());
@@ -229,15 +235,18 @@ public class OrderPDFService {
                     .body(baos.toByteArray());
         } finally {
             if (document != null) {
-                document.close();
+                try {
+                    document.close();
+                } catch (IOException e) {
+                    // Suppress close exception to avoid masking original exception
+                }
             }
         }
     }
 
     private void setSupplier(PDFOrder order, Supplier supplier) throws IOException {
         Address supplierAddress = supplier.getAddress();
-
-        order.setCompanyAddress("""
+        String supplierAddressString = """
                 %s
                 %s %s
                 %s %s
@@ -246,7 +255,8 @@ public class OrderPDFService {
                 getStreet(supplierAddress),
                 getBuildingNumber(supplierAddress),
                 getPostalCode(supplierAddress),
-                getTown(supplierAddress)));
+                getTown(supplierAddress)).trim();
+        order.setCompanyAddress(supplierAddressString);
         // Fax-Nr./E-Mail:
         order.setSupplierEmail(supplier.getEmail());
     }
