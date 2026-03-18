@@ -1,17 +1,22 @@
 package de.hs_esslingen.besy.interfaces;
 
-import de.hs_esslingen.besy.enums.OrderStatus;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import de.hs_esslingen.besy.enums.OrderStatus;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.Value;
+
 /**
  * DTO for {@link de.hs_esslingen.besy.models.Order}
  */
-@Getter @Setter @AllArgsConstructor
+@Getter
+@Setter
+@AllArgsConstructor
 @Value
 public class OrderCompletedValidationDAO {
 
@@ -23,7 +28,7 @@ public class OrderCompletedValidationDAO {
 
     @NotNull
     String bookingYear;
-    
+
     Short autoIndex;
 
     @NotNull
@@ -69,7 +74,6 @@ public class OrderCompletedValidationDAO {
     @NotNull
     Integer supplierId;
 
-    @NotNull
     String secondaryCostCenterId;
 
     BigDecimal fixedDiscount;
