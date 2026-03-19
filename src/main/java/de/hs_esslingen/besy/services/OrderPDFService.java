@@ -20,6 +20,7 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,6 @@ import de.hs_esslingen.besy.enums.VatType;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.interfaces.PDFOrder;
-import de.hs_esslingen.besy.mappers.response.ItemResponseMapper;
 import de.hs_esslingen.besy.models.Address;
 import de.hs_esslingen.besy.models.Approval;
 import de.hs_esslingen.besy.models.Item;
@@ -38,26 +38,28 @@ import de.hs_esslingen.besy.models.Person;
 import de.hs_esslingen.besy.models.Quotation;
 import de.hs_esslingen.besy.models.Supplier;
 import de.hs_esslingen.besy.models.Vat;
-import de.hs_esslingen.besy.repositories.InvoiceRepository;
 import de.hs_esslingen.besy.repositories.ItemRepository;
 import de.hs_esslingen.besy.repositories.OrderRepository;
 import de.hs_esslingen.besy.repositories.PersonRepository;
 import de.hs_esslingen.besy.repositories.QuotationRepository;
 import de.hs_esslingen.besy.repositories.SupplierRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class OrderPDFService {
+
+    @Value("${order-number.prefix}")
+    private String orderNumberPrefix;
+
+    @Value("${order-number.separator}")
+    private String orderNumberSeparator;
 
     private final OrderRepository orderRepository;
     private final SupplierRepository supplierRepository;
     private final ItemRepository itemRepository;
-    private final InvoiceRepository invoiceRepository;
     private final PersonRepository personRepository;
     private final QuotationRepository quotationRepository;
-
-    private final ItemResponseMapper itemResponseMapper;
 
     private final Locale locale;
 
@@ -124,7 +126,7 @@ public class OrderPDFService {
                 setSupplier(order, supplierDAO.get());
 
             // Bestell-Nr.
-            order.setOrderNumber(OrderPDFService.generateOrderNumber(orderDAO.getPrimaryCostCenterId(),
+            order.setOrderNumber(generateOrderNumber(orderDAO.getPrimaryCostCenterId(),
                     orderDAO.getBookingYear(), orderDAO.getAutoIndex()));
             // Datum:
             order.setDate(orderDAO.getCreatedDate()
@@ -316,11 +318,11 @@ public class OrderPDFService {
         }
     }
 
-    public static String generateOrderNumber(String primaryCostCenterId, String bookingYear, Short autoIndex) {
-        return ("""
-                IT%s/%s/%03d
-                """.formatted(
-                primaryCostCenterId, bookingYear, autoIndex)).trim();
+    public String generateOrderNumber(String primaryCostCenterId, String bookingYear, Short autoIndex) {
+        String[] orderNumberParts = { orderNumberPrefix + primaryCostCenterId, bookingYear,
+                String.format("%03d", autoIndex) };
+
+        return String.join(orderNumberSeparator, orderNumberParts);
     }
 
 }
