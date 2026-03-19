@@ -318,7 +318,7 @@ public class OrderPDFService {
 
     public static String generateOrderNumber(String primaryCostCenterId, String bookingYear, Short autoIndex) {
         return ("""
-                IT%s_%s_%s
+                IT%s/%s/%03d
                 """.formatted(
                 primaryCostCenterId, bookingYear, autoIndex)).trim();
     }
