@@ -166,7 +166,7 @@ public class PDFOrder {
         deliveryAndServiceFlag = (PDCheckBox) acroForm.getField("Formular1[0].#subform[0].Kontrollkästchen1[1]");
         orderNumber = acroForm.getField("Formular1[0].#subform[0].Header[0].Rechnungsnummer[0]");
         companyAddress = acroForm.getField("Formular1[0].#subform[0].Header[0].Textfeld1[0]");
-        supplierEmail = acroForm.getField("Formular1[0].#subform[0].Header[0].Fax[2]");
+        supplierEmail = acroForm.getField("Formular1[0].#subform[0].Header[0].Firma[3]");
         invoiceId = acroForm.getField("Formular1[0].#subform[0].Firma[4]");
         date = acroForm.getField("Formular1[0].#subform[0].Header[0].Rechnungsdatum[0]");
         orderer = acroForm.getField("Formular1[0].#subform[0].Header[0].Firma[1]");
