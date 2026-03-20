@@ -259,6 +259,7 @@ public class OrderPDFService {
                 getPostalCode(supplierAddress),
                 getTown(supplierAddress)).trim();
         order.setCompanyAddress(supplierAddressString);
+        order.setSupplierName(supplier.getName());
         // Fax-Nr./E-Mail:
         order.setSupplierEmail(supplier.getEmail());
     }

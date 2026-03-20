@@ -291,12 +291,18 @@ public class PDFOrder {
         this.companyAddress.setValue(address != null ? address : "");
     }
 
+    public void setSupplierName(String supplierName) throws IOException {
+        quotations.get(0).setCompanyName(supplierName != null ? supplierName : "");
+    }
+
     public void setInvoiceId(String invoiceId) throws IOException {
         this.invoiceId.setValue(invoiceId != null ? invoiceId : "");
     }
 
     public void setDate(String date) throws IOException {
-        this.date.setValue(date != null ? date : "");
+        String dateValue = date != null ? date : "";
+        this.date.setValue(dateValue);
+        quotations.get(0).setDate(dateValue);
     }
 
     public void setOrderer(String orderer) throws IOException {
@@ -518,7 +524,9 @@ public class PDFOrder {
     }
 
     public void setNetTotal(String netTotal) throws IOException {
-        this.netTotal.setValue(netTotal != null ? netTotal : "");
+        String netTotalValue = netTotal != null ? netTotal : "";
+        this.netTotal.setValue(netTotalValue);
+        quotations.get(0).setPrice(netTotalValue);
     }
 
     public void setTotal(String total) throws IOException {
@@ -526,9 +534,12 @@ public class PDFOrder {
     }
 
     public void setQuotations(List<Quotation> items) throws IOException {
-        for (int i = 0; i < items.size(); i++) {
+        // We only have 3 quotation fields in the PDF, so we can only set up to 2
+        // quotations as the first one is used for the main supplier info
+        int maxQuotations = Math.min(items.size(), this.quotations.size() - 1);
+        for (int i = 0; i < maxQuotations; i++) {
             Quotation quotation = items.get(i);
-            PDFQuotation pdfQuotation = this.quotations.get(i);
+            PDFQuotation pdfQuotation = this.quotations.get(i + 1);
             pdfQuotation.setIndex(Integer.valueOf(quotation.getIndex()));
             pdfQuotation.setPrice(String.valueOf(quotation.getPrice()));
             pdfQuotation.setCompanyName(quotation.getCompanyName());
