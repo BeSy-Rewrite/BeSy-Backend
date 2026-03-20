@@ -132,8 +132,9 @@ public class OrderPDFService {
             order.setDate(orderDAO.getCreatedDate()
                     .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)));
             // Besteller:in
-            order.setOrderer(orderDAO.getOwner().getName() + " " + orderDAO.getOwner().getSurname());
-            order.setEmail(orderDAO.getOwner().getEmail());
+            order.setOrderer(orderDAO.getQueriesPerson().getName() + " " + orderDAO.getQueriesPerson().getSurname());
+            order.setPhone(orderDAO.getQueriesPerson().getPhone());
+            order.setEmail(orderDAO.getQueriesPerson().getEmail());
 
             // Angebots-Nr.:
             order.setInvoiceId(orderDAO.getQuoteNumber());
