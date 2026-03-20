@@ -233,7 +233,7 @@ class OrderPDFServiceIntegrationTest {
             String total = fieldValue(form, "Formular1[0].#subform[0].Body[0].Gesamtsumme[0]");
             String vat = fieldValue(form, "Formular1[0].#subform[0].Body[0].MwStSatz[0]");
 
-            assertEquals(OrderPDFService.generateOrderNumber("CC-1", "25", (short) 7), orderNumber);
+            assertEquals(orderPDFService.generateOrderNumber("CC-1", "25", (short) 7), orderNumber);
             assertTrue(companyAddress.contains("Supplier GmbH"));
             assertTrue(companyAddress.contains("Supplier St"));
             assertTrue(companyAddress.contains("12345"));

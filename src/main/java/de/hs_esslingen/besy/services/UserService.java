@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -97,7 +98,8 @@ public class UserService {
     public User resolveUserFromJwt(Jwt jwt) {
         return userRepository.findOptionalByKeycloakUUID(jwt.getSubject())
                 .or(() -> {
-                    Optional<User> user = userRepository.findOptionalByEmail(jwt.getClaimAsString("email"));
+                    Optional<User> user = userRepository
+                            .findOptionalByEmail(jwt.getClaimAsString("email").toLowerCase());
                     user.ifPresent(u -> {
                         u.setKeycloakUUID(jwt.getSubject());
                         u = userRepository.save(u);
@@ -106,12 +108,21 @@ public class UserService {
                 })
                 .orElseGet(() -> {
                     if (KeycloakAuthenticationConverter.hasRole(jwt, userRoleName)) {
-                        User newUser = new User();
-                        newUser.setKeycloakUUID(jwt.getSubject());
-                        newUser.setEmail(jwt.getClaimAsString("email"));
-                        newUser.setName(jwt.getClaimAsString("given_name"));
-                        newUser.setSurname(jwt.getClaimAsString("family_name"));
-                        return userRepository.save(newUser);
+                        try {
+                            User newUser = new User();
+                            newUser.setKeycloakUUID(jwt.getSubject());
+                            newUser.setEmail(jwt.getClaimAsString("email").toLowerCase());
+                            newUser.setName(jwt.getClaimAsString("given_name"));
+                            newUser.setSurname(jwt.getClaimAsString("family_name"));
+                            return userRepository.save(newUser);
+                        } catch (DataIntegrityViolationException e) {
+                            // Race condition: Another thread created the user simultaneously
+                            // Try to retrieve the user by keycloak_uuid
+                            return userRepository.findOptionalByKeycloakUUID(jwt.getSubject())
+                                    .orElseThrow(
+                                            () -> new NotFoundException("Benutzer mit Keycloak UUID " + jwt.getSubject()
+                                                    + " konnte nicht gefunden oder erstellt werden."));
+                        }
                     } else {
                         throw new NotFoundException("Benutzer mit Keycloak UUID " + jwt.getSubject()
                                 + " konnte nicht gefunden oder erstellt werden.");
