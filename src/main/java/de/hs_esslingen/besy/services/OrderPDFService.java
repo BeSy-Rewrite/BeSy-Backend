@@ -110,6 +110,9 @@ public class OrderPDFService {
                     .flatMap(personRepository::findById);
             Optional<Person> invoicePersonOpt = Optional.ofNullable(orderDAO.getInvoicePersonId())
                     .flatMap(personRepository::findById);
+            Optional<Person> queriesPersonOpt = Optional.ofNullable(orderDAO.getQueriesPerson())
+                    .or(() -> Optional.ofNullable(orderDAO.getQueriesPersonId())
+                            .flatMap(personRepository::findById));
             List<Quotation> quotations = quotationRepository.getQuotationByOrderId(Long.valueOf(orderId));
 
             Address deliveryAddress = orderDAO.getDeliveryAddress();
@@ -132,9 +135,15 @@ public class OrderPDFService {
             order.setDate(orderDAO.getCreatedDate()
                     .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)));
             // Besteller:in
-            order.setOrderer(orderDAO.getQueriesPerson().getName() + " " + orderDAO.getQueriesPerson().getSurname());
-            order.setPhone(orderDAO.getQueriesPerson().getPhone());
-            order.setEmail(orderDAO.getQueriesPerson().getEmail());
+            if (queriesPersonOpt.isPresent()) {
+                Person queriesPerson = queriesPersonOpt.get();
+                String fullName = String.format("%s %s",
+                        queriesPerson.getName() != null ? queriesPerson.getName() : "",
+                        queriesPerson.getSurname() != null ? queriesPerson.getSurname() : "").trim();
+                order.setOrderer(fullName);
+                order.setPhone(queriesPerson.getPhone());
+                order.setEmail(queriesPerson.getEmail());
+            }
 
             // Angebots-Nr.:
             order.setInvoiceId(orderDAO.getQuoteNumber());
@@ -202,7 +211,7 @@ public class OrderPDFService {
                         .setScale(2, RoundingMode.HALF_UP);
                 order.setTotal(String.valueOf(total).replace('.', ',').concat(" €"));
 
-                order.setVat(String.valueOf(vatValue).replace('.', ','));
+                order.setVat(String.valueOf(vatValue.intValue()));
             } else {
                 comment = "Unterschiedlichen Mehrwertsteuersätze: " + vats.stream()
                         .map(Vat::getValue)
