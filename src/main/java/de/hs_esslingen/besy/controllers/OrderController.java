@@ -181,17 +181,31 @@ public class OrderController {
         return itemService.createItemsOfOrder(id, dtos);
     }
 
-    @DeleteMapping("{order-id}/items/{item-id}")
-    public ResponseEntity<String> deleteItemsOfOrder(
+    @PatchMapping("{order-id}/items/{item-id}")
+    public ResponseEntity<ItemResponseDTO> updateItemOfOrder(
             @PathVariable("order-id") Long orderId,
-            @PathVariable("item-id") Integer itemId) {
+            @PathVariable("item-id") Integer itemId,
+            @RequestBody ItemRequestDTO dto) {
         if (!orderService.existsOrderById(orderId))
             throw new NotFoundException("Bestellung nicht gefunden.");
         if (!itemService.existsItemOfOrder(orderId, itemId))
             throw new NotFoundException("Artikel nicht gefunden.");
         if (!orderService.isOrderStatusEqual(orderId, OrderStatus.IN_PROGRESS))
             throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
-        return itemService.deleteItemsOfOrder(orderId, itemId);
+        return itemService.updateItemOfOrder(orderId, itemId, dto);
+    }
+
+    @DeleteMapping("{order-id}/items/{item-id}")
+    public ResponseEntity<String> deleteItemOfOrder(
+            @PathVariable("order-id") Long orderId,
+            @PathVariable("item-id") Integer itemId) {
+        if (!orderService.existsOrderById(orderId))
+            throw new NotFoundException("Bestellung nicht gefunden.");
+        if (!itemService.existsItemOfOrder(orderId, itemId))
+            return ResponseEntity.noContent().build();
+        if (!orderService.isOrderStatusEqual(orderId, OrderStatus.IN_PROGRESS))
+            throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
+        return itemService.deleteItemOfOrder(orderId, itemId);
     }
 
     @GetMapping("{order-id}/invoices")
@@ -230,7 +244,7 @@ public class OrderController {
         if (!orderService.existsOrderById(orderId))
             throw new NotFoundException("Bestellung nicht gefunden.");
         if (!quotationService.existsQuotation(orderId, quotationId))
-            throw new NotFoundException("Vergleichsartikel nicht gefunden.");
+            return ResponseEntity.noContent().build();
         if (!orderService.isOrderStatusEqual(orderId, OrderStatus.IN_PROGRESS))
             throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
         return quotationService.deleteQuotation(orderId, quotationId);

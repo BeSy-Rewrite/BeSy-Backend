@@ -1,5 +1,26 @@
 package de.hs_esslingen.besy.services;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
+
 import de.hs_esslingen.besy.dtos.request.ItemRequestDTO;
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.enums.PreferredList;
@@ -13,25 +34,6 @@ import de.hs_esslingen.besy.models.Vat;
 import de.hs_esslingen.besy.repositories.ItemRepository;
 import de.hs_esslingen.besy.repositories.OrderRepository;
 import de.hs_esslingen.besy.repositories.VatRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ItemServiceTest {
@@ -72,8 +74,7 @@ class ItemServiceTest {
                 BigDecimal.valueOf(19),
                 PreferredList.RZ,
                 "PL-1",
-                VatType.netto
-        );
+                VatType.netto);
 
         item = new Item();
         item.setName("Item A");
@@ -98,8 +99,7 @@ class ItemServiceTest {
                 null,
                 PreferredList.RZ,
                 "PL-1",
-                VatType.netto
-        );
+                VatType.netto);
 
         order = new Order();
         order.setId(100L);
@@ -173,7 +173,7 @@ class ItemServiceTest {
         verify(itemRequestMapper).toEntity(requestDtos);
         verify(orderRepository).getReferenceById(orderId);
         verify(itemRepository).findByOrder_Id(orderId);
-        //verify(vatRepository).getReferenceById(item.getVatValue());
+        // verify(vatRepository).getReferenceById(item.getVatValue());
         verify(itemResponseMapper).toDto(mappedItems);
     }
 
@@ -182,7 +182,7 @@ class ItemServiceTest {
         Long orderId = 100L;
         Integer itemId = 1;
 
-        ResponseEntity<String> response = itemService.deleteItemsOfOrder(orderId, itemId);
+        ResponseEntity<String> response = itemService.deleteItemOfOrder(orderId, itemId);
 
         assertEquals(204, response.getStatusCode().value());
         verify(itemRepository).deleteItemByOrderIdAndItemId(orderId, itemId);
