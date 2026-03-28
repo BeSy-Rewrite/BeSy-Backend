@@ -1,17 +1,31 @@
 package de.hs_esslingen.besy.interfaces;
 
-import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
-import de.hs_esslingen.besy.models.Quotation;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.text.Normalizer;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
+import org.slf4j.Logger;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import de.hs_esslingen.besy.enums.VatType;
+import de.hs_esslingen.besy.exceptions.BadRequestException;
+import de.hs_esslingen.besy.models.Item;
+import de.hs_esslingen.besy.models.Quotation;
+import de.hs_esslingen.besy.services.PriceConversionService;
 
 public class PDFOrder {
+
+    private static final Logger logger = org.slf4j.LoggerFactory.getLogger(PDFOrder.class);
 
     // nach VOB (Bau-/Montageleistung)
     private PDCheckBox constructionAndAssemblyFlag;
@@ -72,6 +86,10 @@ public class PDFOrder {
 
     // Artikel
     private List<PDFItem> items = new ArrayList<>();
+    private PDTextField itemDescription;
+    private PDFont itemDescriptionFont = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+    private float itemDescriptionFontSize = 12f;
+    private float itemDescriptionMaxWidth = 200f;
 
     // Zwischensumme
     private PDField subTotal;
@@ -102,7 +120,8 @@ public class PDFOrder {
 
     private List<PDFQuotation> quotations = new ArrayList<>();
 
-    // Der Auftrag wird der oben unter der lfd.Nr. genannten Firma erteilt, da diese Firma...
+    // Der Auftrag wird der oben unter der lfd.Nr. genannten Firma erteilt, da diese
+    // Firma...
     private PDField lfdNr;
 
     // das preisgünstigste Angebot abgegeben hat
@@ -132,7 +151,8 @@ public class PDFOrder {
     // 2nd flag
     private PDCheckBox orderFlagFurnitureRoom;
 
-    // 6. Zustimmung bei der Bestellung von Geräten (baulich-infrastrukturell relevant
+    // 6. Zustimmung bei der Bestellung von Geräten (baulich-infrastrukturell
+    // relevant
     private PDCheckBox orderFlagInvestmentRoom;
     // 2nd flag
     private PDCheckBox orderFlagInvestmentStructuralMeasures;
@@ -140,14 +160,14 @@ public class PDFOrder {
     // 7. Zustimmung bei Bestellung von medientechnischen Einrichtungen und Geräten:
     private PDCheckBox orderFlagMediaPermission;
 
-
     public PDFOrder parseOrder(PDAcroForm acroForm) {
-        constructionAndAssemblyFlag = (PDCheckBox) acroForm.getField("Formular1[0].#subform[0].Header[0].Kontrollkästchen1[0]");
+        constructionAndAssemblyFlag = (PDCheckBox) acroForm
+                .getField("Formular1[0].#subform[0].Header[0].Kontrollkästchen1[0]");
         deliveryAndServiceFlag = (PDCheckBox) acroForm.getField("Formular1[0].#subform[0].Kontrollkästchen1[1]");
         orderNumber = acroForm.getField("Formular1[0].#subform[0].Header[0].Rechnungsnummer[0]");
         companyAddress = acroForm.getField("Formular1[0].#subform[0].Header[0].Textfeld1[0]");
-        supplierEmail = acroForm.getField("Formular1[0].#subform[0].Header[0].Fax[2]");
-        invoiceId = acroForm.getField("Formular1[0].#subform[0].Body[0].Zwischensumme[0]");
+        supplierEmail = acroForm.getField("Formular1[0].#subform[0].Header[0].Firma[3]");
+        invoiceId = acroForm.getField("Formular1[0].#subform[0].Firma[4]");
         date = acroForm.getField("Formular1[0].#subform[0].Header[0].Rechnungsdatum[0]");
         orderer = acroForm.getField("Formular1[0].#subform[0].Header[0].Firma[1]");
         phone = acroForm.getField("Formular1[0].#subform[0].Header[0].Telefon[1]");
@@ -162,16 +182,17 @@ public class PDFOrder {
         invoiceStreet = acroForm.getField("Formular1[0].#subform[0].Header[0].Telefon[2]");
         invoiceDeliveryAddress = acroForm.getField("Formular1[0].#subform[0].Header[0].Fax[2]");
 
-        for(int i = 0; i < 14; i++){
+        for (int i = 0; i < 14; i++) {
             PDFItem article = new PDFItem(
                     acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Artikel[%d]", i)),
-                    acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Beschreibung[%d]", i)),
+                    (PDTextField) acroForm
+                            .getField(String.format("Formular1[0].#subform[0].Body[0].Beschreibung[%d]", i)),
                     acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Menge[%d]", i)),
                     acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Stückpreis[%d]", i)),
-                    acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Betrag[%d]", i))
-            );
+                    acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Betrag[%d]", i)));
             items.add(article);
         }
+        itemDescription = (PDTextField) acroForm.getField("Formular1[0].#subform[0].Body[0].Beschreibung[0]");
 
         subTotal = acroForm.getField("Formular1[0].#subform[0].Body[0].Zwischensumme[0]");
         netTotal = acroForm.getField("Formular1[0].#subform[0].Body[0].Nettosumme[1]");
@@ -184,22 +205,23 @@ public class PDFOrder {
         costCenterSecondary = acroForm.getField("Formular1[0].#subform[1].Textfeld1[4]");
         dfgKey = acroForm.getField("Formular1[0].#subform[1].Textfeld1[3]");
 
-        for(int i = 0; i < 3; i++){
+        for (int i = 0; i < 3; i++) {
             PDFQuotation quotation = new PDFQuotation(
-                    i+1, // Index
+                    i + 1, // Index
                     acroForm.getField(String.format("Formular1[0].#subform[1].Textfeld7[%d]", i)),
                     acroForm.getField(String.format("Formular1[0].#subform[1].DateField3[%d]", i)),
-                    acroForm.getField(String.format("Formular1[0].#subform[1].Dezimalfeld1[%d]", i))
-            );
+                    acroForm.getField(String.format("Formular1[0].#subform[1].Dezimalfeld1[%d]", i)));
             quotations.add(quotation);
         }
 
         lfdNr = acroForm.getField("Formular1[0].#subform[1].Textfeld4[0]");
         flagDecisionCheapestOffer = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[2]");
-        flagDecisionMostEconomicalOffer = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[3]");
+        flagDecisionMostEconomicalOffer = (PDCheckBox) acroForm
+                .getField("Formular1[0].#subform[1].Kontrollkästchen1[3]");
         flagDecisionSoleSupplier = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[4]");
         flagDecisionContractPartner = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[5]");
-        flagDecisionPreferredSupplierList = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[6]");
+        flagDecisionPreferredSupplierList = (PDCheckBox) acroForm
+                .getField("Formular1[0].#subform[1].Kontrollkästchen1[6]");
         flagDecisionOtherReasons = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[7]");
         flagDecisionOtherReasonsDescription = acroForm.getField("Formular1[0].#subform[1].Textfeld5[0]");
 
@@ -211,211 +233,398 @@ public class PDFOrder {
         // 2nd flag
         orderFlagFurnitureRoom = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[10]");
 
-        // 6. Zustimmung bei der Bestellung von Geräten (baulich-infrastrukturell relevant
+        // 6. Zustimmung bei der Bestellung von Geräten (baulich-infrastrukturell
+        // relevant
         orderFlagInvestmentRoom = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[11]");
         // 2nd flag
-        orderFlagInvestmentStructuralMeasures = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[12]");
+        orderFlagInvestmentStructuralMeasures = (PDCheckBox) acroForm
+                .getField("Formular1[0].#subform[1].Kontrollkästchen1[12]");
 
         // 7. Zustimmung bei Bestellung von medientechnischen Einrichtungen und Geräten:
         orderFlagMediaPermission = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[13]");
 
+        retrieveDescriptionFontSize();
+        retrieveItemDescriptionMaxWidth();
+
         return this;
     }
 
-    public void setConstructionAndAssemblyFlag(boolean flag) throws IOException {
-        if (flag) {
+    private void retrieveItemDescriptionMaxWidth() {
+        itemDescriptionMaxWidth = itemDescription.getWidgets().get(0).getRectangle().getWidth();
+    }
+
+    private void retrieveDescriptionFontSize() {
+        try {
+            // Try to extract font size from default appearance string
+            String daString = itemDescription.getDefaultAppearance();
+            if (daString != null && daString.contains("Tf")) {
+                String[] parts = daString.split(" ");
+                for (int i = 0; i < parts.length - 1; i++) {
+                    if ("Tf".equals(parts[i + 1])) {
+                        itemDescriptionFontSize = Float.parseFloat(parts[i]);
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            itemDescriptionFontSize = 12f;
+        }
+    }
+
+    public void setConstructionAndAssemblyFlag(Boolean flag) throws IOException {
+        if (Boolean.TRUE.equals(flag)) {
             this.constructionAndAssemblyFlag.check();
         } else {
             this.constructionAndAssemblyFlag.unCheck();
         }
     }
 
-    public void  setDeliveryAndServiceFlag(boolean flag) throws IOException {
-        if (flag) {
+    public void setDeliveryAndServiceFlag(Boolean flag) throws IOException {
+        if (Boolean.TRUE.equals(flag)) {
             this.deliveryAndServiceFlag.check();
-        }else {
+        } else {
             this.deliveryAndServiceFlag.unCheck();
         }
     }
 
     public void setCompanyAddress(String address) throws IOException {
-        this.companyAddress.setValue(address);
+        this.companyAddress.setValue(address != null ? address : "");
+    }
+
+    public void setSupplierName(String supplierName) throws IOException {
+        quotations.get(0).setCompanyName(supplierName != null ? supplierName : "");
     }
 
     public void setInvoiceId(String invoiceId) throws IOException {
-        this.invoiceId.setValue(invoiceId);
+        this.invoiceId.setValue(invoiceId != null ? invoiceId : "");
     }
 
     public void setDate(String date) throws IOException {
-        this.date.setValue(date);
+        String dateValue = date != null ? date : "";
+        this.date.setValue(dateValue);
+        quotations.get(0).setDate(dateValue);
     }
 
     public void setOrderer(String orderer) throws IOException {
-        this.orderer.setValue(orderer);
+        this.orderer.setValue(orderer != null ? orderer : "");
     }
 
     public void setPhone(String phone) throws IOException {
-        this.phone.setValue(phone);
+        this.phone.setValue(phone != null ? phone : "");
     }
 
     public void setMobilePhone(String mobilePhone) throws IOException {
-        this.mobilePhone.setValue(mobilePhone);
+        this.mobilePhone.setValue(mobilePhone != null ? mobilePhone : "");
     }
 
     public void setEmail(String email) throws IOException {
-        this.email.setValue(email);
+        this.email.setValue(email != null ? email : "");
     }
 
     public void setDeliveryFaculty(String deliveryFaculty) throws IOException {
-        this.deliveryFaculty.setValue(deliveryFaculty);
+        this.deliveryFaculty.setValue(deliveryFaculty != null ? deliveryFaculty : "");
     }
 
     public void setDeliveryOrderer(String deliveryOrderer) throws IOException {
-        this.deliveryOrderer.setValue(deliveryOrderer);
+        this.deliveryOrderer.setValue(deliveryOrderer != null ? deliveryOrderer : "");
     }
 
     public void setDeliveryStreet(String deliveryStreet) throws IOException {
-        this.deliveryStreet.setValue(deliveryStreet);
+        this.deliveryStreet.setValue(deliveryStreet != null ? deliveryStreet : "");
     }
 
     public void setDeliveryAddress(String deliveryAddress) throws IOException {
-        this.deliveryAddress.setValue(deliveryAddress);
+        this.deliveryAddress.setValue(deliveryAddress != null ? deliveryAddress : "");
     }
 
     public void setInvoiceFaculty(String invoiceFaculty) throws IOException {
-        this.invoiceFaculty.setValue(invoiceFaculty);
+        this.invoiceFaculty.setValue(invoiceFaculty != null ? invoiceFaculty : "");
     }
 
     public void setInvoiceOrderer(String invoiceOrderer) throws IOException {
-        this.invoiceOrderer.setValue(invoiceOrderer);
+        this.invoiceOrderer.setValue(invoiceOrderer != null ? invoiceOrderer : "");
     }
 
     public void setInvoiceStreet(String invoiceStreet) throws IOException {
-        this.invoiceStreet.setValue(invoiceStreet);
+        this.invoiceStreet.setValue(invoiceStreet != null ? invoiceStreet : "");
     }
 
     public void setInvoiceDeliveryAddress(String invoiceDeliveryAddress) throws IOException {
-        this.invoiceDeliveryAddress.setValue(invoiceDeliveryAddress);
+        this.invoiceDeliveryAddress.setValue(invoiceDeliveryAddress != null ? invoiceDeliveryAddress : "");
     }
 
-    public void setItems(List<ItemResponseDTO> items) throws IOException {
-        if(items.size() < 14){
-                for(int i = 0; i < items.size(); i++){
-                    ItemResponseDTO itemDTO = items.get(i);
-                    PDFItem pdfItem = this.items.get(i);
-                    pdfItem.setPosition(String.valueOf(itemDTO.getItemId()));
-                    pdfItem.setDescription(itemDTO.getName());
-                    pdfItem.setQuantity(String.valueOf(itemDTO.getQuantity()));
-                    pdfItem.setPrice((itemDTO.getPricePerUnit() + " €").replace('.', ','));
-                    pdfItem.setAmount((BigDecimal.valueOf(itemDTO.getQuantity()).multiply(itemDTO.getPricePerUnit()) + " €").replace('.', ','));
+    public void setItems(List<Item> items) throws IOException {
+        items = wrapItemLines(items);
+        if (items.size() < 14) {
+            for (int i = 0; i < items.size(); i++) {
+                Item item = items.get(i);
+                PDFItem pdfItem = this.items.get(i);
+
+                BigDecimal netPrice;
+                try {
+                    netPrice = item.getVatType() == VatType.netto ? item.getPricePerUnit()
+                            : PriceConversionService.convertGrossPriceToNetPrice(item.getPricePerUnit(),
+                                    item.getVat());
+                } catch (IllegalArgumentException e) {
+                    netPrice = BigDecimal.ZERO;
                 }
-    }else {
-            throw new RuntimeException("Number of items must be less than 14.");
+
+                if (item.getQuantity() > 0) {
+
+                    pdfItem.setPosition(String.valueOf(item.getId().getItemId()));
+                    pdfItem.setQuantity(String.valueOf(item.getQuantity()));
+                    pdfItem.setPrice((netPrice + " €").replace('.', ','));
+                    pdfItem.setAmount((BigDecimal.valueOf(item.getQuantity()).multiply(netPrice) + " €")
+                            .replace('.', ','));
+                }
+                pdfItem.setDescription(item.getName());
+            }
+        } else {
+            throw new BadRequestException("Number of items must be less than 14.");
         }
     }
 
+    private List<Item> wrapItemLines(List<Item> items) {
+        Deque<Item> itemStack = new ArrayDeque<>();
+        List<Item> wrappedItems = new ArrayList<>();
+        List<Item> reversedItems = new ArrayList<>(items);
+        java.util.Collections.reverse(reversedItems);
+        for (Item item : reversedItems) {
+            itemStack.push(item);
+        }
+        while (!itemStack.isEmpty()) {
+            Item item = itemStack.pop();
+            try {
+                float descriptionWidth = getStringWidth(item.getName());
+                if (descriptionWidth <= itemDescriptionMaxWidth) {
+                    wrappedItems.add(item);
+                } else {
+                    // Wrap the description into multiple lines
+                    for (Item wrappedItem : wrapItem(item)) {
+                        wrappedItems.add(wrappedItem);
+                    }
+                }
+            } catch (IOException e) {
+                logger.error("Error measuring item description width for item ID {}: {}", item.getId().getItemId(),
+                        e.getMessage());
+                wrappedItems.add(item);
+            }
+        }
+        if (items.size() <= 14 && wrappedItems.size() > 14) {
+            throw new BadRequestException("After wrapping, number of items exceeds the maximum of 14.");
+        }
+        return wrappedItems;
+    }
+
+    private List<Item> wrapItem(Item item) {
+        List<Item> wrappedItems = new ArrayList<>();
+        String fullDescription = item.getName();
+
+        try {
+            // Calculate how much text fits in the first line (accounting for other columns)
+            // Assume the description column takes up about 90% of available width
+            float availableWidth = itemDescriptionMaxWidth * 0.9f;
+
+            int fitLength = findMaxFittingPrefixLength(fullDescription, availableWidth);
+            fitLength = adjustToWordBoundary(fullDescription, fitLength);
+
+            // If entire description fits, return as is
+            if (fitLength >= fullDescription.length()) {
+                wrappedItems.add(item);
+                return wrappedItems;
+            }
+
+            // Create first item with truncated description
+            Item firstItem = new Item();
+            firstItem.setId(item.getId());
+            firstItem.setName(fullDescription.substring(0, fitLength).trim());
+            firstItem.setQuantity(item.getQuantity());
+            firstItem.setPricePerUnit(item.getPricePerUnit());
+            firstItem.setVat(item.getVat());
+            firstItem.setVatType(item.getVatType());
+            wrappedItems.add(firstItem);
+
+            // Create additional items with remaining description
+            String remainingDescription = fullDescription.substring(fitLength).trim();
+            while (!remainingDescription.isEmpty()) {
+                fitLength = findMaxFittingPrefixLength(remainingDescription, itemDescriptionMaxWidth);
+                fitLength = adjustToWordBoundary(remainingDescription, fitLength);
+
+                if (fitLength == 0) {
+                    fitLength = 1; // Ensure progress even with very long words
+                }
+
+                Item continuationItem = new Item();
+                continuationItem.setId(item.getId());
+                continuationItem.setName(remainingDescription.substring(0, fitLength).trim());
+                continuationItem.setQuantity(0l); // No quantity for continuation items
+                continuationItem.setVat(item.getVat());
+                continuationItem.setVatType(item.getVatType());
+                wrappedItems.add(continuationItem);
+
+                remainingDescription = remainingDescription.substring(fitLength).trim();
+            }
+        } catch (IOException e) {
+            logger.error("Error wrapping item description for item ID {}: {}", item.getId().getItemId(),
+                    e.getMessage());
+            wrappedItems.add(item);
+        }
+
+        return wrappedItems;
+    }
+
+    private int findMaxFittingPrefixLength(String text, float maxWidth) throws IOException {
+        int low = 0;
+        int high = text.length();
+        int bestFit = 0;
+
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            float width = getStringWidth(text.substring(0, mid));
+
+            if (width <= maxWidth) {
+                bestFit = mid;
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+
+        return bestFit;
+    }
+
+    private int adjustToWordBoundary(String text, int fitLength) {
+        if (fitLength <= 0 || fitLength >= text.length()) {
+            return fitLength;
+        }
+
+        int lastWhitespace = -1;
+        for (int i = fitLength - 1; i >= 0; i--) {
+            if (Character.isWhitespace(text.charAt(i))) {
+                lastWhitespace = i;
+                break;
+            }
+        }
+
+        // Keep binary-search split for single long words, otherwise cut at whitespace.
+        return lastWhitespace > 0 ? lastWhitespace : fitLength;
+    }
+
+    private float getStringWidth(String input) throws IOException {
+        String normalized = Normalizer
+                .normalize(input, Normalizer.Form.NFD)
+                .replaceAll("[^\\p{ASCII}]", "");
+        normalized = normalized.replaceAll("[^\\x00-\\x7F]", "");
+        System.out.println("Normalized string: '" + normalized + "'");
+        return itemDescriptionFont.getStringWidth(normalized) * itemDescriptionFontSize / 1000f;
+    }
+
     public void setSubTotal(String subTotal) throws IOException {
-        this.subTotal.setValue(subTotal);
+        this.subTotal.setValue(subTotal != null ? subTotal : "");
     }
 
     public void setNetTotal(String netTotal) throws IOException {
-        this.netTotal.setValue(netTotal);
+        String netTotalValue = netTotal != null ? netTotal : "";
+        this.netTotal.setValue(netTotalValue);
+        quotations.get(0).setPrice(netTotalValue);
     }
 
     public void setTotal(String total) throws IOException {
-        this.total.setValue(total);
+        this.total.setValue(total != null ? total : "");
     }
 
-
     public void setQuotations(List<Quotation> items) throws IOException {
-            for(int i = 0; i < items.size(); i++) {
-                Quotation quotation = items.get(i);
-                PDFQuotation pdfQuotation = this.quotations.get(i);
-                pdfQuotation.setIndex(Integer.valueOf(quotation.getIndex()));
-                pdfQuotation.setPrice(String.valueOf(quotation.getPrice()));
-                pdfQuotation.setCompanyName(quotation.getCompanyName());
-                pdfQuotation.setDate(String.valueOf(quotation.getQuoteDate()));
-            }
+        // We only have 3 quotation fields in the PDF, so we can only set up to 2
+        // quotations as the first one is used for the main supplier info
+        int maxQuotations = Math.min(items.size(), this.quotations.size() - 1);
+        for (int i = 0; i < maxQuotations; i++) {
+            Quotation quotation = items.get(i);
+            PDFQuotation pdfQuotation = this.quotations.get(i + 1);
+            pdfQuotation.setIndex(Integer.valueOf(quotation.getIndex()));
+            pdfQuotation.setPrice(String.valueOf(quotation.getPrice()));
+            pdfQuotation.setCompanyName(quotation.getCompanyName());
+            pdfQuotation.setDate(String.valueOf(quotation.getQuoteDate()));
+        }
     }
 
     public void setPercentageDiscount(String percentageDiscount) throws IOException {
-        this.percentageDiscount.setValue(percentageDiscount);
+        this.percentageDiscount.setValue(percentageDiscount != null ? percentageDiscount : "");
     }
 
     public void setVat(String vat) throws IOException {
-        this.vat.setValue(vat);
+        this.vat.setValue(vat != null ? vat : "");
     }
 
     public void setCommentForSupplier(String commentForSupplier) throws IOException {
-        this.commentForSupplier.setValue(commentForSupplier);
+        this.commentForSupplier.setValue(commentForSupplier != null ? commentForSupplier : "");
     }
 
     public void setCostCenter(String costCenter) throws IOException {
-        this.costCenter.setValue(costCenter);
+        this.costCenter.setValue(costCenter != null ? costCenter : "");
     }
 
     public void setCostCenterSecondary(String costCenterSecondary) throws IOException {
-        this.costCenterSecondary.setValue(costCenterSecondary);
+        this.costCenterSecondary.setValue(costCenterSecondary != null ? costCenterSecondary : "");
     }
 
     public void setDfgKey(String dfgKey) throws IOException {
-        this.dfgKey.setValue(dfgKey);
+        this.dfgKey.setValue(dfgKey != null ? dfgKey : "");
     }
 
     public void setOrderNumber(String orderNumber) throws IOException {
-        this.orderNumber.setValue(orderNumber);
+        this.orderNumber.setValue(orderNumber != null ? orderNumber : "");
     }
 
     public void setSupplierEmail(String supplierEmail) throws IOException {
-        this.supplierEmail.setValue(supplierEmail);
+        this.supplierEmail.setValue(supplierEmail != null ? supplierEmail : "");
     }
 
     public void setLfdNr(String lfdNr) throws IOException {
-        this.lfdNr.setValue(lfdNr);
+        this.lfdNr.setValue(lfdNr != null ? lfdNr : "");
     }
 
-    public void setFlagDecisionCheapestOffer(boolean flag) throws IOException {
-        if (flag) {
+    public void setFlagDecisionCheapestOffer(Boolean flag) throws IOException {
+        if (Boolean.TRUE.equals(flag)) {
             this.flagDecisionCheapestOffer.check();
         } else {
             this.flagDecisionCheapestOffer.unCheck();
         }
     }
 
-    public void setFlagDecisionMostEconomicalOffer(boolean flag) throws IOException {
-        if (flag) {
+    public void setFlagDecisionMostEconomicalOffer(Boolean flag) throws IOException {
+        if (Boolean.TRUE.equals(flag)) {
             this.flagDecisionMostEconomicalOffer.check();
         } else {
             this.flagDecisionMostEconomicalOffer.unCheck();
         }
     }
 
-    public void setFlagDecisionSoleSupplier(boolean flag) throws IOException {
-        if (flag) {
+    public void setFlagDecisionSoleSupplier(Boolean flag) throws IOException {
+        if (Boolean.TRUE.equals(flag)) {
             this.flagDecisionSoleSupplier.check();
         } else {
             this.flagDecisionSoleSupplier.unCheck();
         }
     }
 
-    public void setFlagDecisionContractPartner(boolean flag) throws IOException {
-        if (flag) {
+    public void setFlagDecisionContractPartner(Boolean flag) throws IOException {
+        if (Boolean.TRUE.equals(flag)) {
             this.flagDecisionContractPartner.check();
         } else {
             this.flagDecisionContractPartner.unCheck();
         }
     }
 
-    public void setFlagDecisionPreferredSupplierList(boolean flag) throws IOException {
-        if (flag) {
+    public void setFlagDecisionPreferredSupplierList(Boolean flag) throws IOException {
+        if (Boolean.TRUE.equals(flag)) {
             this.flagDecisionPreferredSupplierList.check();
         } else {
             this.flagDecisionPreferredSupplierList.unCheck();
         }
     }
 
-    public void setFlagDecisionOtherReasons(boolean flag) throws IOException {
-        if (flag) {
+    public void setFlagDecisionOtherReasons(Boolean flag) throws IOException {
+        if (Boolean.TRUE.equals(flag)) {
             this.flagDecisionOtherReasons.check();
         } else {
             this.flagDecisionOtherReasons.unCheck();
@@ -423,51 +632,51 @@ public class PDFOrder {
     }
 
     public void setFlagDecisionOtherReasonsDescription(String description) throws IOException {
-        this.flagDecisionOtherReasonsDescription.setValue(description);
+        this.flagDecisionOtherReasonsDescription.setValue(description != null ? description : "");
     }
 
-    public void setOrderFlagEdvPermission(boolean flag) throws IOException {
-        if (flag) {
+    public void setOrderFlagEdvPermission(Boolean flag) throws IOException {
+        if (Boolean.TRUE.equals(flag)) {
             this.orderFlagEdvPermission.check();
         } else {
             this.orderFlagEdvPermission.unCheck();
         }
     }
 
-    public void setOrderFlagFurniturePermission(boolean flag) throws IOException {
-        if (flag) {
+    public void setOrderFlagFurniturePermission(Boolean flag) throws IOException {
+        if (Boolean.TRUE.equals(flag)) {
             this.orderFlagFurniturePermission.check();
         } else {
             this.orderFlagFurniturePermission.unCheck();
         }
     }
 
-    public void setOrderFlagFurnitureRoom(boolean flag) throws IOException {
-        if (flag) {
+    public void setOrderFlagFurnitureRoom(Boolean flag) throws IOException {
+        if (Boolean.TRUE.equals(flag)) {
             this.orderFlagFurnitureRoom.check();
         } else {
             this.orderFlagFurnitureRoom.unCheck();
         }
     }
 
-    public void setOrderFlagInvestmentRoom(boolean flag) throws IOException {
-        if (flag) {
+    public void setOrderFlagInvestmentRoom(Boolean flag) throws IOException {
+        if (Boolean.TRUE.equals(flag)) {
             this.orderFlagInvestmentRoom.check();
         } else {
             this.orderFlagInvestmentRoom.unCheck();
         }
     }
 
-    public void setOrderFlagInvestmentStructuralMeasures(boolean flag) throws IOException {
-        if (flag) {
+    public void setOrderFlagInvestmentStructuralMeasures(Boolean flag) throws IOException {
+        if (Boolean.TRUE.equals(flag)) {
             this.orderFlagInvestmentStructuralMeasures.check();
         } else {
             this.orderFlagInvestmentStructuralMeasures.unCheck();
         }
     }
 
-    public void setOrderFlagMediaPermission(boolean flag) throws IOException {
-        if (flag) {
+    public void setOrderFlagMediaPermission(Boolean flag) throws IOException {
+        if (Boolean.TRUE.equals(flag)) {
             this.orderFlagMediaPermission.check();
         } else {
             this.orderFlagMediaPermission.unCheck();
@@ -477,6 +686,5 @@ public class PDFOrder {
     public List<PDFItem> getItems() {
         return this.items;
     }
-
 
 }

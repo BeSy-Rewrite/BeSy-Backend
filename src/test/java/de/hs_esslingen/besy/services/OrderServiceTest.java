@@ -1,5 +1,40 @@
 package de.hs_esslingen.besy.services;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Set;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.test.util.ReflectionTestUtils;
+
 import de.hs_esslingen.besy.configurations.ValidationHelper;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
@@ -15,13 +50,13 @@ import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
 import de.hs_esslingen.besy.mappers.response.OrderStatusHistoryResponseMapper;
 import de.hs_esslingen.besy.models.Address;
 import de.hs_esslingen.besy.models.CostCenter;
-import de.hs_esslingen.besy.models.CustomerId;
+import de.hs_esslingen.besy.models.Currency;
 import de.hs_esslingen.besy.models.CustomerIdId;
 import de.hs_esslingen.besy.models.Order;
 import de.hs_esslingen.besy.models.OrderStatusHistory;
 import de.hs_esslingen.besy.models.Person;
+import de.hs_esslingen.besy.models.Supplier;
 import de.hs_esslingen.besy.models.User;
-import de.hs_esslingen.besy.models.Currency;
 import de.hs_esslingen.besy.repositories.AddressRepository;
 import de.hs_esslingen.besy.repositories.CostCenterRepository;
 import de.hs_esslingen.besy.repositories.CurrencyRepository;
@@ -30,47 +65,9 @@ import de.hs_esslingen.besy.repositories.OrderPageableRepository;
 import de.hs_esslingen.besy.repositories.OrderRepository;
 import de.hs_esslingen.besy.repositories.OrderStatusHistoryRepository;
 import de.hs_esslingen.besy.repositories.PersonRepository;
+import de.hs_esslingen.besy.repositories.SupplierRepository;
 import de.hs_esslingen.besy.repositories.UserRepository;
 import jakarta.validation.ConstraintViolationException;
-import org.junit.Ignore;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.jwt.Jwt;
-
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
@@ -100,7 +97,13 @@ class OrderServiceTest {
     private AddressRepository addressRepository;
 
     @Mock
+    private SupplierRepository supplierRepository;
+
+    @Mock
     private OrderStatusHistoryRepository orderStatusHistoryRepository;
+
+    @Mock
+    private UserService userService;
 
     @Mock
     private OrderResponseMapper orderResponseMapper;
@@ -128,7 +131,8 @@ class OrderServiceTest {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(orderService, "dekanRoleName", "dekan");
-        ReflectionTestUtils.setField(de.hs_esslingen.besy.security.KeycloakAuthenticationConverter.class, "clientId", "test-client");
+        ReflectionTestUtils.setField(de.hs_esslingen.besy.security.KeycloakAuthenticationConverter.class, "clientId",
+                "test-client");
 
         order = new Order();
         order.setId(1L);
@@ -171,8 +175,7 @@ class OrderServiceTest {
                 "",
                 "DFG",
                 100,
-                101
-        );
+                101);
 
         responseDto = new OrderResponseDTO(
                 1L,
@@ -211,8 +214,7 @@ class OrderServiceTest {
                 "",
                 "DFG",
                 100,
-                101
-        );
+                101);
 
         jwtWithRole = Jwt.withTokenValue("token")
                 .header("alg", "none")
@@ -254,8 +256,7 @@ class OrderServiceTest {
                 null,
                 null,
                 null,
-                pageable
-        );
+                pageable);
 
         assertEquals(1, result.getTotalElements());
         assertEquals(responseDto, result.getContent().get(0));
@@ -294,6 +295,17 @@ class OrderServiceTest {
                 .thenReturn(null);
         when(orderRepository.save(mapped)).thenReturn(mapped);
         when(orderResponseMapper.toDto(mapped)).thenReturn(responseDto);
+        when(currencyRepository.getReferenceById("EUR")).thenReturn(new Currency());
+        when(personRepository.getReferenceById(10L)).thenReturn(new Person());
+        when(personRepository.getReferenceById(11L)).thenReturn(new Person());
+        when(personRepository.getReferenceById(12L)).thenReturn(new Person());
+        when(supplierRepository.getReferenceById(2)).thenReturn(new Supplier());
+        when(customerIdRepository.existsById(any())).thenReturn(true);
+        when(costCenterRepository.getReferenceById("CC-2")).thenReturn(new CostCenter());
+        when(costCenterRepository.getReferenceById("CC-1")).thenReturn(new CostCenter());
+        when(addressRepository.getReferenceById(100)).thenReturn(new Address());
+        when(addressRepository.getReferenceById(101)).thenReturn(new Address());
+        when(userRepository.getReferenceById(1)).thenReturn(new User());
 
         ResponseEntity<OrderResponseDTO> response = orderService.createOrder(requestDto, null);
 
@@ -317,6 +329,17 @@ class OrderServiceTest {
                 .thenReturn(latest);
         when(orderRepository.save(mapped)).thenReturn(mapped);
         when(orderResponseMapper.toDto(mapped)).thenReturn(responseDto);
+        when(currencyRepository.getReferenceById("EUR")).thenReturn(new Currency());
+        when(personRepository.getReferenceById(10L)).thenReturn(new Person());
+        when(personRepository.getReferenceById(11L)).thenReturn(new Person());
+        when(personRepository.getReferenceById(12L)).thenReturn(new Person());
+        when(supplierRepository.getReferenceById(2)).thenReturn(new Supplier());
+        when(customerIdRepository.existsById(any())).thenReturn(true);
+        when(costCenterRepository.getReferenceById("CC-2")).thenReturn(new CostCenter());
+        when(costCenterRepository.getReferenceById("CC-1")).thenReturn(new CostCenter());
+        when(addressRepository.getReferenceById(100)).thenReturn(new Address());
+        when(addressRepository.getReferenceById(101)).thenReturn(new Address());
+        when(userRepository.getReferenceById(1)).thenReturn(new User());
 
         orderService.createOrder(requestDto, null);
 
@@ -325,9 +348,24 @@ class OrderServiceTest {
 
     @Test
     void should_update_order() {
+        Supplier supplier = new Supplier();
+        supplier.setId(2);
+        order.setSupplier(supplier);
+
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
         when(orderRepository.save(order)).thenReturn(order);
         when(orderResponseMapper.toDto(order)).thenReturn(responseDto);
+        when(currencyRepository.getReferenceById("EUR")).thenReturn(new Currency());
+        when(personRepository.getReferenceById(10L)).thenReturn(new Person());
+        when(personRepository.getReferenceById(11L)).thenReturn(new Person());
+        when(personRepository.getReferenceById(12L)).thenReturn(new Person());
+        when(supplierRepository.getReferenceById(2)).thenReturn(new Supplier());
+        when(customerIdRepository.existsById(any())).thenReturn(true);
+        when(costCenterRepository.getReferenceById("CC-2")).thenReturn(new CostCenter());
+        when(costCenterRepository.getReferenceById("CC-1")).thenReturn(new CostCenter());
+        when(addressRepository.getReferenceById(100)).thenReturn(new Address());
+        when(addressRepository.getReferenceById(101)).thenReturn(new Address());
+        when(userRepository.getReferenceById(1)).thenReturn(new User());
 
         ResponseEntity<OrderResponseDTO> response = orderService.updateOrder(requestDto, 1L);
 
@@ -379,18 +417,19 @@ class OrderServiceTest {
 
                 when(orderRepository.findById(1L)).thenReturn(Optional.of(currentOrder));
                 if (current == OrderStatus.IN_PROGRESS && target == OrderStatus.COMPLETED) {
-                    when(orderCompletedValidationMapper.toEntity(currentOrder)).thenReturn(new OrderCompletedValidationDAO(
-                            1L, "CC-1", "25", (short) 1, null, null, 1, "desc", OrderStatus.IN_PROGRESS,
-                            "EUR", null, null, null, null, null, null, 1L, 1L, 1L,
-                            "CUST", 1, "CC-2", null, null, null, null, null,
-                            null, null, null, null, null, null, null, null,
-                            null, 1
-                    ));
+                    when(orderCompletedValidationMapper.toEntity(currentOrder))
+                            .thenReturn(new OrderCompletedValidationDAO(
+                                    1L, "CC-1", "25", (short) 1, null, null, 1, "desc", OrderStatus.IN_PROGRESS,
+                                    "EUR", null, null, null, null, null, null, 1L, 1L, 1L,
+                                    "CUST", 1, "CC-2", null, null, null, null, null,
+                                    null, null, null, null, null, null, null, null,
+                                    null, 1));
                 }
 
-                Jwt jwt = (current == OrderStatus.DEKAN_PENDING && (target == OrderStatus.APPROVED || target == OrderStatus.COMPLETED))
-                        ? jwtWithRole
-                        : null;
+                Jwt jwt = (current == OrderStatus.DEKAN_PENDING
+                        && (target == OrderStatus.APPROVED || target == OrderStatus.COMPLETED))
+                                ? jwtWithRole
+                                : null;
 
                 ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, target, jwt);
                 assertEquals(target, response.getBody());
@@ -415,11 +454,12 @@ class OrderServiceTest {
                 "EUR", null, null, null, null, null, null, 1L, 1L, 1L,
                 "CUST", 1, "CC-2", null, null, null, null, null,
                 null, null, null, null, null, null, null, null,
-                null, 1
-        ));
-        doThrow(new ConstraintViolationException(null)).when(validator).validateOrThrow(any(OrderCompletedValidationDAO.class));
+                null, 1));
+        doThrow(new ConstraintViolationException(null)).when(validator)
+                .validateOrThrow(any(OrderCompletedValidationDAO.class));
 
-        assertThrows(ConstraintViolationException.class, () -> orderService.updateOrderStatus(1L, OrderStatus.COMPLETED, null));
+        assertThrows(ConstraintViolationException.class,
+                () -> orderService.updateOrderStatus(1L, OrderStatus.COMPLETED, null));
         verify(orderRepository, never()).save(any(Order.class));
     }
 
@@ -428,7 +468,8 @@ class OrderServiceTest {
         order.setStatus(OrderStatus.DEKAN_PENDING);
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
 
-        assertThrows(NotAuthorizedException.class, () -> orderService.updateOrderStatus(1L, OrderStatus.APPROVED, jwtWithoutRole));
+        assertThrows(NotAuthorizedException.class,
+                () -> orderService.updateOrderStatus(1L, OrderStatus.APPROVED, jwtWithoutRole));
     }
 
     @Test
@@ -436,7 +477,8 @@ class OrderServiceTest {
         order.setStatus(OrderStatus.DEKAN_PENDING);
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
 
-        assertThrows(NotAuthorizedException.class, () -> orderService.updateOrderStatus(1L, OrderStatus.COMPLETED, jwtWithoutRole));
+        assertThrows(NotAuthorizedException.class,
+                () -> orderService.updateOrderStatus(1L, OrderStatus.COMPLETED, jwtWithoutRole));
     }
 
     @Test
@@ -478,8 +520,7 @@ class OrderServiceTest {
     void should_get_status_history() {
         List<OrderStatusHistory> history = List.of(new OrderStatusHistory());
         List<OrderStatusHistoryResponseDTO> responseHistory = List.of(new OrderStatusHistoryResponseDTO(
-                OrderStatus.IN_PROGRESS, null
-        ));
+                OrderStatus.IN_PROGRESS, null));
 
         when(orderStatusHistoryRepository.findAllByOrderId(1L)).thenReturn(history);
         when(orderStatusHistoryResponseMapper.toDto(history)).thenReturn(responseHistory);
@@ -493,10 +534,10 @@ class OrderServiceTest {
 
     @Test
     void should_exists_order_by_id_when_not_deleted() {
-        when(orderRepository.existsByIdAndStatusNot(1L, OrderStatus.DELETED)).thenReturn(true);
+        when(orderRepository.existsById(1L)).thenReturn(true);
 
         assertTrue(orderService.existsOrderById(1L));
-        verify(orderRepository).existsByIdAndStatusNot(1L, OrderStatus.DELETED);
+        verify(orderRepository).existsById(1L);
     }
 
     @Test
@@ -516,7 +557,8 @@ class OrderServiceTest {
         when(orderRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(NoSuchElementException.class, () -> orderService.isOrderStatusEqual(1L, OrderStatus.IN_PROGRESS));
-        assertThrows(NoSuchElementException.class, () -> orderService.isOrderStatusEqual(1L, List.of(OrderStatus.IN_PROGRESS)));
+        assertThrows(NoSuchElementException.class,
+                () -> orderService.isOrderStatusEqual(1L, List.of(OrderStatus.IN_PROGRESS)));
     }
 
     @Test
@@ -542,7 +584,8 @@ class OrderServiceTest {
         when(personRepository.getReferenceById(12L)).thenReturn(new Person());
         when(costCenterRepository.getReferenceById("CC-2")).thenReturn(new CostCenter());
         when(userRepository.getReferenceById(1)).thenReturn(new User());
-        when(customerIdRepository.getReferenceById(new CustomerIdId("CUST-1", 2))).thenReturn(new CustomerId());
+        when(supplierRepository.getReferenceById(2)).thenReturn(new Supplier());
+        when(customerIdRepository.existsById(any())).thenReturn(true);
         when(addressRepository.getReferenceById(100)).thenReturn(new Address());
         when(addressRepository.getReferenceById(101)).thenReturn(new Address());
         when(costCenterRepository.getReferenceById("CC-1")).thenReturn(new CostCenter());
@@ -555,7 +598,8 @@ class OrderServiceTest {
         verify(personRepository).getReferenceById(12L);
         verify(costCenterRepository).getReferenceById("CC-2");
         verify(userRepository).getReferenceById(1);
-        verify(customerIdRepository).getReferenceById(new CustomerIdId("CUST-1", 2));
+        verify(supplierRepository).getReferenceById(2);
+        verify(customerIdRepository).existsById(new CustomerIdId("CUST-1", 2));
         verify(addressRepository).getReferenceById(100);
         verify(addressRepository).getReferenceById(101);
         verify(costCenterRepository).getReferenceById("CC-1");
@@ -596,8 +640,7 @@ class OrderServiceTest {
                 null,
                 null,
                 null,
-                null
-        );
+                null);
 
         Order mapped = new Order();
         when(orderRequestMapper.toEntity(dto)).thenReturn(mapped);
@@ -620,8 +663,7 @@ class OrderServiceTest {
         OrderRequestDTO dto = new OrderRequestDTO(
                 null, null, null, null, "Content", null, null, null, null, null, null,
                 null, null, null, null, null, null, null, null, null, null, null,
-                null, null, null, null, null, null, null, null, null, null
-        );
+                null, null, null, null, null, null, null, null, null, null);
         Order mapped = new Order();
         when(orderRequestMapper.toEntity(dto)).thenReturn(mapped);
         when(orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(null, null))
@@ -631,13 +673,16 @@ class OrderServiceTest {
 
         orderService.createOrder(dto, null);
 
-        verifyNoInteractions(currencyRepository, personRepository, costCenterRepository, customerIdRepository, addressRepository, userRepository);
+        verifyNoInteractions(currencyRepository, personRepository, costCenterRepository, customerIdRepository,
+                addressRepository, userRepository);
     }
 
     @Test
     void should_return_false_when_exists_by_id_and_status_not_for_deleted() {
-        when(orderRepository.existsByIdAndStatusNot(1L, OrderStatus.DELETED)).thenReturn(false);
+        when(orderRepository.existsById(1L)).thenReturn(false);
+
         assertFalse(orderService.existsOrderById(1L));
+        verify(orderRepository).existsById(1L);
     }
 
     @Test
