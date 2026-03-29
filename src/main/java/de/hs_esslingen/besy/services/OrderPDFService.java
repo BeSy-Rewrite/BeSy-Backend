@@ -153,14 +153,14 @@ public class OrderPDFService {
             if (deliveryPersonOpt.isPresent())
                 order.setDeliveryOrderer(
                         deliveryPersonOpt.get().getName() + " " + deliveryPersonOpt.get().getSurname());
-            order.setDeliveryStreet(getStreet(deliveryAddress));
+            order.setDeliveryStreet(getStreet(deliveryAddress) + " " + getBuildingNumber(deliveryAddress));
             order.setDeliveryAddress(formatPostalAndTown(deliveryAddress));
 
             // Rechnungsanschrift
             order.setInvoiceFaculty(ANSCHRIFT_FAKULTAET_DEFAULT);
             if (invoicePersonOpt.isPresent())
                 order.setInvoiceOrderer(invoicePersonOpt.get().getName() + " " + invoicePersonOpt.get().getSurname());
-            order.setInvoiceStreet(getStreet(invoiceAddress));
+            order.setInvoiceStreet(getStreet(invoiceAddress) + " " + getBuildingNumber(invoiceAddress));
             order.setInvoiceDeliveryAddress(formatPostalAndTown(invoiceAddress));
 
             try {
