@@ -1,22 +1,5 @@
 package de.hs_esslingen.besy.services;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import de.hs_esslingen.besy.configurations.SpecificationHelper;
 import de.hs_esslingen.besy.configurations.ValidationHelper;
 import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
@@ -26,33 +9,30 @@ import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotAuthorizedException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
+import de.hs_esslingen.besy.extern.bic.BicService;
 import de.hs_esslingen.besy.interfaces.OrderCompletedValidationDAO;
 import de.hs_esslingen.besy.mappers.OrderCompletedValidationMapper;
 import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
 import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
 import de.hs_esslingen.besy.mappers.response.OrderStatusHistoryResponseMapper;
-import de.hs_esslingen.besy.models.Address;
-import de.hs_esslingen.besy.models.CostCenter;
+import de.hs_esslingen.besy.models.*;
 import de.hs_esslingen.besy.models.Currency;
-import de.hs_esslingen.besy.models.CustomerIdId;
-import de.hs_esslingen.besy.models.Order;
-import de.hs_esslingen.besy.models.OrderStatusHistory;
-import de.hs_esslingen.besy.models.Person;
-import de.hs_esslingen.besy.models.Supplier;
-import de.hs_esslingen.besy.models.User;
-import de.hs_esslingen.besy.repositories.AddressRepository;
-import de.hs_esslingen.besy.repositories.CostCenterRepository;
-import de.hs_esslingen.besy.repositories.CurrencyRepository;
-import de.hs_esslingen.besy.repositories.CustomerIdRepository;
-import de.hs_esslingen.besy.repositories.OrderPageableRepository;
-import de.hs_esslingen.besy.repositories.OrderRepository;
-import de.hs_esslingen.besy.repositories.OrderStatusHistoryRepository;
-import de.hs_esslingen.besy.repositories.PersonRepository;
-import de.hs_esslingen.besy.repositories.SupplierRepository;
-import de.hs_esslingen.besy.repositories.UserRepository;
+import de.hs_esslingen.besy.repositories.*;
 import de.hs_esslingen.besy.security.KeycloakAuthenticationConverter;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -70,6 +50,7 @@ public class OrderService {
     private final CustomerIdRepository customerIdRepository;
 
     private final UserService userService;
+    private final BicService bicService;
 
     private final OrderResponseMapper orderResponseMapper;
     private final OrderRequestMapper orderRequestMapper;
@@ -208,7 +189,6 @@ public class OrderService {
      * @param id        the ID of the order to update
      * @param newStatus the new {@link OrderStatus} to assign to the order
      * @return a {@link ResponseEntity} containing the updated order status
-     *
      * @throws NoSuchElementException       if no order with the given ID is found
      * @throws BadRequestException          if the transition from the current to
      *                                      the new status is not allowed
@@ -236,6 +216,8 @@ public class OrderService {
 
         orderStatusHistoryRepository.save(orderStatusHistory);
 
+        this.handleStateChangeActionsForOrder(savedOrder, newStatus);
+
         return ResponseEntity.ok(savedOrder.getStatus());
     }
 
@@ -257,13 +239,13 @@ public class OrderService {
     /**
      * Checks if the status of the order with the given ID matches the provided
      * status.
-     *
+     * <p>
      * This method retrieves the order from the repository using the provided order
      * ID and
      * compares the order's status with the given status. If the order is found and
      * its status
      * matches the provided status, it returns true. Otherwise, it returns false.
-     *
+     * <p>
      * Note: This method assumes that the order with the given ID exists in the
      * database. If
      * the order is not found, it will throw a {@link NoSuchElementException} when
@@ -273,7 +255,7 @@ public class OrderService {
      * @param orderId The ID of the order to be checked.
      * @param status  The status to compare the order's status against.
      * @return {@code true} if the order's status matches the given status,
-     *         {@code false} otherwise.
+     * {@code false} otherwise.
      */
     public boolean isOrderStatusEqual(Long orderId, OrderStatus status) {
         return orderRepository.findById(orderId).get().getStatus().equals(status);
@@ -291,7 +273,7 @@ public class OrderService {
      * @param orderId  the ID of the order to check
      * @param statuses the list of OrderStatus values to check against
      * @return true if the order exists and its status is in the list, false
-     *         otherwise
+     * otherwise
      */
     public boolean isOrderStatusEqual(Long orderId, Set<OrderStatus> statuses) {
         return orderRepository.findById(orderId).map(order -> statuses.contains(order.getStatus())).orElse(false);
@@ -302,6 +284,28 @@ public class OrderService {
                 .filter(entry -> entry.getValue().contains(status))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
+    }
+
+
+    /**
+     * Performs additional actions when an order transitions to a specific status.
+     *
+     * <p>This method is invoked after an order's status has been successfully updated
+     * to trigger any side effects or integrations associated with that status change.</p>
+     *
+     * <p>Currently supported actions:</p>
+     * <ul>
+     *   <li>When status transitions to {@link OrderStatus#SENT}, sends a BIC start request
+     *       via the {@link BicService}.</li>
+     * </ul>
+     *
+     * @param order  the order that has undergone a status change
+     * @param status the new {@link OrderStatus} that was assigned to the order
+     */
+    private void handleStateChangeActionsForOrder(Order order, OrderStatus status) {
+        if (status == OrderStatus.SENT) {
+            this.bicService.sendBicStartRequest(order);
+        }
     }
 
     /**
