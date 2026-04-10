@@ -44,9 +44,11 @@ public class BicService {
     private boolean isAutoRun;
 
     private final OrderNumberHelper orderNumberHelper;
+    private final RestTemplate restTemplate;
 
-    public BicService(OrderNumberHelper orderNumberHelper) {
+    public BicService(OrderNumberHelper orderNumberHelper, RestTemplate restTemplate) {
         this.orderNumberHelper = orderNumberHelper;
+        this.restTemplate = restTemplate;
     }
 
     public void sendBicStartRequest(Order order) {
@@ -62,8 +64,6 @@ public class BicService {
         if (isAutoRun) logger.warn("BIC is set to auto run.");
 
         try {
-            RestTemplate restTemplate = new RestTemplate();
-
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-Api-Key", authToken);
             headers.set("Accept", "*/*");
