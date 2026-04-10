@@ -58,10 +58,10 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
 
-      - name: Build and push backend image for main
+      - name: Build and push backend image for other
         uses: docker/build-push-action@v5
         if: (github.ref != 'refs/heads/main')
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BUILD_PROFILE }}"
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BUILD_PROFILE }}
