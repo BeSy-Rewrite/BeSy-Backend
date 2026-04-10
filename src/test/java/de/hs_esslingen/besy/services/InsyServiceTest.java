@@ -1,17 +1,8 @@
 package de.hs_esslingen.besy.services;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
+import de.hs_esslingen.besy.enums.VatType;
+import de.hs_esslingen.besy.models.*;
+import de.hs_esslingen.besy.repositories.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,18 +13,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
 
-import de.hs_esslingen.besy.enums.VatType;
-import de.hs_esslingen.besy.models.CostCenter;
-import de.hs_esslingen.besy.models.Item;
-import de.hs_esslingen.besy.models.ItemId;
-import de.hs_esslingen.besy.models.Order;
-import de.hs_esslingen.besy.models.Supplier;
-import de.hs_esslingen.besy.models.User;
-import de.hs_esslingen.besy.repositories.CostCenterRepository;
-import de.hs_esslingen.besy.repositories.ItemRepository;
-import de.hs_esslingen.besy.repositories.OrderRepository;
-import de.hs_esslingen.besy.repositories.SupplierRepository;
-import de.hs_esslingen.besy.repositories.UserRepository;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class InsyServiceTest {
@@ -129,9 +117,6 @@ class InsyServiceTest {
         when(costCenterRepository.findById(order.getPrimaryCostCenterId())).thenReturn(Optional.of(costCenter));
         when(userRepository.findById(order.getOwnerId())).thenReturn(Optional.of(user));
         when(itemRepository.findByOrder_Id(orderId)).thenReturn(items);
-        when(pdfService.generateOrderNumber(order.getPrimaryCostCenterId(), order.getBookingYear(),
-                order.getAutoIndex()))
-                .thenReturn("CC-1-25-0001");
 
         when(restClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
