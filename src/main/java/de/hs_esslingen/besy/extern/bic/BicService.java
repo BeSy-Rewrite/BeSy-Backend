@@ -49,8 +49,10 @@ public class BicService {
         this.orderNumberHelper = orderNumberHelper;
     }
 
-
     public void sendBicStartRequest(Order order) {
+        if (order == null) {
+            throw new IllegalArgumentException("Order cannot be null");
+        }
         BicRequestDTO bicRequestDTO = createPayload(order);
         sendBicRequestAsync(bicRequestDTO);
     }
