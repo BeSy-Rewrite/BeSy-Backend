@@ -1,6 +1,7 @@
 package de.hs_esslingen.besy.services;
 
 import de.hs_esslingen.besy.enums.VatType;
+import de.hs_esslingen.besy.helper.OrderNumberHelper;
 import de.hs_esslingen.besy.models.*;
 import de.hs_esslingen.besy.repositories.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,6 +56,9 @@ class InsyServiceTest {
 
     @Mock
     private RestClient.ResponseSpec responseSpec;
+
+    @Mock
+    private OrderNumberHelper orderNumberHelper;
 
     @InjectMocks
     private InsyService insyService;
@@ -125,6 +129,7 @@ class InsyServiceTest {
         when(requestBodySpec.body(any(List.class))).thenReturn(requestBodySpec);
         when(requestBodySpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.body(String.class)).thenReturn(apiResponse);
+        when(orderNumberHelper.generateOrderNumber(any(Order.class))).thenReturn("IT200/26/001");
 
         ResponseEntity<String> response = insyService.createOrder(orderId);
 

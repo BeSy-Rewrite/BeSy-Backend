@@ -17,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -70,8 +69,6 @@ class OrderPDFServiceTest {
     void setUp() {
         orderPDFService = new OrderPDFService(orderRepository, supplierRepository, itemRepository,
                 personRepository, quotationRepository, orderNumberHelper, Locale.GERMANY);
-        ReflectionTestUtils.setField(orderPDFService, "orderNumberPrefix", "IT");
-        ReflectionTestUtils.setField(orderPDFService, "orderNumberSeparator", "_");
 
         owner = new User();
         owner.setName("Jane");
@@ -193,6 +190,7 @@ class OrderPDFServiceTest {
         when(personRepository.findById(order.getDeliveryPersonId())).thenReturn(Optional.of(deliveryPerson));
         when(personRepository.findById(order.getInvoicePersonId())).thenReturn(Optional.of(invoicePerson));
         when(quotationRepository.getQuotationByOrderId(orderId)).thenReturn(List.of());
+        when(orderNumberHelper.generateOrderNumber(any(Order.class))).thenReturn(finaleOrderNumber);
 
         ResponseEntity<byte[]> response = orderPDFService.generateOrderPDF(orderId);
 
@@ -244,7 +242,8 @@ class OrderPDFServiceTest {
         when(personRepository.findById(order.getDeliveryPersonId())).thenReturn(Optional.empty());
         when(personRepository.findById(order.getInvoicePersonId())).thenReturn(Optional.empty());
         when(quotationRepository.getQuotationByOrderId(orderId)).thenReturn(List.of());
-
+        when(orderNumberHelper.generateOrderNumber(any(Order.class))).thenReturn(finaleOrderNumber);
+        
         ResponseEntity<byte[]> response = orderPDFService.generateOrderPDF(orderId);
 
         assertNotNull(response.getBody());

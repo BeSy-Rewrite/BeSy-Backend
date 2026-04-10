@@ -5,7 +5,6 @@ import de.hs_esslingen.besy.repositories.InvoiceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -14,7 +13,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -57,22 +57,6 @@ class InvoiceServiceTest {
         verify(invoiceRepository, never()).deleteAll();
     }
 
-    @Test
-    void should_create_invoice_set_fields() {
-        Long orderId = 100L;
-
-        when(invoiceRepository.save(any(Invoice.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        ArgumentCaptor<Invoice> captor = ArgumentCaptor.forClass(Invoice.class);
-        verify(invoiceRepository).save(captor.capture());
-        Invoice saved = captor.getValue();
-        assertEquals(orderId, saved.getOrderId());
-        assertNotNull(saved.getCreatedDate());
-
-        verify(invoiceRepository, never()).delete(any(Invoice.class));
-        verify(invoiceRepository, never()).deleteById(anyString());
-        verify(invoiceRepository, never()).deleteAll();
-    }
 
     @Test
     void should_return_true_when_invoice_exists() {

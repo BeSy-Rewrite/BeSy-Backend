@@ -1,25 +1,23 @@
 package de.hs_esslingen.besy.services;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
-
+import de.hs_esslingen.besy.configurations.ValidationHelper;
+import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
+import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
+import de.hs_esslingen.besy.dtos.response.OrderStatusHistoryResponseDTO;
+import de.hs_esslingen.besy.enums.OrderStatus;
+import de.hs_esslingen.besy.exceptions.BadRequestException;
+import de.hs_esslingen.besy.exceptions.NotAuthorizedException;
+import de.hs_esslingen.besy.exceptions.NotFoundException;
+import de.hs_esslingen.besy.extern.bic.BicSendService;
+import de.hs_esslingen.besy.interfaces.OrderCompletedValidationDAO;
+import de.hs_esslingen.besy.mappers.OrderCompletedValidationMapper;
+import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
+import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
+import de.hs_esslingen.besy.mappers.response.OrderStatusHistoryResponseMapper;
+import de.hs_esslingen.besy.models.*;
+import de.hs_esslingen.besy.models.Currency;
+import de.hs_esslingen.besy.repositories.*;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -35,39 +33,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import de.hs_esslingen.besy.configurations.ValidationHelper;
-import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
-import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
-import de.hs_esslingen.besy.dtos.response.OrderStatusHistoryResponseDTO;
-import de.hs_esslingen.besy.enums.OrderStatus;
-import de.hs_esslingen.besy.exceptions.BadRequestException;
-import de.hs_esslingen.besy.exceptions.NotAuthorizedException;
-import de.hs_esslingen.besy.exceptions.NotFoundException;
-import de.hs_esslingen.besy.interfaces.OrderCompletedValidationDAO;
-import de.hs_esslingen.besy.mappers.OrderCompletedValidationMapper;
-import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
-import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
-import de.hs_esslingen.besy.mappers.response.OrderStatusHistoryResponseMapper;
-import de.hs_esslingen.besy.models.Address;
-import de.hs_esslingen.besy.models.CostCenter;
-import de.hs_esslingen.besy.models.Currency;
-import de.hs_esslingen.besy.models.CustomerIdId;
-import de.hs_esslingen.besy.models.Order;
-import de.hs_esslingen.besy.models.OrderStatusHistory;
-import de.hs_esslingen.besy.models.Person;
-import de.hs_esslingen.besy.models.Supplier;
-import de.hs_esslingen.besy.models.User;
-import de.hs_esslingen.besy.repositories.AddressRepository;
-import de.hs_esslingen.besy.repositories.CostCenterRepository;
-import de.hs_esslingen.besy.repositories.CurrencyRepository;
-import de.hs_esslingen.besy.repositories.CustomerIdRepository;
-import de.hs_esslingen.besy.repositories.OrderPageableRepository;
-import de.hs_esslingen.besy.repositories.OrderRepository;
-import de.hs_esslingen.besy.repositories.OrderStatusHistoryRepository;
-import de.hs_esslingen.besy.repositories.PersonRepository;
-import de.hs_esslingen.besy.repositories.SupplierRepository;
-import de.hs_esslingen.besy.repositories.UserRepository;
-import jakarta.validation.ConstraintViolationException;
+import java.math.BigDecimal;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
@@ -119,6 +91,9 @@ class OrderServiceTest {
 
     @Mock
     private ValidationHelper validator;
+
+    @Mock
+    private BicSendService bicSendService;
 
     @InjectMocks
     private OrderService orderService;
@@ -402,6 +377,7 @@ class OrderServiceTest {
         when(orderRepository.save(any(Order.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
         when(orderStatusHistoryRepository.save(any(OrderStatusHistory.class))).thenReturn(history);
+        doNothing().when(bicSendService).sendBicStartRequest(any(Order.class));
 
         OrderService.getOrderStatusMatrix().forEach((current, allowedTargets) -> {
             if (allowedTargets.isEmpty()) {
@@ -428,8 +404,8 @@ class OrderServiceTest {
 
                 Jwt jwt = (current == OrderStatus.DEKAN_PENDING
                         && (target == OrderStatus.APPROVED || target == OrderStatus.COMPLETED))
-                                ? jwtWithRole
-                                : null;
+                        ? jwtWithRole
+                        : null;
 
                 ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, target, jwt);
                 assertEquals(target, response.getBody());
