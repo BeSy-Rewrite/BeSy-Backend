@@ -64,6 +64,8 @@ class OrderPDFServiceTest {
     private Person invoicePerson;
     private Approval approval;
 
+    final String finaleOrderNumber = "ITCC-1/14/007";
+
     @BeforeEach
     void setUp() {
         orderPDFService = new OrderPDFService(orderRepository, supplierRepository, itemRepository,
@@ -142,12 +144,6 @@ class OrderPDFServiceTest {
     }
 
     @Test
-    void should_generate_order_number_format() {
-        //TODO: String orderNumber = orderPDFService.generateOrderNumber("CC1", "25", (short) 7);
-        //TODO: assertEquals("ITCC1_25_007", orderNumber);
-    }
-
-    @Test
     void should_format_date_in_german_locale() throws IOException {
         Long orderId = 100L;
 
@@ -215,7 +211,7 @@ class OrderPDFServiceTest {
             String deliveryStreet = fieldValue(form, "Formular1[0].#subform[0].Header[0].Telefon[0]");
             String deliveryAddressField = fieldValue(form, "Formular1[0].#subform[0].Header[0].Fax[0]");
 
-            //TODO: assertEquals(orderPDFService.generateOrderNumber("CC-1", "25", (short) 7), orderNumber);
+            assertEquals(finaleOrderNumber, orderNumber);
             assertAmountEquals(subTotal, BigDecimal.valueOf(40));
             assertAmountEquals(netTotal, BigDecimal.valueOf(36));
             assertAmountEquals(total, BigDecimal.valueOf(42.84));
@@ -258,7 +254,7 @@ class OrderPDFServiceTest {
             PDAcroForm form = document.getDocumentCatalog().getAcroForm();
             assertNotNull(form);
             String orderNumber = fieldValue(form, "Formular1[0].#subform[0].Header[0].Rechnungsnummer[0]");
-            //TODO:  assertEquals(orderPDFService.generateOrderNumber("CC-1", "25", (short) 7), orderNumber);
+            assertEquals(finaleOrderNumber, orderNumber);
         }
 
         verify(orderRepository).findById(orderId);

@@ -65,6 +65,8 @@ class OrderPDFServiceIntegrationTest {
     @Autowired
     private VatRepository vatRepository;
 
+    final String finaleOrderNumber = "ITCC-1/14/007";
+
     @AfterEach
     void tearDown() {
         quotationRepository.deleteAll();
@@ -206,7 +208,7 @@ class OrderPDFServiceIntegrationTest {
             String total = fieldValue(form, "Formular1[0].#subform[0].Body[0].Gesamtsumme[0]");
             String vat = fieldValue(form, "Formular1[0].#subform[0].Body[0].MwStSatz[0]");
 
-            //TODO: assertEquals(orderPDFService.generateOrderNumber("CC-1", "25", (short) 7), orderNumber);
+            assertEquals(finaleOrderNumber, orderNumber);
             assertTrue(companyAddress.contains("Supplier GmbH"));
             assertTrue(companyAddress.contains("Supplier St"));
             assertTrue(companyAddress.contains("12345"));
