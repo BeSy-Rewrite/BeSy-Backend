@@ -8,14 +8,12 @@ import java.io.Serializable;
 public class BicReqDataDTO implements Serializable {
     Boolean autoRun;
     String title;
-    String ID;
+    String id;
     String email;
     String intranetUrl;
-    String responseUrl;
-    Boolean flag_edv_permission;
-    Boolean flag_furniture_permission;
-    Boolean flag_furniture_room;
-    Boolean flag_investment_room;
-    Boolean flag_investment_structural_measures;
-    Boolean flag_media_permission;
+    String responseUrlData;
+    String responseUrlFile;
+    String responseSendWith;
+    BicReqDataFlagsDTO flags;
 }
+

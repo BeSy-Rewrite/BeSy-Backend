@@ -1,5 +1,21 @@
 package de.hs_esslingen.besy.services;
 
+import de.hs_esslingen.besy.enums.VatType;
+import de.hs_esslingen.besy.exceptions.BadRequestException;
+import de.hs_esslingen.besy.exceptions.NotFoundException;
+import de.hs_esslingen.besy.helper.OrderNumberHelper;
+import de.hs_esslingen.besy.interfaces.PDFOrder;
+import de.hs_esslingen.besy.models.*;
+import de.hs_esslingen.besy.repositories.*;
+import lombok.RequiredArgsConstructor;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -8,52 +24,13 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDField;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
-import de.hs_esslingen.besy.enums.VatType;
-import de.hs_esslingen.besy.exceptions.BadRequestException;
-import de.hs_esslingen.besy.exceptions.NotFoundException;
-import de.hs_esslingen.besy.interfaces.PDFOrder;
-import de.hs_esslingen.besy.models.Address;
-import de.hs_esslingen.besy.models.Approval;
-import de.hs_esslingen.besy.models.Item;
-import de.hs_esslingen.besy.models.Order;
-import de.hs_esslingen.besy.models.Person;
-import de.hs_esslingen.besy.models.Quotation;
-import de.hs_esslingen.besy.models.Supplier;
-import de.hs_esslingen.besy.models.Vat;
-import de.hs_esslingen.besy.repositories.ItemRepository;
-import de.hs_esslingen.besy.repositories.OrderRepository;
-import de.hs_esslingen.besy.repositories.PersonRepository;
-import de.hs_esslingen.besy.repositories.QuotationRepository;
-import de.hs_esslingen.besy.repositories.SupplierRepository;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class OrderPDFService {
 
-    @Value("${order-number.prefix}")
-    private String orderNumberPrefix;
-
-    @Value("${order-number.separator}")
-    private String orderNumberSeparator;
 
     private final OrderRepository orderRepository;
     private final SupplierRepository supplierRepository;
@@ -61,10 +38,12 @@ public class OrderPDFService {
     private final PersonRepository personRepository;
     private final QuotationRepository quotationRepository;
 
+    private final OrderNumberHelper orderNumberHelper;
+
     private final Locale locale;
 
     static final String FORMULAR_URI = "static/Bestellformular_V01_empty.pdf";
-
+    //TODO: set to properties
     static final String ANSCHRIFT_FAKULTAET_DEFAULT = "IT";
     static final String ANSCHRIFT_STRASSE_DEFAULT = "Flandernstraße 101";
     static final String ANSCHRIFT_PLZ_ORT_DEFAULT = "73732 Esslingen";
@@ -129,8 +108,8 @@ public class OrderPDFService {
                 setSupplier(order, supplierDAO.get());
 
             // Bestell-Nr.
-            order.setOrderNumber(generateOrderNumber(orderDAO.getPrimaryCostCenterId(),
-                    orderDAO.getBookingYear(), orderDAO.getAutoIndex()));
+            String orderNumber = orderNumberHelper.generateOrderNumber(orderDAO);
+            order.setOrderNumber(orderNumber);
             // Datum:
             order.setDate(orderDAO.getCreatedDate()
                     .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)));
@@ -174,13 +153,13 @@ public class OrderPDFService {
                     .map(item -> {
                         BigDecimal netPrice = item.getVatType() == VatType.netto ? item.getPricePerUnit()
                                 : PriceConversionService.convertGrossPriceToNetPrice(item.getPricePerUnit(),
-                                        item.getVat());
+                                item.getVat());
                         return netPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
                     })
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             order.setSubTotal(String.valueOf(
-                    subTotal)
+                            subTotal)
                     .replace('.', ',')
                     .concat(" €"));
 
@@ -207,7 +186,7 @@ public class OrderPDFService {
                         .findFirst()
                         .orElse(BigDecimal.valueOf(Double.parseDouble(MEHRWERTSTEUER_DEFAULT)));
                 BigDecimal total = netTotal.multiply(
-                        (BigDecimal.valueOf(100).add(vatValue)).divide(BigDecimal.valueOf(100)))
+                                (BigDecimal.valueOf(100).add(vatValue)).divide(BigDecimal.valueOf(100)))
                         .setScale(2, RoundingMode.HALF_UP);
                 order.setTotal(String.valueOf(total).replace('.', ',').concat(" €"));
 
@@ -224,7 +203,7 @@ public class OrderPDFService {
             order.setCommentForSupplier(comment);
 
             order.setPercentageDiscount(String.valueOf(
-                    orderDAO.getPercentageDiscount() != null ? orderDAO.getPercentageDiscount() : BigDecimal.ZERO)
+                            orderDAO.getPercentageDiscount() != null ? orderDAO.getPercentageDiscount() : BigDecimal.ZERO)
                     .replace('.', ','));
             order.setCostCenter(orderDAO.getPrimaryCostCenterId());
             order.setCostCenterSecondary(orderDAO.getSecondaryCostCenterId());
@@ -312,28 +291,4 @@ public class OrderPDFService {
     private String formatPostalAndTown(Address address) {
         return (getPostalCode(address) + " " + getTown(address)).trim();
     }
-
-    private void printFormFields(PDAcroForm acroForm) {
-        Iterable<PDField> fieldTree = acroForm.getFieldTree();
-
-        List<PDField> allFields = new ArrayList<>();
-        fieldTree.forEach(allFields::add);
-
-        System.out.println("Total fields (including nested): " + allFields.size());
-
-        for (PDField field : allFields) {
-            System.out.println("Name:  " + field.getFullyQualifiedName());
-            System.out.println("Type:  " + field.getClass().getSimpleName());
-            System.out.println("Value: " + field.getValueAsString());
-            System.out.println("----------------------------");
-        }
-    }
-
-    public String generateOrderNumber(String primaryCostCenterId, String bookingYear, Short autoIndex) {
-        String[] orderNumberParts = { orderNumberPrefix + primaryCostCenterId, bookingYear,
-                String.format("%03d", autoIndex) };
-
-        return String.join(orderNumberSeparator, orderNumberParts);
-    }
-
 }

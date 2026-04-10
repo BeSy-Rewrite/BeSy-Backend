@@ -6,5 +6,5 @@ import java.io.Serializable;
 
 @Value
 public class BicRequestDTO implements Serializable {
-    BicVariablesDTO variables;
+    BicVariablesDTO variable;
 }

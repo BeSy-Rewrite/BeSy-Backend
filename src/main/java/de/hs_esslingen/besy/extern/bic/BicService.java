@@ -1,8 +1,8 @@
 package de.hs_esslingen.besy.extern.bic;
 
-import de.hs_esslingen.besy.extern.bic.dtos.BicReqDataDTO;
-import de.hs_esslingen.besy.extern.bic.dtos.BicRequestDTO;
-import de.hs_esslingen.besy.extern.bic.dtos.BicVariablesDTO;
+import de.hs_esslingen.besy.extern.bic.dtos.*;
+import de.hs_esslingen.besy.helper.OrderNumberHelper;
+import de.hs_esslingen.besy.models.Approval;
 import de.hs_esslingen.besy.models.Order;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +25,8 @@ public class BicService {
 
     private static final Logger logger = LoggerFactory.getLogger(BicService.class);
 
-    @Value("${bic.api.base-url}")
-    private String bicBaseUrl;
+    @Value("${bic.api.url}")
+    private String bicUrl;
 
     @Value("${bic.api.token}")
     private String authToken;
@@ -34,8 +34,19 @@ public class BicService {
     @Value("${besy-frontend-url}")
     private String besyFrontendUrl;
 
+    @Value("${bic.api.response-url-data}")
+    private String responseUrlData;
 
-    public BicService() {
+    @Value("${bic.api.response-url-file}")
+    private String responseUrlFile;
+
+    @Value("${bic.is-auto-run}")
+    private boolean isAutoRun;
+
+    private final OrderNumberHelper orderNumberHelper;
+
+    public BicService(OrderNumberHelper orderNumberHelper) {
+        this.orderNumberHelper = orderNumberHelper;
     }
 
 
@@ -46,6 +57,8 @@ public class BicService {
 
     @Async
     protected void sendBicRequestAsync(BicRequestDTO bicRequestDTO) {
+        if (isAutoRun) logger.warn("BIC is set to auto run.");
+
         try {
             RestTemplate restTemplate = new RestTemplate();
 
@@ -57,7 +70,7 @@ public class BicService {
             HttpEntity<BicRequestDTO> request = new HttpEntity<>(bicRequestDTO, headers);
 
             ResponseEntity<String> response = restTemplate.postForEntity(
-                    bicBaseUrl,
+                    bicUrl,
                     request,
                     String.class
             );
@@ -68,19 +81,14 @@ public class BicService {
     }
 
     private BicRequestDTO createPayload(Order order) {
-        String caseName = String.format("Bestellung IT%s/%s/%03d", order.getPrimaryCostCenter().getId(), order.getBookingYear(), order.getAutoIndex());
+        String oderNumber = orderNumberHelper.generateOrderNumber(order);
+
+        String caseName = String.format("Bestellung %s", oderNumber);
         String caseDueDate = Instant.now().plus(2, ChronoUnit.DAYS).toString();
-        boolean isAutoRun = true;
         String id = String.format("ID_IT_%s", order.getId());
         String email = order.getDeliveryPerson().getEmail();
-        String intranetUrl = String.format("%s/orders/%s-%s-%03d", besyFrontendUrl, order.getPrimaryCostCenter().getId(), order.getBookingYear(), order.getAutoIndex());
-        String responseUrl = "https://calm-valley-90.webhook.cool";
-        boolean flag_edv_permission = order.getApproval().getFlagEdvPermission();
-        boolean flag_furniture_permission = order.getApproval().getFlagFurniturePermission();
-        boolean flag_furniture_room = order.getApproval().getFlagFurnitureRoom();
-        boolean flag_investment_room = order.getApproval().getFlagInvestmentRoom();
-        boolean flag_investment_structural_measures = order.getApproval().getFlagInvestmentStructuralMeasures();
-        boolean flag_media_permission = order.getApproval().getFlagMediaPermission();
+        String intranetUrl = String.format("%s/orders/%s", besyFrontendUrl, oderNumber.replace('/', '-').substring(2));
+        BicReqDataFlagsDTO bicReqDataFlagsDTO = getBicReqDataFlagsDTO(order.getApproval());
 
         BicReqDataDTO bicReqDataDTO = new BicReqDataDTO(
                 isAutoRun,
@@ -88,7 +96,24 @@ public class BicService {
                 id,
                 email,
                 intranetUrl,
-                responseUrl,
+                responseUrlData,
+                responseUrlFile,
+                BicReqDataAuthFlag.SEND_WITH_OAUTH.toString(),
+                bicReqDataFlagsDTO
+        );
+        BicVariablesDTO bicVariablesDTO = new BicVariablesDTO(caseName, caseDueDate, bicReqDataDTO);
+        return new BicRequestDTO(bicVariablesDTO);
+    }
+
+    private static BicReqDataFlagsDTO getBicReqDataFlagsDTO(Approval approval) {
+        boolean flag_edv_permission = approval.getFlagEdvPermission();
+        boolean flag_furniture_permission = approval.getFlagFurniturePermission();
+        boolean flag_furniture_room = approval.getFlagFurnitureRoom();
+        boolean flag_investment_room = approval.getFlagInvestmentRoom();
+        boolean flag_investment_structural_measures = approval.getFlagInvestmentStructuralMeasures();
+        boolean flag_media_permission = approval.getFlagMediaPermission();
+
+        return new BicReqDataFlagsDTO(
                 flag_edv_permission,
                 flag_furniture_permission,
                 flag_furniture_room,
@@ -96,8 +121,6 @@ public class BicService {
                 flag_investment_structural_measures,
                 flag_media_permission
         );
-        BicVariablesDTO bicVariablesDTO = new BicVariablesDTO(caseName, caseDueDate, bicReqDataDTO);
-        return new BicRequestDTO(bicVariablesDTO);
     }
 
 }
