@@ -23,7 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class BicServiceTest {
+class BicSendServiceTest {
 
     @Mock
     private OrderNumberHelper orderNumberHelper;
@@ -31,7 +31,7 @@ class BicServiceTest {
     @Mock
     private RestTemplate restTemplate;
 
-    private BicService bicService;
+    private BicSendService bicSendService;
 
     private final String bicUrl = "http://bic-api.com";
     private final String authToken = "test-token";
@@ -41,13 +41,13 @@ class BicServiceTest {
 
     @BeforeEach
     void setUp() {
-        bicService = new BicService(orderNumberHelper, restTemplate);
-        ReflectionTestUtils.setField(bicService, "bicUrl", bicUrl);
-        ReflectionTestUtils.setField(bicService, "authToken", authToken);
-        ReflectionTestUtils.setField(bicService, "besyFrontendUrl", besyFrontendUrl);
-        ReflectionTestUtils.setField(bicService, "responseUrlData", responseUrlData);
-        ReflectionTestUtils.setField(bicService, "responseUrlFile", responseUrlFile);
-        ReflectionTestUtils.setField(bicService, "isAutoRun", true);
+        bicSendService = new BicSendService(orderNumberHelper, restTemplate);
+        ReflectionTestUtils.setField(bicSendService, "bicUrl", bicUrl);
+        ReflectionTestUtils.setField(bicSendService, "authToken", authToken);
+        ReflectionTestUtils.setField(bicSendService, "besyFrontendUrl", besyFrontendUrl);
+        ReflectionTestUtils.setField(bicSendService, "responseUrlData", responseUrlData);
+        ReflectionTestUtils.setField(bicSendService, "responseUrlFile", responseUrlFile);
+        ReflectionTestUtils.setField(bicSendService, "isAutoRun", true);
     }
 
     @Test
@@ -61,7 +61,7 @@ class BicServiceTest {
                 .thenReturn(responseEntity);
 
         // Act
-        bicService.sendBicStartRequest(order);
+        bicSendService.sendBicStartRequest(order);
 
         // Assert
         ArgumentCaptor<HttpEntity<BicRequestDTO>> argumentCaptor = ArgumentCaptor.forClass(HttpEntity.class);
@@ -87,7 +87,7 @@ class BicServiceTest {
 
     @Test
     void sendBicStartRequest_NullOrder_ThrowsException() {
-        assertThrows(IllegalArgumentException.class, () -> bicService.sendBicStartRequest(null));
+        assertThrows(IllegalArgumentException.class, () -> bicSendService.sendBicStartRequest(null));
     }
 
     @Test
@@ -100,7 +100,7 @@ class BicServiceTest {
                 .thenThrow(new RuntimeException("API Down"));
 
         // Act & Assert (Should not throw exception because it's caught in the method)
-        assertDoesNotThrow(() -> bicService.sendBicStartRequest(order));
+        assertDoesNotThrow(() -> bicSendService.sendBicStartRequest(order));
         verify(restTemplate).postForEntity(anyString(), any(HttpEntity.class), eq(String.class));
     }
 

@@ -11,4 +11,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Order findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(String primaryCostCenterId, String bookingYear);
 
     boolean existsByIdAndStatusNot(Long id, OrderStatus status);
+
+    Order findByPrimaryCostCenterIdAndBookingYearAndAutoIndex(String primaryCostCenterId, String primaryCostCenterId1, Short autoIndex);
 }

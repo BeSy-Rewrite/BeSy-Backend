@@ -21,9 +21,9 @@ import java.time.temporal.ChronoUnit;
 
 @Service
 @EnableRetry
-public class BicService {
+public class BicSendService {
 
-    private static final Logger logger = LoggerFactory.getLogger(BicService.class);
+    private static final Logger logger = LoggerFactory.getLogger(BicSendService.class);
 
     @Value("${bic.api.url}")
     private String bicUrl;
@@ -46,7 +46,7 @@ public class BicService {
     private final OrderNumberHelper orderNumberHelper;
     private final RestTemplate restTemplate;
 
-    public BicService(OrderNumberHelper orderNumberHelper, RestTemplate restTemplate) {
+    public BicSendService(OrderNumberHelper orderNumberHelper, RestTemplate restTemplate) {
         this.orderNumberHelper = orderNumberHelper;
         this.restTemplate = restTemplate;
     }
@@ -84,12 +84,13 @@ public class BicService {
 
     private BicRequestDTO createPayload(Order order) {
         String oderNumber = orderNumberHelper.generateOrderNumber(order);
+        String oderNumberForUrl = oderNumber.replace('/', '-');
 
         String caseName = String.format("Bestellung %s", oderNumber);
         String caseDueDate = Instant.now().plus(2, ChronoUnit.DAYS).toString();
         String id = String.format("ID_IT_%s", order.getId());
         String email = order.getDeliveryPerson().getEmail();
-        String intranetUrl = String.format("%s/orders/%s", besyFrontendUrl, oderNumber.replace('/', '-').substring(2));
+        String intranetUrl = String.format("%s/orders/%s", besyFrontendUrl, oderNumberForUrl.substring(2));
         BicReqDataFlagsDTO bicReqDataFlagsDTO = getBicReqDataFlagsDTO(order.getApproval());
 
         BicReqDataDTO bicReqDataDTO = new BicReqDataDTO(
@@ -98,8 +99,8 @@ public class BicService {
                 id,
                 email,
                 intranetUrl,
-                responseUrlData,
-                responseUrlFile,
+                responseUrlData.replace("{order-number}", oderNumberForUrl),
+                responseUrlFile.replace("{order-number}", oderNumberForUrl),
                 BicReqDataAuthFlag.SEND_WITH_OAUTH.toString(),
                 bicReqDataFlagsDTO
         );

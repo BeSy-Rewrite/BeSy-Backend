@@ -9,7 +9,8 @@ import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotAuthorizedException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
-import de.hs_esslingen.besy.extern.bic.BicService;
+import de.hs_esslingen.besy.extern.bic.BicSendService;
+import de.hs_esslingen.besy.helper.OrderNumberHelper;
 import de.hs_esslingen.besy.interfaces.OrderCompletedValidationDAO;
 import de.hs_esslingen.besy.mappers.OrderCompletedValidationMapper;
 import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
@@ -21,6 +22,8 @@ import de.hs_esslingen.besy.repositories.*;
 import de.hs_esslingen.besy.security.KeycloakAuthenticationConverter;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +41,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrderService {
 
+    private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
+
+
     private final OrderRepository orderRepository;
     private final OrderPageableRepository orderPageableRepository;
     private final UserRepository userRepository;
@@ -50,7 +56,8 @@ public class OrderService {
     private final CustomerIdRepository customerIdRepository;
 
     private final UserService userService;
-    private final BicService bicService;
+    private final BicSendService bicSendService;
+    private final OrderNumberHelper orderNumberHelper;
 
     private final OrderResponseMapper orderResponseMapper;
     private final OrderRequestMapper orderRequestMapper;
@@ -296,7 +303,7 @@ public class OrderService {
      * <p>Currently supported actions:</p>
      * <ul>
      *   <li>When status transitions to {@link OrderStatus#SENT}, sends a BIC start request
-     *       via the {@link BicService}.</li>
+     *       via the {@link BicSendService}.</li>
      * </ul>
      *
      * @param order  the order that has undergone a status change
@@ -304,7 +311,7 @@ public class OrderService {
      */
     private void handleStateChangeActionsForOrder(Order order, OrderStatus status) {
         if (status == OrderStatus.SENT) {
-            this.bicService.sendBicStartRequest(order);
+            this.bicSendService.sendBicStartRequest(order);
         }
     }
 
@@ -325,6 +332,7 @@ public class OrderService {
         OrderStatus currentStatus = currentOrder.getStatus();
 
         if (!isValidStatusTransition(currentStatus, targetStatus)) {
+            logger.warn("Invalid status transition from {} to {}", currentStatus, targetStatus);
             throw new BadRequestException(String.format(
                     "Ungültiger Statusübergang von %s zu %s", currentStatus, targetStatus));
         }
@@ -424,4 +432,10 @@ public class OrderService {
         }
     }
 
+    public Order getOrderByOrderNumber(String orderNumber) {
+        OrderNumberHelper.OrderNumberParts orderNumberParts = orderNumberHelper.parseOrderNumber(orderNumber);
+
+        return orderRepository.findByPrimaryCostCenterIdAndBookingYearAndAutoIndex(
+                orderNumberParts.primaryCostCenterId(), orderNumberParts.bookingYear(), orderNumberParts.autoIndex());
+    }
 }

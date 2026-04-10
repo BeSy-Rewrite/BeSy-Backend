@@ -13,6 +13,9 @@ public class OrderNumberHelper {
     @Value("${order-number.separator}")
     private String orderNumberSeparator;
 
+    public record OrderNumberParts(String primaryCostCenterId, String bookingYear, Short autoIndex) {
+    }
+
     public String generateOrderNumber(Order order) {
         if (order == null) {
             throw new IllegalArgumentException("Order cannot be null");
@@ -32,4 +35,40 @@ public class OrderNumberHelper {
 
         return String.join(orderNumberSeparator != null ? orderNumberSeparator : "", orderNumberParts);
     }
+
+
+    public OrderNumberParts parseOrderNumber(String orderNumber) {
+        if (orderNumber == null || orderNumber.isEmpty()) {
+            throw new IllegalArgumentException("Order number cannot be null or empty");
+        }
+
+        String separator = orderNumberSeparator != null ? orderNumberSeparator : "";
+        String prefix = orderNumberPrefix != null ? orderNumberPrefix : "";
+
+        // Remove prefix if present
+        String withoutPrefix = orderNumber;
+        if (!prefix.isEmpty() && orderNumber.startsWith(prefix)) {
+            withoutPrefix = orderNumber.substring(prefix.length());
+        }
+
+        // Split by separator
+        String[] parts = withoutPrefix.split(java.util.regex.Pattern.quote(separator));
+
+        if (parts.length != 3) {
+            throw new IllegalArgumentException("Invalid order number format. Expected format: " + prefix + "primaryCostCenterId" + separator + "bookingYear" + separator + "autoIndex");
+        }
+
+        String primaryCostCenterId = parts[0];
+        String bookingYear = parts[1];
+        short autoIndex;
+
+        try {
+            autoIndex = Short.parseShort(parts[2]);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid autoIndex in order number: " + parts[2], e);
+        }
+
+        return new OrderNumberParts(primaryCostCenterId, bookingYear, autoIndex);
+    }
+
 }

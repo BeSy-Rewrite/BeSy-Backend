@@ -1,13 +1,16 @@
 package de.hs_esslingen.besy.controllers;
 
-import java.beans.PropertyDescriptor;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import de.hs_esslingen.besy.dtos.request.*;
+import de.hs_esslingen.besy.dtos.response.*;
+import de.hs_esslingen.besy.enums.OrderStatus;
+import de.hs_esslingen.besy.exceptions.BadRequestException;
+import de.hs_esslingen.besy.exceptions.EntityAlreadyExistsException;
+import de.hs_esslingen.besy.exceptions.NotFoundException;
+import de.hs_esslingen.besy.mappers.request.InvoiceRequestMapper;
+import de.hs_esslingen.besy.mappers.response.InvoiceResponseMapper;
+import de.hs_esslingen.besy.models.Invoice;
+import de.hs_esslingen.besy.services.*;
+import lombok.AllArgsConstructor;
 import org.apache.hc.core5.http.ParseException;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -18,43 +21,16 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import de.hs_esslingen.besy.dtos.request.ApprovalRequestDTO;
-import de.hs_esslingen.besy.dtos.request.InvoiceRequestDTO;
-import de.hs_esslingen.besy.dtos.request.ItemRequestDTO;
-import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
-import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
-import de.hs_esslingen.besy.dtos.response.ApprovalResponseDTO;
-import de.hs_esslingen.besy.dtos.response.InvoiceResponseDTO;
-import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
-import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
-import de.hs_esslingen.besy.dtos.response.OrderStatusHistoryResponseDTO;
-import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
-import de.hs_esslingen.besy.enums.OrderStatus;
-import de.hs_esslingen.besy.exceptions.BadRequestException;
-import de.hs_esslingen.besy.exceptions.EntityAlreadyExistsException;
-import de.hs_esslingen.besy.exceptions.NotFoundException;
-import de.hs_esslingen.besy.repositories.InvoiceRepository;
-import de.hs_esslingen.besy.services.ApprovalService;
-import de.hs_esslingen.besy.services.CostCenterService;
-import de.hs_esslingen.besy.services.InvoiceService;
-import de.hs_esslingen.besy.services.ItemService;
-import de.hs_esslingen.besy.services.OrderPDFService;
-import de.hs_esslingen.besy.services.OrderService;
-import de.hs_esslingen.besy.services.PaperlessService;
-import de.hs_esslingen.besy.services.QuotationService;
-import lombok.AllArgsConstructor;
+import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @AllArgsConstructor
@@ -65,10 +41,13 @@ public class OrderController {
     private final QuotationService quotationService;
     private final OrderPDFService orderPDFService;
     private final PaperlessService paperlessService;
-    private final InvoiceRepository invoiceRepository;
     private final InvoiceService invoiceService;
     private final ApprovalService approvalService;
     private final CostCenterService costCenterService;
+
+    private final InvoiceRequestMapper invoiceRequestMapper;
+    private final InvoiceResponseMapper invoiceResponseMapper;
+
 
     @GetMapping
     public Page<OrderResponseDTO> getAllOrders(
@@ -115,7 +94,7 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO orderRequestDTO,
-            @AuthenticationPrincipal Jwt jwt) {
+                                                        @AuthenticationPrincipal Jwt jwt) {
         return orderService.createOrder(orderRequestDTO, jwt);
     }
 
@@ -212,7 +191,10 @@ public class OrderController {
     public ResponseEntity<List<InvoiceResponseDTO>> getInvoicesOfOrder(@PathVariable("order-id") Long orderId) {
         if (!orderService.existsOrderById(orderId))
             throw new NotFoundException("Bestellung nicht gefunden.");
-        return invoiceService.getAllInvoices(orderId);
+
+        List<Invoice> invoices = invoiceService.getAllInvoices(orderId);
+        List<InvoiceResponseDTO> invoiceResponseDTOS = invoiceResponseMapper.toDto(invoices);
+        return ResponseEntity.ok(invoiceResponseDTOS);
     }
 
     @PostMapping("{order-id}/invoices")
@@ -227,7 +209,9 @@ public class OrderController {
         // new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
         if (!costCenterService.existsById(dto.getCostCenterId()))
             throw new NotFoundException("Kostenstelle nicht gefunden.");
-        return this.invoiceService.createInvoice(dto, orderId);
+
+        Invoice invoice = this.invoiceService.createInvoice(invoiceRequestMapper.toEntity(dto), orderId);
+        return ResponseEntity.ok(invoiceResponseMapper.toDto(invoice));
     }
 
     @GetMapping("{order-id}/quotations")
