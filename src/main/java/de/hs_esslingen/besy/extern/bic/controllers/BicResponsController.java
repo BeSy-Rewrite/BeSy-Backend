@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
@@ -28,14 +27,16 @@ public class BicResponsController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value = "/{order-number}/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/{order-number}/attachments", consumes = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<String> postAttachmentToInsy(
             @PathVariable("order-number") String orderNumber,
-            @RequestPart("file") MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            return ResponseEntity.badRequest().body("File cannot be empty");
+            @RequestParam("filename") String filename,
+            @RequestBody byte[] fileContent) {
+        if (fileContent == null || fileContent.length == 0) {
+            return ResponseEntity.badRequest().body("File content cannot be empty");
         }
-        bicCallbackService.handleFileCallback(orderNumber, file);
+
+        bicCallbackService.handleFileCallback(orderNumber, filename, fileContent);
         return ResponseEntity.ok().build();
     }
 

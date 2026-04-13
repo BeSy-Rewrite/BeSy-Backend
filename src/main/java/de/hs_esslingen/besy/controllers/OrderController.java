@@ -258,7 +258,7 @@ public class OrderController {
             @PathVariable("invoice-id") String invoiceId) throws IOException, ParseException {
         if (!invoiceService.existsInvoiceById(invoiceId))
             throw new NotFoundException("Rechnung nicht gefunden.");
-        return paperlessService.uploadPdfToPaperless(file, invoiceId);
+        return paperlessService.uploadPdfToPaperless(file.getBytes(), file.getOriginalFilename(), invoiceId);
     }
 
     @GetMapping("invoice/{invoice-id}/document/preview")

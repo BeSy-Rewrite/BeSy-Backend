@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -36,11 +35,11 @@ public class BicCallbackService {
         orderService.updateOrderStatus(order.getId(), newStatus, jwt);
     }
 
-    public void handleFileCallback(String orderNumber, MultipartFile file) {
+    public void handleFileCallback(String orderNumber, String filename, byte[] fileContent) {
         Order order = orderService.getOrderByOrderNumber(orderNumber.replace("-", "/"));
 
         Invoice invoice = new Invoice();
-        invoice.setComment("BIC Report");
+        invoice.setComment("BIC Report:%s".formatted(filename.replace(".pdf", "")));
         invoice.setDate(OffsetDateTime.now().toLocalDate());
         invoice.setCostCenterId(order.getPrimaryCostCenterId());
         invoice.setOrderId(order.getId());
@@ -50,7 +49,7 @@ public class BicCallbackService {
         Invoice newInvoice = invoiceService.createInvoice(invoice, order.getId());
 
         try {
-            paperlessService.uploadPdfToPaperless(file, newInvoice.getId());
+            paperlessService.uploadPdfToPaperless(fileContent, filename, newInvoice.getId());
         } catch (Exception e) {
             logger.error("Failed to upload PDF to paperless service for order {}, invoice {}", orderNumber, newInvoice.getId(), e);
             throw new RuntimeException(e);
