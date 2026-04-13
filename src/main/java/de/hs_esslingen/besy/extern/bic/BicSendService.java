@@ -1,6 +1,9 @@
 package de.hs_esslingen.besy.extern.bic;
 
-import de.hs_esslingen.besy.extern.bic.dtos.*;
+import de.hs_esslingen.besy.extern.bic.dtos.BicReqDataDTO;
+import de.hs_esslingen.besy.extern.bic.dtos.BicReqDataFlagsDTO;
+import de.hs_esslingen.besy.extern.bic.dtos.BicRequestDTO;
+import de.hs_esslingen.besy.extern.bic.dtos.BicVariablesDTO;
 import de.hs_esslingen.besy.helper.OrderNumberHelper;
 import de.hs_esslingen.besy.models.Approval;
 import de.hs_esslingen.besy.models.Order;
@@ -42,6 +45,9 @@ public class BicSendService {
 
     @Value("${bic.is-auto-run}")
     private boolean isAutoRun;
+
+    @Value("${bic.req-data-auth-flag}")
+    private String authFlag;
 
     private final OrderNumberHelper orderNumberHelper;
     private final RestTemplate restTemplate;
@@ -101,7 +107,7 @@ public class BicSendService {
                 intranetUrl,
                 responseUrlData.replace("{order-number}", oderNumberForUrl),
                 responseUrlFile.replace("{order-number}", oderNumberForUrl),
-                BicReqDataAuthFlag.SEND_WITH_OAUTH.toString(),
+                authFlag,
                 bicReqDataFlagsDTO
         );
         BicVariablesDTO bicVariablesDTO = new BicVariablesDTO(caseName, caseDueDate, bicReqDataDTO);
