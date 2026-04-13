@@ -73,16 +73,16 @@ class BicSendServiceTest {
 
         BicRequestDTO payload = capturedRequest.getBody();
         assertNotNull(payload);
-        assertEquals("Bestellung 2024/001", payload.getVariable().getCaseName());
-        assertEquals("test@example.com", payload.getVariable().getReqData().getEmail());
+        assertEquals("Bestellung 2024/001", payload.getVariables().getCaseName());
+        assertEquals("test@example.com", payload.getVariables().getReqData().getEmail());
         // URL is generated as: intranetUrl = String.format("%s/orders/%s", besyFrontendUrl, oderNumber.replace('/', '-').substring(2));
         // For "2024/001" -> "2024-001" -> substring(2) -> "24-001"
-        assertEquals(besyFrontendUrl + "/orders/24-001", payload.getVariable().getReqData().getIntranetUrl());
-        assertTrue(payload.getVariable().getReqData().getAutoRun());
+        assertEquals(besyFrontendUrl + "/orders/24-001", payload.getVariables().getReqData().getIntranetUrl());
+        assertTrue(payload.getVariables().getReqData().getAutoRun());
 
         // Verify flags
-        assertTrue(payload.getVariable().getReqData().getFlags().getItPermission());
-        assertFalse(payload.getVariable().getReqData().getFlags().getFurniturePermission());
+        assertTrue(payload.getVariables().getReqData().getFlags().getItPermission());
+        assertFalse(payload.getVariables().getReqData().getFlags().getFurniturePermission());
     }
 
     @Test
