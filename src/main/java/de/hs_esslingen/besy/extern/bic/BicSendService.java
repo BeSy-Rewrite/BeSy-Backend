@@ -94,7 +94,7 @@ public class BicSendService {
 
         String caseName = String.format("Bestellung %s", oderNumber);
         String caseDueDate = Instant.now().plus(2, ChronoUnit.DAYS).toString();
-        String id = String.format("ID_IT_%s", order.getId());
+        String id = String.format("ID_%s", oderNumberForUrl);
         String email = order.getDeliveryPerson().getEmail();
         String intranetUrl = String.format("%s/orders/%s", besyFrontendUrl, oderNumberForUrl.substring(2));
         BicReqDataFlagsDTO bicReqDataFlagsDTO = getBicReqDataFlagsDTO(order.getApproval());
