@@ -10,6 +10,6 @@ public class BicReqDataFlagsDTO implements Serializable {
     Boolean furniturePermission;
     Boolean furnitureRoom;
     Boolean investmentRoom;
-    Boolean investment_structural_measures;
-    Boolean media_permission;
+    Boolean investmentStructuralMeasures;
+    Boolean mediaPermission;
 }
