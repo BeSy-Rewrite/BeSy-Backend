@@ -366,14 +366,15 @@ public class PDFOrder {
      */
     public void setItems(List<Item> items) throws IOException {
         int amountInitialItems = items.size();
-        items.sort((o1, o2) -> o1.getId().getItemId() - o2.getId().getItemId());
+        items.sort((o1, o2) -> Integer.compare(o1.getId().getItemId(), o2.getId().getItemId()));
         items = wrapItemLines(items);
 
         if (items.size() > AMOUNT_ITEM_LINES) {
             if (amountInitialItems > AMOUNT_ITEM_LINES) {
-                throw new BadRequestException("Number of items must be less than " + AMOUNT_ITEM_LINES + ".");
+                throw new BadRequestException(
+                        "Number of items must be less than or equal to " + AMOUNT_ITEM_LINES + ".");
             } else {
-                throw new BadRequestException("The item descriptions are to long which results in more than "
+                throw new BadRequestException("The item descriptions are too long which results in more than "
                         + AMOUNT_ITEM_LINES + " lines.");
             }
         }
