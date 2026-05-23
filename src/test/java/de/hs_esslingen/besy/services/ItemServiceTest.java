@@ -145,7 +145,7 @@ class ItemServiceTest {
 
         when(itemRequestMapper.toEntity(requestDtos)).thenReturn(mappedItems);
         when(orderRepository.getReferenceById(orderId)).thenReturn(order);
-        when(itemRepository.findByOrder_Id(orderId)).thenReturn(List.of());
+        when(itemRepository.findTopItemIdByOrderIdOrderByItemIdDesc(orderId)).thenReturn(java.util.Optional.of(0));
         when(vatRepository.getReferenceById(item.getVatValue())).thenReturn(vat);
         when(vatRepository.getReferenceById(item2.getVatValue())).thenReturn(vat);
         when(itemRepository.saveAll(mappedItems)).thenReturn(mappedItems);
@@ -172,7 +172,7 @@ class ItemServiceTest {
 
         verify(itemRequestMapper).toEntity(requestDtos);
         verify(orderRepository).getReferenceById(orderId);
-        verify(itemRepository).findByOrder_Id(orderId);
+        verify(itemRepository).findTopItemIdByOrderIdOrderByItemIdDesc(orderId);
         // verify(vatRepository).getReferenceById(item.getVatValue());
         verify(itemResponseMapper).toDto(mappedItems);
     }
