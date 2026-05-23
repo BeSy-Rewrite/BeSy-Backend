@@ -38,12 +38,14 @@ public class ItemService {
         return ResponseEntity.ok(itemResponseDTOS);
     }
 
+    @Transactional
     public ResponseEntity<List<ItemResponseDTO>> createItemsOfOrder(Long orderId, List<ItemRequestDTO> dto) {
         List<Item> items = itemRequestMapper.toEntity(dto);
-        Order order = orderRepository.getReferenceById(orderId);
+        Order order = orderRepository.findByIdForUpdate(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found."));
 
         // Server-side id generation
-        int largestItemId = itemRepository.findTopItemIdByOrderIdOrderByItemIdDesc(orderId).orElse(0);
+        int largestItemId = itemRepository.findMaxItemIdByOrderId(orderId).orElse(0);
         AtomicInteger itemIdCounter = new AtomicInteger(largestItemId);
         logger.debug("Generating new item IDs starting from {}", largestItemId + 1);
 
