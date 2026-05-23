@@ -24,6 +24,7 @@ import de.hs_esslingen.besy.models.Quotation;
 import de.hs_esslingen.besy.services.PriceConversionService;
 
 public class PDFOrder {
+    public static final int AMOUNT_ITEM_LINES = 15;
 
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(PDFOrder.class);
 
@@ -182,7 +183,7 @@ public class PDFOrder {
         invoiceStreet = acroForm.getField("Formular1[0].#subform[0].Header[0].Telefon[2]");
         invoiceDeliveryAddress = acroForm.getField("Formular1[0].#subform[0].Header[0].Fax[2]");
 
-        for (int i = 0; i < 14; i++) {
+        for (int i = 0; i < AMOUNT_ITEM_LINES; i++) {
             PDFItem article = new PDFItem(
                     acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Artikel[%d]", i)),
                     (PDTextField) acroForm
@@ -353,34 +354,52 @@ public class PDFOrder {
         this.invoiceDeliveryAddress.setValue(invoiceDeliveryAddress != null ? invoiceDeliveryAddress : "");
     }
 
+    /**
+     * Set the items of a pdf order.
+     * The PDF must have no less than {@link PDFOrder.AMOUNT_ITEM_LINES} lines.
+     * 
+     * @param items The list of items to set
+     * @throws IOException
+     * @throws BadRequestException if the resulting lines after wrapping
+     *                             descriptions exceeds
+     *                             {@link PDFOrder.AMOUNT_ITEM_LINES}
+     */
     public void setItems(List<Item> items) throws IOException {
+        int amountInitialItems = items.size();
+        items.sort((o1, o2) -> o1.getId().getItemId() - o2.getId().getItemId());
         items = wrapItemLines(items);
-        if (items.size() < 14) {
-            for (int i = 0; i < items.size(); i++) {
-                Item item = items.get(i);
-                PDFItem pdfItem = this.items.get(i);
 
-                BigDecimal netPrice;
-                try {
-                    netPrice = item.getVatType() == VatType.netto ? item.getPricePerUnit()
-                            : PriceConversionService.convertGrossPriceToNetPrice(item.getPricePerUnit(),
-                                    item.getVat());
-                } catch (IllegalArgumentException e) {
-                    netPrice = BigDecimal.ZERO;
-                }
-
-                if (item.getQuantity() > 0) {
-
-                    pdfItem.setPosition(String.valueOf(item.getId().getItemId()));
-                    pdfItem.setQuantity(String.valueOf(item.getQuantity()));
-                    pdfItem.setPrice((netPrice + " €").replace('.', ','));
-                    pdfItem.setAmount((BigDecimal.valueOf(item.getQuantity()).multiply(netPrice) + " €")
-                            .replace('.', ','));
-                }
-                pdfItem.setDescription(item.getName());
+        if (items.size() > AMOUNT_ITEM_LINES) {
+            if (amountInitialItems > AMOUNT_ITEM_LINES) {
+                throw new BadRequestException("Number of items must be less than " + AMOUNT_ITEM_LINES + ".");
+            } else {
+                throw new BadRequestException("The item descriptions are to long which results in more than "
+                        + AMOUNT_ITEM_LINES + " lines.");
             }
-        } else {
-            throw new BadRequestException("Number of items must be less than 14.");
+        }
+
+        for (int i = 0; i < items.size(); i++) {
+            Item item = items.get(i);
+            PDFItem pdfItem = this.items.get(i);
+
+            BigDecimal netPrice;
+            try {
+                netPrice = item.getVatType() == VatType.netto ? item.getPricePerUnit()
+                        : PriceConversionService.convertGrossPriceToNetPrice(item.getPricePerUnit(),
+                                item.getVat());
+            } catch (IllegalArgumentException e) {
+                netPrice = BigDecimal.ZERO;
+            }
+
+            if (item.getQuantity() > 0) {
+
+                pdfItem.setPosition(String.valueOf(i + 1));
+                pdfItem.setQuantity(String.valueOf(item.getQuantity()));
+                pdfItem.setPrice((netPrice + " €").replace('.', ','));
+                pdfItem.setAmount((BigDecimal.valueOf(item.getQuantity()).multiply(netPrice) + " €")
+                        .replace('.', ','));
+            }
+            pdfItem.setDescription(item.getName());
         }
     }
 
@@ -409,9 +428,6 @@ public class PDFOrder {
                         e.getMessage());
                 wrappedItems.add(item);
             }
-        }
-        if (items.size() <= 14 && wrappedItems.size() > 14) {
-            throw new BadRequestException("After wrapping, number of items exceeds the maximum of 14.");
         }
         return wrappedItems;
     }
@@ -515,7 +531,6 @@ public class PDFOrder {
                 .normalize(input, Normalizer.Form.NFD)
                 .replaceAll("[^\\p{ASCII}]", "");
         normalized = normalized.replaceAll("[^\\x00-\\x7F]", "");
-        System.out.println("Normalized string: '" + normalized + "'");
         return itemDescriptionFont.getStringWidth(normalized) * itemDescriptionFontSize / 1000f;
     }
 
