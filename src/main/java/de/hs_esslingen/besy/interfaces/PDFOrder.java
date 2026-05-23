@@ -371,7 +371,8 @@ public class PDFOrder {
 
         if (items.size() > AMOUNT_ITEM_LINES) {
             if (amountInitialItems > AMOUNT_ITEM_LINES) {
-                throw new BadRequestException("Number of items must be less than " + AMOUNT_ITEM_LINES + ".");
+                throw new BadRequestException(
+                        "Number of items must be less than or equal to " + AMOUNT_ITEM_LINES + ".");
             } else {
                 throw new BadRequestException("The item descriptions are too long which results in more than "
                         + AMOUNT_ITEM_LINES + " lines.");
