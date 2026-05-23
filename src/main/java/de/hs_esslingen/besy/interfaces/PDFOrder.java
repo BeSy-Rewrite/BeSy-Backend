@@ -366,7 +366,7 @@ public class PDFOrder {
      */
     public void setItems(List<Item> items) throws IOException {
         int amountInitialItems = items.size();
-        items.sort((o1, o2) -> o1.getId().getItemId() - o2.getId().getItemId());
+        items.sort((o1, o2) -> Integer.compare(o1.getId().getItemId(), o2.getId().getItemId()));
         items = wrapItemLines(items);
 
         if (items.size() > AMOUNT_ITEM_LINES) {
