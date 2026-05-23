@@ -24,6 +24,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class ItemService {
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ItemService.class);
+
     private final ItemRepository itemRepository;
     private final OrderRepository orderRepository;
     private final VatRepository vatRepository;
@@ -41,13 +43,16 @@ public class ItemService {
         Order order = orderRepository.getReferenceById(orderId);
 
         // Server-side id generation
-        int largestItemId = itemRepository.findByOrder_Id(orderId).size();
+        int largestItemId = itemRepository.findTopItemIdByOrderIdOrderByItemIdDesc(orderId).orElse(0);
         AtomicInteger itemIdCounter = new AtomicInteger(largestItemId);
+        logger.debug("Generating new item IDs starting from {}", largestItemId + 1);
 
         items.forEach(item -> {
             int newItemId = itemIdCounter.incrementAndGet();
             ItemId itemId = new ItemId(orderId, newItemId);
             Vat vat = vatRepository.getReferenceById(item.getVatValue());
+
+            logger.debug("Assigning ItemId {} to new item for order {}", itemId, orderId);
 
             item.setId(itemId);
             item.setVat(vat);
