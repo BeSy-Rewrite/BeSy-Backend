@@ -169,7 +169,7 @@ class OrderPDFServiceTest {
         order.setCreatedDate(LocalDateTime.of(2025, 1, 15, 10, 30));
 
         Item item1 = itemWithVat(orderId, 1, BigDecimal.valueOf(10), 2L, BigDecimal.valueOf(19));
-        List<Item> items = List.of(item1);
+        List<Item> items = new java.util.ArrayList<>(List.of(item1));
 
         ItemResponseDTO itemDto1 = new ItemResponseDTO(1, "Item A", BigDecimal.valueOf(10), 2L, "pcs", "A-1", "",
                 new VatResponseDTO(BigDecimal.valueOf(19), "VAT"), PreferredList.RZ, "", VatType.netto);
@@ -198,7 +198,7 @@ class OrderPDFServiceTest {
         Item item1 = itemWithVat(orderId, 1, BigDecimal.valueOf(10), 2L, BigDecimal.valueOf(19));
         Item item2 = itemWithVat(orderId, 2, BigDecimal.valueOf(5), 4L, BigDecimal.valueOf(19));
         item2.setVat(item1.getVat());
-        List<Item> items = List.of(item1, item2);
+        List<Item> items = new java.util.ArrayList<>(List.of(item1, item2));
 
         ItemResponseDTO itemDto1 = new ItemResponseDTO(1, "Item A", BigDecimal.valueOf(10), 2L, "pcs", "A-1", "",
                 new VatResponseDTO(BigDecimal.valueOf(19), "VAT"), PreferredList.RZ, "", VatType.netto);
@@ -251,7 +251,7 @@ class OrderPDFServiceTest {
         Long orderId = 100L;
 
         Item item1 = itemWithVat(orderId, 1, BigDecimal.valueOf(0), 1L, BigDecimal.valueOf(7));
-        List<Item> items = List.of(item1);
+        List<Item> items = new java.util.ArrayList<>(List.of(item1));
 
         ItemResponseDTO itemDto1 = new ItemResponseDTO(1, "Item A", BigDecimal.valueOf(0), 1L, "pcs", "A-1", "",
                 new VatResponseDTO(BigDecimal.valueOf(7), "VAT"), PreferredList.RZ, "", VatType.netto);
@@ -290,7 +290,7 @@ class OrderPDFServiceTest {
         order.setPercentageDiscount(BigDecimal.valueOf(50));
 
         Item item1 = itemWithVat(orderId, 1, BigDecimal.valueOf(0), 0L, BigDecimal.valueOf(100));
-        List<Item> items = List.of(item1);
+        List<Item> items = new java.util.ArrayList<>(List.of(item1));
 
         ItemResponseDTO itemDto1 = new ItemResponseDTO(1, "Item Zero", BigDecimal.valueOf(0), 0L, "pcs", "Z-1", "",
                 new VatResponseDTO(BigDecimal.valueOf(100), "VAT"), PreferredList.RZ, "", VatType.netto);
