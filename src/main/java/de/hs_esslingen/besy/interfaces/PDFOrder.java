@@ -379,6 +379,8 @@ public class PDFOrder {
             }
         }
 
+        int itemPosition = 1;
+
         for (int i = 0; i < items.size(); i++) {
             Item item = items.get(i);
             PDFItem pdfItem = this.items.get(i);
@@ -394,7 +396,7 @@ public class PDFOrder {
 
             if (item.getQuantity() > 0) {
 
-                pdfItem.setPosition(String.valueOf(i + 1));
+                pdfItem.setPosition(String.valueOf(itemPosition++));
                 pdfItem.setQuantity(String.valueOf(item.getQuantity()));
                 pdfItem.setPrice((netPrice + " €").replace('.', ','));
                 pdfItem.setAmount((BigDecimal.valueOf(item.getQuantity()).multiply(netPrice) + " €")
