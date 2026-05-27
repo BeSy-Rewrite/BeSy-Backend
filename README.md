@@ -2,8 +2,8 @@
 
 Backend des Bestellsystems (BeSy) der Fakultät Informationstechnik der Hochschule Esslingen. Gebaut mit **Spring Boot 3**, **PostgreSQL** und **Keycloak (OAuth2)**.
 
-- 🔗 **Live-Version:** [https://test.besy.hs-esslingen.com/](https://test.besy.hs-esslingen.com/)
-- 📄 **Swagger UI:** [https://swagger.test.besy.hs-esslingen.com/](https://swagger.test.besy.hs-esslingen.com/)
+- 🔗 **Live-Version:** [https://besy.lind3.de/](https://besy.lind3.de/)
+- 📄 **Swagger UI:** [https://swagger-besy.lind3.de/](https://swagger-besy.lind3.de/)
 
 ---
 
