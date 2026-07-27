@@ -129,9 +129,6 @@ class InsyServiceTest {
         when(costCenterRepository.findById(order.getPrimaryCostCenterId())).thenReturn(Optional.of(costCenter));
         when(userRepository.findById(order.getOwnerId())).thenReturn(Optional.of(user));
         when(itemRepository.findByOrder_Id(orderId)).thenReturn(items);
-        when(pdfService.generateOrderNumber(order.getPrimaryCostCenterId(), order.getBookingYear(),
-                order.getAutoIndex()))
-                .thenReturn("CC-1-25-0001");
 
         when(restClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);

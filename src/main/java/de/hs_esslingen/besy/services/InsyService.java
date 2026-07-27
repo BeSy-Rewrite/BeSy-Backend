@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +38,7 @@ public class InsyService {
         private final CostCenterRepository costCenterRepository;
         private final UserRepository userRepository;
         private final ItemRepository itemRepository;
-        private final OrderPDFService pdfService;
+        private final OrderService orderService;
 
         @Value("${insy.api.base-url}")
         private String insyBaseUrl;
@@ -64,7 +65,7 @@ public class InsyService {
         public InsyService(@Qualifier("oauthRestClient") RestClient oAuthRestClient,
                         @Qualifier("plainRestClient") RestClient plainRestClient, OrderRepository orderRepository,
                         SupplierRepository supplierRepository, CostCenterRepository costCenterRepository,
-                        UserRepository userRepository, ItemRepository itemRepository, OrderPDFService pdfService) {
+                        UserRepository userRepository, ItemRepository itemRepository, OrderService orderService) {
                 this.oAuthRestClient = oAuthRestClient;
                 this.plainRestClient = plainRestClient;
                 this.orderRepository = orderRepository;
@@ -72,7 +73,7 @@ public class InsyService {
                 this.costCenterRepository = costCenterRepository;
                 this.userRepository = userRepository;
                 this.itemRepository = itemRepository;
-                this.pdfService = pdfService;
+                this.orderService = orderService;
         }
 
         public ResponseEntity<String> createOrder(Long orderId) {
@@ -104,8 +105,10 @@ public class InsyService {
 
                 InsyOrderRequestDTO requestOrder = new InsyOrderRequestDTO();
                 requestOrder.setBesyId(orderId);
-                requestOrder.setOrderNumber(pdfService.generateOrderNumber(order.getPrimaryCostCenterId(),
-                                order.getBookingYear(), order.getAutoIndex()));
+                Optional<String> orderNumber = orderService.getOrderNumber(order);
+                if (orderNumber.isPresent()) {
+                        requestOrder.setOrderNumber(orderNumber.get());
+                }
                 requestOrder.setOrderCreatedDate(order.getCreatedDate());
                 requestOrder.setSupplierName(supplier.getName());
                 requestOrder.setDescription(order.getContentDescription());

@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import de.hs_esslingen.besy.dtos.request.OrderRequestDTO;
 import de.hs_esslingen.besy.dtos.response.OrderResponseDTO;
 import de.hs_esslingen.besy.dtos.response.OrderStatusHistoryResponseDTO;
 import de.hs_esslingen.besy.enums.OrderStatus;
+import de.hs_esslingen.besy.events.OrderStatusChangedEvent;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotAuthorizedException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
@@ -68,6 +70,7 @@ public class OrderService {
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
     private final SupplierRepository supplierRepository;
     private final CustomerIdRepository customerIdRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     private final UserService userService;
 
@@ -80,6 +83,12 @@ public class OrderService {
 
     @Value("${dekan-role-name}")
     private String dekanRoleName;
+
+    @Value("${order-number.prefix}")
+    private String orderNumberPrefix;
+
+    @Value("${order-number.separator}")
+    private String orderNumberSeparator;
 
     /**
      * Defines valid status transitions for orders.
@@ -218,6 +227,7 @@ public class OrderService {
     @Transactional
     public ResponseEntity<OrderStatus> updateOrderStatus(Long id, OrderStatus newStatus, Jwt jwt) {
         Order order = orderRepository.findById(id).get();
+        OrderStatus currentStatus = order.getStatus();
 
         this.validateStatusTransition(order, newStatus, jwt);
 
@@ -235,6 +245,9 @@ public class OrderService {
         orderStatusHistory.setStatus(savedOrder.getStatus());
 
         orderStatusHistoryRepository.save(orderStatusHistory);
+        applicationEventPublisher.publishEvent(
+                new OrderStatusChangedEvent(savedOrder, currentStatus, savedOrder.getStatus(),
+                        userService.resolveUserFromJwt(jwt)));
 
         return ResponseEntity.ok(savedOrder.getStatus());
     }
@@ -302,6 +315,18 @@ public class OrderService {
                 .filter(entry -> entry.getValue().contains(status))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
+    }
+
+    public Optional<String> getOrderNumber(Order order) {
+        if (order.getPrimaryCostCenterId() == null || order.getBookingYear() == null || order.getAutoIndex() == null) {
+            return Optional.empty();
+        }
+
+        String[] orderNumberParts = { orderNumberPrefix + order.getPrimaryCostCenterId(), order.getBookingYear(),
+                String.format("%03d", order.getAutoIndex()) };
+
+        return Optional.of(String.join(orderNumberSeparator, orderNumberParts));
+
     }
 
     /**

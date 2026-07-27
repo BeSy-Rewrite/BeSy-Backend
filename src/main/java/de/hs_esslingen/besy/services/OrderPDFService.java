@@ -20,7 +20,6 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -49,17 +48,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OrderPDFService {
 
-    @Value("${order-number.prefix}")
-    private String orderNumberPrefix;
-
-    @Value("${order-number.separator}")
-    private String orderNumberSeparator;
-
     private final OrderRepository orderRepository;
     private final SupplierRepository supplierRepository;
     private final ItemRepository itemRepository;
     private final PersonRepository personRepository;
     private final QuotationRepository quotationRepository;
+    private final OrderService orderService;
 
     private final Locale locale;
 
@@ -129,8 +123,7 @@ public class OrderPDFService {
                 setSupplier(order, supplierDAO.get());
 
             // Bestell-Nr.
-            order.setOrderNumber(generateOrderNumber(orderDAO.getPrimaryCostCenterId(),
-                    orderDAO.getBookingYear(), orderDAO.getAutoIndex()));
+            order.setOrderNumber(orderService.getOrderNumber(orderDAO).orElse(""));
             // Datum:
             order.setDate(orderDAO.getCreatedDate()
                     .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)));
@@ -327,13 +320,6 @@ public class OrderPDFService {
             System.out.println("Value: " + field.getValueAsString());
             System.out.println("----------------------------");
         }
-    }
-
-    public String generateOrderNumber(String primaryCostCenterId, String bookingYear, Short autoIndex) {
-        String[] orderNumberParts = { orderNumberPrefix + primaryCostCenterId, bookingYear,
-                String.format("%03d", autoIndex) };
-
-        return String.join(orderNumberSeparator, orderNumberParts);
     }
 
 }
