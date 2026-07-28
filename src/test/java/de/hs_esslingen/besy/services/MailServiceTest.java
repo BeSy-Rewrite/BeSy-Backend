@@ -17,6 +17,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.mail.MailService;
+import de.hs_esslingen.besy.mail.MailTemplateRenderer;
 import de.hs_esslingen.besy.models.Order;
 import de.hs_esslingen.besy.models.User;
 
@@ -29,11 +30,13 @@ class MailServiceTest {
     @Mock
     private OrderService orderService;
 
+    private MailTemplateRenderer templateRenderer;
+
     private MailService mailService;
 
     @BeforeEach
     void setUp() {
-        mailService = new MailService(mailSender, orderService);
+        mailService = new MailService(mailSender, orderService, templateRenderer);
         ReflectionTestUtils.setField(mailService, "senderMail", "besy@it.hs-esslingen.de");
         ReflectionTestUtils.setField(mailService, "approvalMails",
                 new String[] { "dekan@hs-esslingen.de", "tmp@hs-esslingen.de" });
