@@ -16,6 +16,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import de.hs_esslingen.besy.enums.OrderStatus;
+import de.hs_esslingen.besy.mail.MailService;
 import de.hs_esslingen.besy.models.Order;
 import de.hs_esslingen.besy.models.User;
 

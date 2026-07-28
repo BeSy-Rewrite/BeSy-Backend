@@ -7,9 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -28,12 +28,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -45,8 +45,8 @@ import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotAuthorizedException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
-import de.hs_esslingen.besy.events.OrderStatusChangedEvent;
 import de.hs_esslingen.besy.interfaces.OrderCompletedValidationDAO;
+import de.hs_esslingen.besy.mail.OrderStatusChangedEvent;
 import de.hs_esslingen.besy.mappers.OrderCompletedValidationMapper;
 import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
 import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
@@ -469,7 +469,7 @@ class OrderServiceTest {
         assertThrows(ConstraintViolationException.class,
                 () -> orderService.updateOrderStatus(1L, OrderStatus.COMPLETED, null));
         verify(orderRepository, never()).save(any(Order.class));
-    verifyNoInteractions(applicationEventPublisher);
+        verifyNoInteractions(applicationEventPublisher);
     }
 
     @Test

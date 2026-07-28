@@ -14,7 +14,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.hs_esslingen.besy.enums.OrderStatus;
-import de.hs_esslingen.besy.events.OrderStatusChangedEvent;
+import de.hs_esslingen.besy.mail.MailService;
+import de.hs_esslingen.besy.mail.OrderStatusChangedEvent;
+import de.hs_esslingen.besy.mail.OrderStatusMailListener;
 import de.hs_esslingen.besy.models.Order;
 import de.hs_esslingen.besy.models.User;
 import de.hs_esslingen.besy.repositories.OrderRepository;

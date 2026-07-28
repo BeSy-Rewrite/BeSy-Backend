@@ -1,22 +1,20 @@
-package de.hs_esslingen.besy.services;
+package de.hs_esslingen.besy.mail;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import de.hs_esslingen.besy.events.OrderStatusChangedEvent;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class OrderStatusMailListener {
 
-/*
-besy.mail.notify-approver-states=DEKAN_PENDING
-besy.mail.notify-user-states=APPROVED,REJECTED
-*/
-
+    /*
+     * besy.mail.notify-approver-states=DEKAN_PENDING
+     * besy.mail.notify-user-states=APPROVED,REJECTED
+     */
 
     private final MailService mailService;
 
@@ -24,7 +22,8 @@ besy.mail.notify-user-states=APPROVED,REJECTED
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onOrderStatusChanged(OrderStatusChangedEvent event) {
 
-        if (!mailService.getNotifyApproverStates().contains(event.newStatus()) && !mailService.getNotifyUserStates().contains(event.newStatus())) {
+        if (!mailService.getNotifyApproverStates().contains(event.newStatus())
+                && !mailService.getNotifyUserStates().contains(event.newStatus())) {
             return;
         }
 
@@ -32,8 +31,7 @@ besy.mail.notify-user-states=APPROVED,REJECTED
                 event.order(),
                 event.previousStatus(),
                 event.newStatus(),
-                event.user()
-            );
+                event.user());
     }
 
 }

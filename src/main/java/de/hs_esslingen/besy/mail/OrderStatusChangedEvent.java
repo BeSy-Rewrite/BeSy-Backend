@@ -1,4 +1,4 @@
-package de.hs_esslingen.besy.events;
+package de.hs_esslingen.besy.mail;
 
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.models.Order;
