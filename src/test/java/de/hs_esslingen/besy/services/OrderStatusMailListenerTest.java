@@ -46,13 +46,15 @@ class OrderStatusMailListenerTest {
 
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
 
+        when(mailService.getNotifyApproverStates()).thenReturn(java.util.Set.of(OrderStatus.APPROVED));
+        when(mailService.getNotifyUserStates()).thenReturn(java.util.Set.of());
+
         listener.onOrderStatusChanged(
                 new OrderStatusChangedEvent(order.getId(), OrderStatus.DEKAN_PENDING, OrderStatus.APPROVED,
                         user.getId()));
 
         verify(mailService).sendOrderStatusChangeMail(order.getId(), OrderStatus.DEKAN_PENDING, OrderStatus.APPROVED,
                 user.getId());
-    }
 
     @Test
     void should_ignore_status_changes_that_are_not_configured_for_mail() {
