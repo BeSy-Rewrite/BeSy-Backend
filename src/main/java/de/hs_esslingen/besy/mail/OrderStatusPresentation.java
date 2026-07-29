@@ -40,7 +40,7 @@ public final class OrderStatusPresentation {
                         OrderStatus.APPROVED, new OrderStatusPresentation(
                                         "✅ Genehmigt", "#e3f9e5", "#1b7f36",
                                         "Ihre Bestellung wurde genehmigt",
-                                        "Die folgende Bestellung wurde genehmigt und wird nun weiterverarbeitet.",
+                                        "Die folgende Bestellung wurde genehmigt und kann nun weiterverarbeitet werden.",
                                         CTA_LABEL_VIEW_ORDER),
                         OrderStatus.IN_PROGRESS, new OrderStatusPresentation(
                                         "⏳ In Bearbeitung", "#fff4e0", "#a15c00",
