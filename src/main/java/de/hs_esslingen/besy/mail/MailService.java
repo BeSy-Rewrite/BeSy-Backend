@@ -100,9 +100,10 @@ public class MailService {
             helper.setTo(recipients);
             helper.setSubject(buildSubject(order, newStatus));
             helper.setText(buildBody(order, previousStatus, newStatus), true);
+
             helper.addInline("besyLogo", new ClassPathResource("static/besy-logo.png"), "image/png");
-            helper.addInline("hochschuleLogo", new ClassPathResource("static/heonline_logo-white-red.svg"),
-                    "image/svg+xml");
+            helper.addInline("hochschuleLogo", new ClassPathResource("static/heonline_logo-white-red.png"),
+                    "image/png");
 
             mailSender.send(message);
             log.info("Send state change mail for order {} to {}.", order.getId(), Arrays.toString(recipients));
