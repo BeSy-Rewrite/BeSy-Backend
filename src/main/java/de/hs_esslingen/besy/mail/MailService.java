@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -49,6 +50,12 @@ public class MailService {
     @Value("${besy.mail.approvals}")
     private String[] approvalMails;
 
+    @Value("${besy.mail.contact-name}")
+    private String contactName;
+
+    @Value("${besy.mail.contact-mail}")
+    private String contactMail;
+
     /**
      * Sends an email notification about an order status change to the appropriate
      * recipients.
@@ -86,13 +93,15 @@ public class MailService {
         }
 
         MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, "UTF-8");
 
         try {
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setFrom(senderMail);
             helper.setTo(recipients);
             helper.setSubject(buildSubject(order, newStatus));
             helper.setText(buildBody(order, previousStatus, newStatus), true);
+            helper.addInline("besyLogo", new ClassPathResource("static/besy-logo.png"), "image/png");
+
             mailSender.send(message);
             log.info("Send state change mail for order {} to {}.", order.getId(), Arrays.toString(recipients));
         } catch (MessagingException e) {
@@ -160,7 +169,12 @@ public class MailService {
         values.put("NEW_STATUS", statusLabel(newStatus));
         values.put("ORDER_URL", frontendUrl + "/orders/" + order.getId());
 
-        return templateRenderer.render(values);
+        boolean hasContact = contactMail != null && !contactMail.isBlank();
+        values.put("CONTACT_NAME", nullSafe(contactName));
+        values.put("CONTACT_MAIL", nullSafe(contactMail));
+
+        Set<String> activeSections = hasContact ? Set.of("CONTACT") : Set.of();
+        return templateRenderer.render(values, activeSections);
     }
 
     private String statusLabel(OrderStatus status) {

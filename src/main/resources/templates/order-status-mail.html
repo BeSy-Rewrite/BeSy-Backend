@@ -17,9 +17,13 @@
 
                     <!-- Header -->
                     <tr>
-                        <td style="background-color:#004a8f; padding:20px 32px;">
-                            <span style="color:#ffffff; font-size:20px; font-weight:bold;">BeSy – Hochschule
-                                Esslingen</span>
+                        <td style="background-color:#193058; padding:20px 32px;">
+                            <img src="cid:hochschuleLogo"
+                                alt="Hochschule Esslingen Logo" width="80.95" height="32"
+                                style="vertical-align:middle;">
+                            <img src="cid:besyLogo"
+                                alt="BeSy Logo" width="32" height="32"
+                                style="vertical-align:middle; margin-right:12px;">
                         </td>
                     </tr>
 
@@ -93,7 +97,7 @@
                     <tr>
                         <td align="center" style="padding:8px 32px 32px 32px;">
                             <a href="{{ORDER_URL}}" target="_blank"
-                                style="display:inline-block; background-color:#004a8f; color:#ffffff; text-decoration:none; font-size:16px; font-weight:bold; padding:14px 32px; border-radius:6px;">
+                                style="display:inline-block; background-color:#193058; color:#ffffff; text-decoration:none; font-size:16px; font-weight:bold; padding:14px 32px; border-radius:6px;">
                                 {{CTA_LABEL}}
                             </a>
                         </td>
@@ -104,7 +108,10 @@
                         <td style="background-color:#f9fafb; padding:20px 32px; border-top:1px solid #e5e7eb;">
                             <p style="font-size:12px; color:#9ca3af; line-height:1.5; margin:0;">
                                 Diese E-Mail wurde automatisch vom BeSy-Bestellsystem generiert. Bitte antworten Sie
-                                nicht direkt auf diese Nachricht.
+                                nicht direkt auf diese Nachricht.{{#CONTACT}}<br>
+                                Wenn sie Fragen haben, wenden Sie sich bitte an
+                                <a href="mailto:{{CONTACT_MAIL}}"
+                                    style="color:#193058; text-decoration:underline;">{{CONTACT_NAME}}</a>.{{/CONTACT}}
                             </p>
                         </td>
                     </tr>
