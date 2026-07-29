@@ -71,20 +71,23 @@ public class MailService {
             OrderStatus previousStatus,
             OrderStatus newStatus,
             long userId) {
-        if (!getNotifyUserStates().contains(newStatus)
-                && (approvalMails == null || approvalMails.length == 0
-                        || !getNotifyApproverStates().contains(newStatus))) {
+        boolean notifyUsers = getNotifyUserStates().contains(newStatus);
+        boolean notifyApprovers = getNotifyApproverStates().contains(newStatus)
+                && approvalMails != null && approvalMails.length > 0;
+
+        if (!notifyUsers && !notifyApprovers) {
             return;
         }
 
         Order order = orderService.getOrderById(orderId).orElseThrow();
         User user = userService.getUserById(userId).orElse(null);
 
-        if (order.getOwner().getId() == user.getId() && getNotifyUserStates().contains(newStatus)) {
-            // If the user is the owner of the order and the new status is in
-            // notifyUserStates,
-            // we don't need to send an email to the user.
-            return;
+        // Avoid self-notification only when the triggering user would be the only recipient.
+        if (notifyUsers && !notifyApprovers) {
+            User owner = order.getOwner();
+            if (user != null && owner != null && owner.getId() == user.getId()) {
+                return;
+            }
         }
 
         String[] recipients = buildRecipients(order, newStatus, user);
