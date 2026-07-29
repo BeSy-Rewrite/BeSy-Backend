@@ -105,10 +105,7 @@ public class InsyService {
 
                 InsyOrderRequestDTO requestOrder = new InsyOrderRequestDTO();
                 requestOrder.setBesyId(orderId);
-                Optional<String> orderNumber = orderService.getOrderNumber(order);
-                if (orderNumber.isPresent()) {
-                        requestOrder.setOrderNumber(orderNumber.get());
-                }
+                requestOrder.setOrderNumber(orderService.getOrderNumber(order).orElse(String.valueOf(orderId)));
                 requestOrder.setOrderCreatedDate(order.getCreatedDate());
                 requestOrder.setSupplierName(supplier.getName());
                 requestOrder.setDescription(order.getContentDescription());
