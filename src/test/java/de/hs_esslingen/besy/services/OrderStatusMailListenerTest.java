@@ -47,9 +47,11 @@ class OrderStatusMailListenerTest {
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
 
         listener.onOrderStatusChanged(
-                new OrderStatusChangedEvent(order, OrderStatus.DEKAN_PENDING, OrderStatus.APPROVED, user));
+                new OrderStatusChangedEvent(order.getId(), OrderStatus.DEKAN_PENDING, OrderStatus.APPROVED,
+                        user.getId()));
 
-        verify(mailService).sendOrderStatusChangeMail(order, OrderStatus.DEKAN_PENDING, OrderStatus.APPROVED, user);
+        verify(mailService).sendOrderStatusChangeMail(order.getId(), OrderStatus.DEKAN_PENDING, OrderStatus.APPROVED,
+                user.getId());
     }
 
     @Test
@@ -61,7 +63,8 @@ class OrderStatusMailListenerTest {
         order.setOwner(user);
 
         listener.onOrderStatusChanged(
-                new OrderStatusChangedEvent(order, OrderStatus.IN_PROGRESS, OrderStatus.COMPLETED, user));
+                new OrderStatusChangedEvent(order.getId(), OrderStatus.IN_PROGRESS, OrderStatus.COMPLETED,
+                        user.getId()));
 
         verify(orderRepository, never()).findById(any());
         verify(mailService, never()).sendOrderStatusChangeMail(any(), any(), any(), any());

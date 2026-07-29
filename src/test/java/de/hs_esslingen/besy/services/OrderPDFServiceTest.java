@@ -127,7 +127,7 @@ class OrderPDFServiceTest {
         order.setCreatedDate(LocalDateTime.of(2025, 1, 15, 10, 30));
         order.setContentDescription("Test Order");
         order.setSupplierId(10);
-        order.setOwnerId(1);
+        order.setOwnerId(1l);
         order.setOwner(owner);
         order.setQuotePrice(BigDecimal.valueOf(100));
         order.setCommentForSupplier("Comment");

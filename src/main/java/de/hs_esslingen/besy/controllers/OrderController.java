@@ -45,7 +45,9 @@ import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.EntityAlreadyExistsException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
-import de.hs_esslingen.besy.repositories.InvoiceRepository;
+import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
+import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
+import de.hs_esslingen.besy.models.Order;
 import de.hs_esslingen.besy.services.ApprovalService;
 import de.hs_esslingen.besy.services.CostCenterService;
 import de.hs_esslingen.besy.services.InvoiceService;
@@ -65,10 +67,11 @@ public class OrderController {
     private final QuotationService quotationService;
     private final OrderPDFService orderPDFService;
     private final PaperlessService paperlessService;
-    private final InvoiceRepository invoiceRepository;
     private final InvoiceService invoiceService;
     private final ApprovalService approvalService;
     private final CostCenterService costCenterService;
+    private final OrderResponseMapper orderResponseMapper;
+    private final OrderRequestMapper orderRequestMapper;
 
     @GetMapping
     public Page<OrderResponseDTO> getAllOrders(
@@ -116,14 +119,20 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO orderRequestDTO,
             @AuthenticationPrincipal Jwt jwt) {
-        return orderService.createOrder(orderRequestDTO, jwt);
+        Order createdOrder = orderService.createOrder(orderRequestDTO, jwt);
+        OrderResponseDTO dto = orderResponseMapper.toDto(createdOrder);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("{order-id}")
     public ResponseEntity<OrderResponseDTO> getOrder(@PathVariable("order-id") Long id) {
         if (!orderService.existsOrderById(id))
             throw new NotFoundException("Bestellung nicht gefunden.");
-        return orderService.getOrderById(id);
+
+        Order order = orderService.getOrderById(id)
+                .orElseThrow(() -> new NotFoundException("Bestellung mit id " + id + " nicht gefunden."));
+        OrderResponseDTO dto = orderResponseMapper.toDto(order);
+        return ResponseEntity.ok(dto);
     }
 
     @PatchMapping("{order-id}")

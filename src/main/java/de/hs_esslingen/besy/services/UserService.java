@@ -44,10 +44,8 @@ public class UserService {
         return ResponseEntity.ok(userResponseDTOS);
     }
 
-    public ResponseEntity<UserResponseDTO> getUserById(Integer id) {
-        return userRepository.findById(id)
-                .map(user -> ResponseEntity.ok(userResponseMapper.toDto(user)))
-                .orElseThrow(() -> new NotFoundException("Benutzer mit id " + id + " nicht gefunden."));
+    public Optional<User> getUserById(long id) {
+        return userRepository.findById(id);
     }
 
     public ResponseEntity<UserResponseDTO> getUserByKeycloakUUID(Jwt jwt) {

@@ -90,7 +90,7 @@ class InsyServiceTest {
         order.setId(100L);
         order.setSupplierId(10);
         order.setPrimaryCostCenterId("CC-1");
-        order.setOwnerId(20);
+        order.setOwnerId(20l);
         order.setBookingYear("25");
         order.setAutoIndex((short) 1);
         order.setCreatedDate(LocalDateTime.of(2025, 1, 1, 10, 0));

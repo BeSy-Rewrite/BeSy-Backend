@@ -26,7 +26,6 @@ import de.hs_esslingen.besy.dtos.response.OrderStatusHistoryResponseDTO;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotAuthorizedException;
-import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.interfaces.OrderCompletedValidationDAO;
 import de.hs_esslingen.besy.mail.OrderStatusChangedEvent;
 import de.hs_esslingen.besy.mappers.OrderCompletedValidationMapper;
@@ -152,14 +151,11 @@ public class OrderService {
         return orders.map(orderResponseMapper::toDto);
     }
 
-    public ResponseEntity<OrderResponseDTO> getOrderById(Long id) {
-        return orderRepository.findById(id)
-                .map(order -> {
-                    return ResponseEntity.ok(orderResponseMapper.toDto(order));
-                }).orElseThrow(() -> new NotFoundException("Bestellung mit id " + id + " nicht gefunden."));
+    public Optional<Order> getOrderById(Long id) throws IllegalArgumentException {
+        return orderRepository.findById(id);
     }
 
-    public ResponseEntity<OrderResponseDTO> createOrder(OrderRequestDTO dto, Jwt jwt) {
+    public Order createOrder(OrderRequestDTO dto, Jwt jwt) {
         Order order = orderRequestMapper.toEntity(dto);
 
         this.mapForeignRelationships(order, dto, jwt);
@@ -178,7 +174,6 @@ public class OrderService {
         order.setStatus(OrderStatus.IN_PROGRESS);
 
         Order savedOrder = orderRepository.save(order);
-        OrderResponseDTO responseDTO = orderResponseMapper.toDto(savedOrder);
 
         // Create first OrderStatusHistory entry
         OrderStatusHistory orderStatusHistory = OrderStatusHistory.builder()
@@ -187,7 +182,7 @@ public class OrderService {
                 .build();
         orderStatusHistoryRepository.save(orderStatusHistory);
 
-        return ResponseEntity.ok(responseDTO);
+        return savedOrder;
 
     }
 
@@ -246,8 +241,8 @@ public class OrderService {
 
         orderStatusHistoryRepository.save(orderStatusHistory);
         applicationEventPublisher.publishEvent(
-                new OrderStatusChangedEvent(savedOrder, currentStatus, savedOrder.getStatus(),
-                        userService.resolveUserFromJwt(jwt)));
+                new OrderStatusChangedEvent(savedOrder.getId(), currentStatus, savedOrder.getStatus(),
+                        userService.resolveUserFromJwt(jwt).getId()));
 
         return ResponseEntity.ok(savedOrder.getStatus());
     }

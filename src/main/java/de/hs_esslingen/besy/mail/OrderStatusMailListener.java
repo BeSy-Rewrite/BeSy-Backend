@@ -11,11 +11,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OrderStatusMailListener {
 
-    /*
-     * besy.mail.notify-approver-states=DEKAN_PENDING
-     * besy.mail.notify-user-states=APPROVED,REJECTED
-     */
-
     private final MailService mailService;
 
     @Async
@@ -28,10 +23,10 @@ public class OrderStatusMailListener {
         }
 
         mailService.sendOrderStatusChangeMail(
-                event.order(),
+                event.orderId(),
                 event.previousStatus(),
                 event.newStatus(),
-                event.user());
+                event.userId());
     }
 
 }

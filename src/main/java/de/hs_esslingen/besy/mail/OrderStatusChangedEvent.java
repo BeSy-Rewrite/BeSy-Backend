@@ -1,8 +1,6 @@
 package de.hs_esslingen.besy.mail;
 
 import de.hs_esslingen.besy.enums.OrderStatus;
-import de.hs_esslingen.besy.models.Order;
-import de.hs_esslingen.besy.models.User;
 
-public record OrderStatusChangedEvent(Order order, OrderStatus previousStatus, OrderStatus newStatus, User user) {
+public record OrderStatusChangedEvent(long orderId, OrderStatus previousStatus, OrderStatus newStatus, long userId) {
 }

@@ -17,8 +17,10 @@ import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.models.Order;
 import de.hs_esslingen.besy.models.User;
 import de.hs_esslingen.besy.services.OrderService;
+import de.hs_esslingen.besy.services.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,6 +31,7 @@ public class MailService {
 
     private final JavaMailSender mailSender;
     private final OrderService orderService;
+    private final UserService userService;
     private final MailTemplateRenderer templateRenderer;
 
     @Value("${besy.mail.notify-approver-states}")
@@ -55,18 +58,22 @@ public class MailService {
      * @param newStatus      the new status of the order
      * @param user           the user who triggered the status change (can be null)
      */
+    @Transactional
     public void sendOrderStatusChangeMail(
-            Order order,
+            long orderId,
             OrderStatus previousStatus,
             OrderStatus newStatus,
-            User user) {
+            long userId) {
         if (!getNotifyUserStates().contains(newStatus)
                 && (approvalMails == null || approvalMails.length == 0
                         || !getNotifyApproverStates().contains(newStatus))) {
             return;
         }
 
-        if (order.getOwner().getId().equals(user.getId()) && getNotifyUserStates().contains(newStatus)) {
+        Order order = orderService.getOrderById(orderId).orElseThrow();
+        User user = userService.getUserById(userId).orElse(null);
+
+        if (order.getOwner().getId() == user.getId() && getNotifyUserStates().contains(newStatus)) {
             // If the user is the owner of the order and the new status is in
             // notifyUserStates,
             // we don't need to send an email to the user.
@@ -104,9 +111,6 @@ public class MailService {
             if (owner != null && owner.getEmail() != null && !owner.getEmail().isBlank()) {
                 recipients.add(owner.getEmail());
             }
-            if (user != null && user.getEmail() != null && !user.getEmail().isBlank()) {
-                recipients.add(user.getEmail());
-            }
         }
 
         if (getNotifyApproverStates().contains(newStatus) && approvalMails != null) {
@@ -114,11 +118,15 @@ public class MailService {
                     .filter(mail -> mail != null && !mail.isBlank())
                     .forEach(recipients::add);
         }
+
+        if (user != null && user.getEmail() != null && !user.getEmail().isBlank()) {
+            recipients.remove(user.getEmail());
+        }
         return recipients.toArray(String[]::new);
     }
 
     private String buildSubject(Order order, OrderStatus newStatus) {
-        return "[BeSy] Bestellung " + orderService.getOrderNumber(order).orElse(order.getId().toString())
+        return "[BeSy] Bestellung " + orderService.getOrderNumber(order).orElse(String.valueOf(order.getId()))
                 + " - neuer Status: "
                 + statusLabel(newStatus);
     }
@@ -135,7 +143,7 @@ public class MailService {
                 ? "Die folgende Bestellung wurde im Genehmigungsprozess abgelehnt."
                 : p.introText;
 
-        String orderNumber = orderService.getOrderNumber(order).orElse(order.getId().toString());
+        String orderNumber = orderService.getOrderNumber(order).orElse(String.valueOf(order.getId()));
 
         Map<String, String> values = new HashMap<>();
         values.put("STATUS_BADGE", p.badge);

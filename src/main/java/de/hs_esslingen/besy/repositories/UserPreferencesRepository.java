@@ -1,17 +1,18 @@
 package de.hs_esslingen.besy.repositories;
 
-import de.hs_esslingen.besy.models.User;
-import de.hs_esslingen.besy.models.UserPreferences;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 
-public interface UserPreferencesRepository extends JpaRepository<UserPreferences, Integer> {
-    List<UserPreferences> getUserPreferencesByUser_IdAndPreferenceType(Integer userId, String preferenceType);
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import de.hs_esslingen.besy.models.User;
+import de.hs_esslingen.besy.models.UserPreferences;
+
+public interface UserPreferencesRepository extends JpaRepository<UserPreferences, Long> {
+    List<UserPreferences> getUserPreferencesByUser_IdAndPreferenceType(long userId, String preferenceType);
 
     void deleteByIdAndUser(Integer id, User user);
 
-    Boolean existsByIdAndUser_Id(Integer id, Integer userId);
+    Boolean existsByIdAndUser_Id(Integer id, Long userId);
 
     UserPreferences findByIdAndUser(Integer id, User user);
 }

@@ -30,13 +30,16 @@ class MailServiceTest {
     @Mock
     private OrderService orderService;
 
+    @Mock
+    private UserService userService;
+
     private MailTemplateRenderer templateRenderer;
 
     private MailService mailService;
 
     @BeforeEach
     void setUp() {
-        mailService = new MailService(mailSender, orderService, templateRenderer);
+        mailService = new MailService(mailSender, orderService, userService, templateRenderer);
         ReflectionTestUtils.setField(mailService, "senderMail", "besy@it.hs-esslingen.de");
         ReflectionTestUtils.setField(mailService, "approvalMails",
                 new String[] { "dekan@hs-esslingen.de", "tmp@hs-esslingen.de" });
@@ -52,8 +55,10 @@ class MailServiceTest {
 
         User user = new User();
         user.setEmail("jane.doe@hs-esslingen.de");
+        user.setId(1L);
 
-        mailService.sendOrderStatusChangeMail(order, OrderStatus.COMPLETED, OrderStatus.DEKAN_PENDING, user);
+        mailService.sendOrderStatusChangeMail(order.getId(), OrderStatus.COMPLETED, OrderStatus.DEKAN_PENDING,
+                user.getId());
 
         ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
         verify(mailSender).send(captor.capture());

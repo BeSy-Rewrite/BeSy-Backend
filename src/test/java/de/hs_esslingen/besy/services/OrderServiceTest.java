@@ -146,14 +146,14 @@ class OrderServiceTest {
         order.setBookingYear("25");
         order.setAutoIndex((short) 1);
         order.setStatus(OrderStatus.IN_PROGRESS);
-        order.setOwnerId(1);
+        order.setOwnerId(1l);
         order.setSupplierId(2);
 
         requestDto = new OrderRequestDTO(
                 "CC-1",
                 "25",
                 "LA",
-                1,
+                1l,
                 "Content",
                 "EUR",
                 "Comment",
@@ -273,13 +273,11 @@ class OrderServiceTest {
     @Test
     void should_get_order_by_id_when_exists() {
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
-        when(orderResponseMapper.toDto(order)).thenReturn(responseDto);
 
-        ResponseEntity<OrderResponseDTO> response = orderService.getOrderById(1L);
+        Order retrievedOrder = orderService.getOrderById(1L).get();
 
-        assertSame(responseDto, response.getBody());
+        assertSame(order, retrievedOrder);
         verify(orderRepository).findById(1L);
-        verify(orderResponseMapper).toDto(order);
     }
 
     @Test
@@ -311,11 +309,11 @@ class OrderServiceTest {
         when(costCenterRepository.getReferenceById("CC-1")).thenReturn(new CostCenter());
         when(addressRepository.getReferenceById(100)).thenReturn(new Address());
         when(addressRepository.getReferenceById(101)).thenReturn(new Address());
-        when(userRepository.getReferenceById(1)).thenReturn(new User());
+        when(userRepository.getReferenceById(1l)).thenReturn(new User());
 
-        ResponseEntity<OrderResponseDTO> response = orderService.createOrder(requestDto, null);
+        Order createdOrder = orderService.createOrder(requestDto, null);
 
-        assertSame(responseDto, response.getBody());
+        assertSame(order, createdOrder);
         assertEquals((short) 1, mapped.getAutoIndex());
         assertEquals(OrderStatus.IN_PROGRESS, mapped.getStatus());
         verify(orderStatusHistoryRepository).save(any(OrderStatusHistory.class));
@@ -345,7 +343,7 @@ class OrderServiceTest {
         when(costCenterRepository.getReferenceById("CC-1")).thenReturn(new CostCenter());
         when(addressRepository.getReferenceById(100)).thenReturn(new Address());
         when(addressRepository.getReferenceById(101)).thenReturn(new Address());
-        when(userRepository.getReferenceById(1)).thenReturn(new User());
+        when(userRepository.getReferenceById(1l)).thenReturn(new User());
 
         orderService.createOrder(requestDto, null);
 
@@ -371,7 +369,7 @@ class OrderServiceTest {
         when(costCenterRepository.getReferenceById("CC-1")).thenReturn(new CostCenter());
         when(addressRepository.getReferenceById(100)).thenReturn(new Address());
         when(addressRepository.getReferenceById(101)).thenReturn(new Address());
-        when(userRepository.getReferenceById(1)).thenReturn(new User());
+        when(userRepository.getReferenceById(1l)).thenReturn(new User());
 
         ResponseEntity<OrderResponseDTO> response = orderService.updateOrder(requestDto, 1L);
 
@@ -594,7 +592,7 @@ class OrderServiceTest {
         when(personRepository.getReferenceById(11L)).thenReturn(new Person());
         when(personRepository.getReferenceById(12L)).thenReturn(new Person());
         when(costCenterRepository.getReferenceById("CC-2")).thenReturn(new CostCenter());
-        when(userRepository.getReferenceById(1)).thenReturn(new User());
+        when(userRepository.getReferenceById(1L)).thenReturn(new User());
         when(supplierRepository.getReferenceById(2)).thenReturn(new Supplier());
         when(customerIdRepository.existsById(any())).thenReturn(true);
         when(addressRepository.getReferenceById(100)).thenReturn(new Address());
@@ -608,7 +606,7 @@ class OrderServiceTest {
         verify(personRepository).getReferenceById(11L);
         verify(personRepository).getReferenceById(12L);
         verify(costCenterRepository).getReferenceById("CC-2");
-        verify(userRepository).getReferenceById(1);
+        verify(userRepository).getReferenceById(1L);
         verify(supplierRepository).getReferenceById(2);
         verify(customerIdRepository).existsById(new CustomerIdId("CUST-1", 2));
         verify(addressRepository).getReferenceById(100);

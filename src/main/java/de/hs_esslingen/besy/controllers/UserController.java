@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import de.hs_esslingen.besy.dtos.request.UserPreferencesRequestDTO;
 import de.hs_esslingen.besy.dtos.response.UserPreferencesResponseDTO;
 import de.hs_esslingen.besy.dtos.response.UserResponseDTO;
+import de.hs_esslingen.besy.exceptions.NotFoundException;
+import de.hs_esslingen.besy.mappers.response.UserResponseMapper;
 import de.hs_esslingen.besy.services.UserService;
 import lombok.AllArgsConstructor;
 
@@ -27,6 +29,7 @@ import lombok.AllArgsConstructor;
 public class UserController {
 
     private final UserService userService;
+    private final UserResponseMapper userResponseMapper;
 
     @GetMapping
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
@@ -35,7 +38,8 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getUser(@PathVariable("id") Integer id) {
-        return userService.getUserById(id);
+        return ResponseEntity.ok(userResponseMapper.toDto(userService.getUserById(id)
+                .orElseThrow(() -> new NotFoundException("Benutzer mit id " + id + " nicht gefunden."))));
     }
 
     @GetMapping("/me")
