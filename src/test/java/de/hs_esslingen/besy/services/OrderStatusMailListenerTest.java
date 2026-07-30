@@ -59,6 +59,7 @@ class OrderStatusMailListenerTest {
 
         verify(mailService).sendOrderStatusChangeMail(order.getId(), OrderStatus.DEKAN_PENDING, OrderStatus.APPROVED,
                 user.getId());
+    }
 
     @Test
     void should_ignore_status_changes_that_are_not_configured_for_mail() {
