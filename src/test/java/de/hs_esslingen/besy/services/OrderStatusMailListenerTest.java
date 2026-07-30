@@ -51,7 +51,6 @@ class OrderStatusMailListenerTest {
         when(mailService.getNotifyApproverStates()).thenReturn(Set.of(OrderStatus.APPROVED));
 
         when(mailService.getNotifyApproverStates()).thenReturn(java.util.Set.of(OrderStatus.APPROVED));
-        when(mailService.getNotifyUserStates()).thenReturn(java.util.Set.of());
 
         listener.onOrderStatusChanged(
                 new OrderStatusChangedEvent(order.getId(), OrderStatus.DEKAN_PENDING, OrderStatus.APPROVED,
