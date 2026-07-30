@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -109,23 +110,21 @@ class UserServiceTest {
     @Test
     void should_get_user_by_id_when_exists() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userResponseMapper.toDto(user)).thenReturn(userResponseDTO);
 
         Optional<User> result = userService.getUserById(1L);
 
         assertTrue(result.isPresent());
         assertSame(user, result.get());
         verify(userRepository).findById(1L);
-        verify(userResponseMapper).toDto(user);
     }
 
     @Test
-    void should_throw_not_found_when_user_missing() {
+    void should_return_empty_when_user_missing() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        NotFoundException ex = assertThrows(NotFoundException.class, () -> userService.getUserById(1L));
+        Optional<User> result = userService.getUserById(1L);
 
-        assertEquals(true, ex.getMessage().contains("1"));
+        assertTrue(result.isEmpty());
         verify(userRepository).findById(1L);
     }
 
@@ -169,7 +168,7 @@ class UserServiceTest {
 
         assertEquals(true, ex.getMessage().contains("Benutzer"));
         verify(userRepository).findOptionalByKeycloakUUID("kc-123");
-        verify(userPreferencesRepository, never()).getUserPreferencesByUser_IdAndPreferenceType(any(), any());
+        verify(userPreferencesRepository, never()).getUserPreferencesByUser_IdAndPreferenceType(anyLong(), any());
     }
 
     @Test

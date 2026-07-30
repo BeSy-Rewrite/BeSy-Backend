@@ -12,7 +12,7 @@ public interface UserPreferencesRepository extends JpaRepository<UserPreferences
 
     void deleteByIdAndUser(Integer id, User user);
 
-    Boolean existsByIdAndUser_Id(Integer id, Long userId);
+    Boolean existsByIdAndUser_Id(Integer id, long userId);
 
     UserPreferences findByIdAndUser(Integer id, User user);
 }

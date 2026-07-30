@@ -53,6 +53,12 @@ class ItemServiceTest {
     @Mock
     private ItemResponseMapper itemResponseMapper;
 
+    @Mock
+    private OrderPDFService pdfService;
+
+    @Mock
+    private OrderService orderService;
+
     @InjectMocks
     private ItemService itemService;
 

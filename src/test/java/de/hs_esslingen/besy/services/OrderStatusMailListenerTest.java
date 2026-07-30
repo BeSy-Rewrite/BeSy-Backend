@@ -1,11 +1,14 @@
 package de.hs_esslingen.besy.services;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,7 +47,8 @@ class OrderStatusMailListenerTest {
         user.setEmail("test@example.com");
         order.setOwner(user);
 
-        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+        lenient().when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+        when(mailService.getNotifyApproverStates()).thenReturn(Set.of(OrderStatus.APPROVED));
 
         listener.onOrderStatusChanged(
                 new OrderStatusChangedEvent(order.getId(), OrderStatus.DEKAN_PENDING, OrderStatus.APPROVED,
@@ -67,6 +71,6 @@ class OrderStatusMailListenerTest {
                         user.getId()));
 
         verify(orderRepository, never()).findById(any());
-        verify(mailService, never()).sendOrderStatusChangeMail(any(), any(), any(), any());
+        verify(mailService, never()).sendOrderStatusChangeMail(anyLong(), any(), any(), anyLong());
     }
 }

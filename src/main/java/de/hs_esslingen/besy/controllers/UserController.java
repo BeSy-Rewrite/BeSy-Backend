@@ -37,7 +37,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> getUser(@PathVariable("id") Integer id) {
+    public ResponseEntity<UserResponseDTO> getUser(@PathVariable("id") long id) {
         return ResponseEntity.ok(userResponseMapper.toDto(userService.getUserById(id)
                 .orElseThrow(() -> new NotFoundException("Benutzer mit id " + id + " nicht gefunden."))));
     }

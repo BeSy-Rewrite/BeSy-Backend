@@ -26,7 +26,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.dtos.response.VatResponseDTO;
@@ -85,8 +84,6 @@ class OrderPDFServiceTest {
     void setUp() {
         orderPDFService = new OrderPDFService(orderRepository, supplierRepository, itemRepository,
                 personRepository, quotationRepository, orderService, Locale.GERMANY);
-        ReflectionTestUtils.setField(orderPDFService, "orderNumberPrefix", "IT");
-        ReflectionTestUtils.setField(orderPDFService, "orderNumberSeparator", "_");
 
         owner = new User();
         owner.setName("Jane");

@@ -60,6 +60,9 @@ class InsyServiceTest {
     private OrderPDFService pdfService;
 
     @Mock
+    private OrderService orderService;
+
+    @Mock
     private RestClient.RequestBodyUriSpec requestBodyUriSpec;
 
     @Mock
