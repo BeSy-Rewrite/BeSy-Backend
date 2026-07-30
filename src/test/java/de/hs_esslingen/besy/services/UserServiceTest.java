@@ -1,5 +1,30 @@
 package de.hs_esslingen.besy.services;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
+
 import de.hs_esslingen.besy.dtos.request.UserPreferencesRequestDTO;
 import de.hs_esslingen.besy.dtos.response.UserPreferencesResponseDTO;
 import de.hs_esslingen.besy.dtos.response.UserResponseDTO;
@@ -11,28 +36,6 @@ import de.hs_esslingen.besy.models.User;
 import de.hs_esslingen.besy.models.UserPreferences;
 import de.hs_esslingen.besy.repositories.UserPreferencesRepository;
 import de.hs_esslingen.besy.repositories.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.jwt.Jwt;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -85,9 +88,9 @@ class UserServiceTest {
         jwt = Jwt.withTokenValue("token")
                 .header("alg", "none")
                 .subject("kc-123")
-            .claim("email", "jane.doe@example.com")
-            .claim("given_name", "Jane")
-            .claim("family_name", "Doe")
+                .claim("email", "jane.doe@example.com")
+                .claim("given_name", "Jane")
+                .claim("family_name", "Doe")
                 .build();
     }
 
@@ -106,25 +109,23 @@ class UserServiceTest {
 
     @Test
     void should_get_user_by_id_when_exists() {
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
-        when(userResponseMapper.toDto(user)).thenReturn(userResponseDTO);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        ResponseEntity<UserResponseDTO> response = userService.getUserById(1);
+        Optional<User> result = userService.getUserById(1L);
 
-        assertEquals(200, response.getStatusCode().value());
-        assertSame(userResponseDTO, response.getBody());
-        verify(userRepository).findById(1);
-        verify(userResponseMapper).toDto(user);
+        assertTrue(result.isPresent());
+        assertSame(user, result.get());
+        verify(userRepository).findById(1L);
     }
 
     @Test
-    void should_throw_not_found_when_user_missing() {
-        when(userRepository.findById(1)).thenReturn(Optional.empty());
+    void should_return_empty_when_user_missing() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        NotFoundException ex = assertThrows(NotFoundException.class, () -> userService.getUserById(1));
+        Optional<User> result = userService.getUserById(1L);
 
-        assertEquals(true, ex.getMessage().contains("1"));
-        verify(userRepository).findById(1);
+        assertTrue(result.isEmpty());
+        verify(userRepository).findById(1L);
     }
 
     @Test
@@ -147,7 +148,8 @@ class UserServiceTest {
                 .thenReturn(List.of(preferences));
         when(userPreferencesResponseMapper.toDto(List.of(preferences))).thenReturn(List.of(preferencesResponseDTO));
 
-        ResponseEntity<List<UserPreferencesResponseDTO>> response = userService.getUserPreferencesByPreferenceType(jwt, "table");
+        ResponseEntity<List<UserPreferencesResponseDTO>> response = userService.getUserPreferencesByPreferenceType(jwt,
+                "table");
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals(List.of(preferencesResponseDTO), response.getBody());
@@ -166,14 +168,15 @@ class UserServiceTest {
 
         assertEquals(true, ex.getMessage().contains("Benutzer"));
         verify(userRepository).findOptionalByKeycloakUUID("kc-123");
-        verify(userPreferencesRepository, never()).getUserPreferencesByUser_IdAndPreferenceType(any(), any());
+        verify(userPreferencesRepository, never()).getUserPreferencesByUser_IdAndPreferenceType(anyLong(), any());
     }
 
     @Test
     void should_add_user_preference() {
         when(userRepository.findOptionalByKeycloakUUID("kc-123")).thenReturn(Optional.of(user));
         when(userPreferencesRequestMapper.toEntity(preferencesRequestDTO)).thenReturn(preferences);
-        when(userPreferencesRepository.save(any(UserPreferences.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userPreferencesRepository.save(any(UserPreferences.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
         when(userPreferencesResponseMapper.toDto(any(UserPreferences.class))).thenReturn(preferencesResponseDTO);
 
         ResponseEntity<UserPreferencesResponseDTO> response = userService.addUserPreference(jwt, preferencesRequestDTO);
@@ -209,7 +212,8 @@ class UserServiceTest {
         when(userPreferencesRepository.findByIdAndUser(10, user)).thenReturn(preferences);
         when(userPreferencesResponseMapper.toDto(preferences)).thenReturn(preferencesResponseDTO);
 
-        ResponseEntity<UserPreferencesResponseDTO> response = userService.updateUserPreferences(jwt, preferencesRequestDTO, 10);
+        ResponseEntity<UserPreferencesResponseDTO> response = userService.updateUserPreferences(jwt,
+                preferencesRequestDTO, 10);
 
         assertEquals(200, response.getStatusCode().value());
         assertSame(preferencesResponseDTO, response.getBody());
@@ -227,7 +231,8 @@ class UserServiceTest {
 
         assertEquals(true, ex.getMessage().contains("Präferenz"));
         verify(userPreferencesRepository).findByIdAndUser(10, user);
-        verify(userPreferencesRequestMapper, never()).partialUpdate(any(UserPreferences.class), any(UserPreferencesRequestDTO.class));
+        verify(userPreferencesRequestMapper, never()).partialUpdate(any(UserPreferences.class),
+                any(UserPreferencesRequestDTO.class));
     }
 
     @Test

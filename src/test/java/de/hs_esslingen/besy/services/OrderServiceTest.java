@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -42,8 +44,8 @@ import de.hs_esslingen.besy.dtos.response.OrderStatusHistoryResponseDTO;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotAuthorizedException;
-import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.interfaces.OrderCompletedValidationDAO;
+import de.hs_esslingen.besy.mail.OrderStatusChangedEvent;
 import de.hs_esslingen.besy.mappers.OrderCompletedValidationMapper;
 import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
 import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
@@ -120,6 +122,9 @@ class OrderServiceTest {
     @Mock
     private ValidationHelper validator;
 
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
+
     @InjectMocks
     private OrderService orderService;
     private Order order;
@@ -140,14 +145,14 @@ class OrderServiceTest {
         order.setBookingYear("25");
         order.setAutoIndex((short) 1);
         order.setStatus(OrderStatus.IN_PROGRESS);
-        order.setOwnerId(1);
+        order.setOwnerId(1l);
         order.setSupplierId(2);
 
         requestDto = new OrderRequestDTO(
                 "CC-1",
                 "25",
                 "LA",
-                1,
+                1l,
                 "Content",
                 "EUR",
                 "Comment",
@@ -267,20 +272,18 @@ class OrderServiceTest {
     @Test
     void should_get_order_by_id_when_exists() {
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
-        when(orderResponseMapper.toDto(order)).thenReturn(responseDto);
 
-        ResponseEntity<OrderResponseDTO> response = orderService.getOrderById(1L);
+        Order retrievedOrder = orderService.getOrderById(1L).get();
 
-        assertSame(responseDto, response.getBody());
+        assertSame(order, retrievedOrder);
         verify(orderRepository).findById(1L);
-        verify(orderResponseMapper).toDto(order);
     }
 
     @Test
-    void should_throw_not_found_when_get_order_by_id_missing() {
+    void should_return_empty_when_get_order_by_id_missing() {
         when(orderRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> orderService.getOrderById(1L));
+        assertTrue(orderService.getOrderById(1L).isEmpty());
         verify(orderRepository).findById(1L);
     }
 
@@ -294,7 +297,6 @@ class OrderServiceTest {
         when(orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc("CC-1", "25"))
                 .thenReturn(null);
         when(orderRepository.save(mapped)).thenReturn(mapped);
-        when(orderResponseMapper.toDto(mapped)).thenReturn(responseDto);
         when(currencyRepository.getReferenceById("EUR")).thenReturn(new Currency());
         when(personRepository.getReferenceById(10L)).thenReturn(new Person());
         when(personRepository.getReferenceById(11L)).thenReturn(new Person());
@@ -305,11 +307,11 @@ class OrderServiceTest {
         when(costCenterRepository.getReferenceById("CC-1")).thenReturn(new CostCenter());
         when(addressRepository.getReferenceById(100)).thenReturn(new Address());
         when(addressRepository.getReferenceById(101)).thenReturn(new Address());
-        when(userRepository.getReferenceById(1)).thenReturn(new User());
+        when(userRepository.getReferenceById(1l)).thenReturn(new User());
 
-        ResponseEntity<OrderResponseDTO> response = orderService.createOrder(requestDto, null);
+        Order createdOrder = orderService.createOrder(requestDto, null);
 
-        assertSame(responseDto, response.getBody());
+        assertSame(mapped, createdOrder);
         assertEquals((short) 1, mapped.getAutoIndex());
         assertEquals(OrderStatus.IN_PROGRESS, mapped.getStatus());
         verify(orderStatusHistoryRepository).save(any(OrderStatusHistory.class));
@@ -328,7 +330,6 @@ class OrderServiceTest {
         when(orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc("CC-1", "25"))
                 .thenReturn(latest);
         when(orderRepository.save(mapped)).thenReturn(mapped);
-        when(orderResponseMapper.toDto(mapped)).thenReturn(responseDto);
         when(currencyRepository.getReferenceById("EUR")).thenReturn(new Currency());
         when(personRepository.getReferenceById(10L)).thenReturn(new Person());
         when(personRepository.getReferenceById(11L)).thenReturn(new Person());
@@ -339,7 +340,7 @@ class OrderServiceTest {
         when(costCenterRepository.getReferenceById("CC-1")).thenReturn(new CostCenter());
         when(addressRepository.getReferenceById(100)).thenReturn(new Address());
         when(addressRepository.getReferenceById(101)).thenReturn(new Address());
-        when(userRepository.getReferenceById(1)).thenReturn(new User());
+        when(userRepository.getReferenceById(1l)).thenReturn(new User());
 
         orderService.createOrder(requestDto, null);
 
@@ -365,7 +366,7 @@ class OrderServiceTest {
         when(costCenterRepository.getReferenceById("CC-1")).thenReturn(new CostCenter());
         when(addressRepository.getReferenceById(100)).thenReturn(new Address());
         when(addressRepository.getReferenceById(101)).thenReturn(new Address());
-        when(userRepository.getReferenceById(1)).thenReturn(new User());
+        when(userRepository.getReferenceById(1l)).thenReturn(new User());
 
         ResponseEntity<OrderResponseDTO> response = orderService.updateOrder(requestDto, 1L);
 
@@ -403,6 +404,10 @@ class OrderServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
         when(orderStatusHistoryRepository.save(any(OrderStatusHistory.class))).thenReturn(history);
 
+        User actor = new User();
+        actor.setId(1);
+        when(userService.resolveUserFromJwt(any())).thenReturn(actor);
+
         OrderService.getOrderStatusMatrix().forEach((current, allowedTargets) -> {
             if (allowedTargets.isEmpty()) {
                 return;
@@ -435,6 +440,8 @@ class OrderServiceTest {
                 assertEquals(target, response.getBody());
             });
         });
+
+        verify(applicationEventPublisher, atLeastOnce()).publishEvent(any(OrderStatusChangedEvent.class));
     }
 
     @Test
@@ -461,6 +468,7 @@ class OrderServiceTest {
         assertThrows(ConstraintViolationException.class,
                 () -> orderService.updateOrderStatus(1L, OrderStatus.COMPLETED, null));
         verify(orderRepository, never()).save(any(Order.class));
+        verifyNoInteractions(applicationEventPublisher);
     }
 
     @Test
@@ -487,10 +495,15 @@ class OrderServiceTest {
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
         when(orderRepository.save(order)).thenReturn(order);
 
+        User actor = new User();
+        actor.setId(1);
+        when(userService.resolveUserFromJwt(any())).thenReturn(actor);
+
         ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, OrderStatus.APPROVED, jwtWithRole);
 
         assertEquals(OrderStatus.APPROVED, response.getBody());
         verify(orderStatusHistoryRepository).save(any(OrderStatusHistory.class));
+        verify(applicationEventPublisher).publishEvent(any(OrderStatusChangedEvent.class));
     }
 
     @Test
@@ -499,10 +512,15 @@ class OrderServiceTest {
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
         when(orderRepository.save(order)).thenReturn(order);
 
+        User actor = new User();
+        actor.setId(1);
+        when(userService.resolveUserFromJwt(any())).thenReturn(actor);
+
         ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, OrderStatus.COMPLETED, jwtWithRole);
 
         assertEquals(OrderStatus.COMPLETED, response.getBody());
         verify(orderStatusHistoryRepository).save(any(OrderStatusHistory.class));
+        verify(applicationEventPublisher).publishEvent(any(OrderStatusChangedEvent.class));
     }
 
     @Test
@@ -510,6 +528,10 @@ class OrderServiceTest {
         order.setStatus(OrderStatus.COMPLETED);
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
         when(orderRepository.save(order)).thenReturn(order);
+
+        User actor = new User();
+        actor.setId(1);
+        when(userService.resolveUserFromJwt(any())).thenReturn(actor);
 
         ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, OrderStatus.APPROVED, null);
 
@@ -576,14 +598,13 @@ class OrderServiceTest {
         when(orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc("CC-1", "25"))
                 .thenReturn(null);
         when(orderRepository.save(mapped)).thenReturn(mapped);
-        when(orderResponseMapper.toDto(mapped)).thenReturn(responseDto);
 
         when(currencyRepository.getReferenceById("EUR")).thenReturn(new Currency());
         when(personRepository.getReferenceById(10L)).thenReturn(new Person());
         when(personRepository.getReferenceById(11L)).thenReturn(new Person());
         when(personRepository.getReferenceById(12L)).thenReturn(new Person());
         when(costCenterRepository.getReferenceById("CC-2")).thenReturn(new CostCenter());
-        when(userRepository.getReferenceById(1)).thenReturn(new User());
+        when(userRepository.getReferenceById(1L)).thenReturn(new User());
         when(supplierRepository.getReferenceById(2)).thenReturn(new Supplier());
         when(customerIdRepository.existsById(any())).thenReturn(true);
         when(addressRepository.getReferenceById(100)).thenReturn(new Address());
@@ -597,7 +618,7 @@ class OrderServiceTest {
         verify(personRepository).getReferenceById(11L);
         verify(personRepository).getReferenceById(12L);
         verify(costCenterRepository).getReferenceById("CC-2");
-        verify(userRepository).getReferenceById(1);
+        verify(userRepository).getReferenceById(1L);
         verify(supplierRepository).getReferenceById(2);
         verify(customerIdRepository).existsById(new CustomerIdId("CUST-1", 2));
         verify(addressRepository).getReferenceById(100);
@@ -669,7 +690,6 @@ class OrderServiceTest {
         when(orderRepository.findTopByPrimaryCostCenterIdAndBookingYearOrderByAutoIndexDesc(null, null))
                 .thenReturn(null);
         when(orderRepository.save(mapped)).thenReturn(mapped);
-        when(orderResponseMapper.toDto(mapped)).thenReturn(responseDto);
 
         orderService.createOrder(dto, null);
 
@@ -690,6 +710,10 @@ class OrderServiceTest {
         order.setStatus(OrderStatus.COMPLETED);
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
         when(orderRepository.save(order)).thenReturn(order);
+
+        User actor = new User();
+        actor.setId(1);
+        when(userService.resolveUserFromJwt(any())).thenReturn(actor);
 
         ResponseEntity<OrderStatus> response = orderService.updateOrderStatus(1L, OrderStatus.DEKAN_PENDING, null);
 

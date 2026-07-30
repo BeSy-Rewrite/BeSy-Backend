@@ -1,10 +1,10 @@
 package de.hs_esslingen.besy.dtos.request;
 
-import lombok.Value;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import lombok.Value;
 
 /**
  * DTO for {@link de.hs_esslingen.besy.models.Order}
@@ -14,7 +14,7 @@ public class OrderRequestDTO implements Serializable {
     String primaryCostCenterId;
     String bookingYear;
     String legacyAlias;
-    Integer ownerId;
+    Long ownerId;
     String contentDescription;
     String currencyShort;
     String comment;

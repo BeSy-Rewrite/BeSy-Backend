@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +26,8 @@ import de.hs_esslingen.besy.dtos.response.OrderStatusHistoryResponseDTO;
 import de.hs_esslingen.besy.enums.OrderStatus;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotAuthorizedException;
-import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.interfaces.OrderCompletedValidationDAO;
+import de.hs_esslingen.besy.mail.OrderStatusChangedEvent;
 import de.hs_esslingen.besy.mappers.OrderCompletedValidationMapper;
 import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
 import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
@@ -68,6 +69,7 @@ public class OrderService {
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
     private final SupplierRepository supplierRepository;
     private final CustomerIdRepository customerIdRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     private final UserService userService;
 
@@ -80,6 +82,12 @@ public class OrderService {
 
     @Value("${dekan-role-name}")
     private String dekanRoleName;
+
+    @Value("${order-number.prefix}")
+    private String orderNumberPrefix;
+
+    @Value("${order-number.separator}")
+    private String orderNumberSeparator;
 
     /**
      * Defines valid status transitions for orders.
@@ -143,14 +151,11 @@ public class OrderService {
         return orders.map(orderResponseMapper::toDto);
     }
 
-    public ResponseEntity<OrderResponseDTO> getOrderById(Long id) {
-        return orderRepository.findById(id)
-                .map(order -> {
-                    return ResponseEntity.ok(orderResponseMapper.toDto(order));
-                }).orElseThrow(() -> new NotFoundException("Bestellung mit id " + id + " nicht gefunden."));
+    public Optional<Order> getOrderById(Long id) throws IllegalArgumentException {
+        return orderRepository.findById(id);
     }
 
-    public ResponseEntity<OrderResponseDTO> createOrder(OrderRequestDTO dto, Jwt jwt) {
+    public Order createOrder(OrderRequestDTO dto, Jwt jwt) {
         Order order = orderRequestMapper.toEntity(dto);
 
         this.mapForeignRelationships(order, dto, jwt);
@@ -169,7 +174,6 @@ public class OrderService {
         order.setStatus(OrderStatus.IN_PROGRESS);
 
         Order savedOrder = orderRepository.save(order);
-        OrderResponseDTO responseDTO = orderResponseMapper.toDto(savedOrder);
 
         // Create first OrderStatusHistory entry
         OrderStatusHistory orderStatusHistory = OrderStatusHistory.builder()
@@ -178,7 +182,7 @@ public class OrderService {
                 .build();
         orderStatusHistoryRepository.save(orderStatusHistory);
 
-        return ResponseEntity.ok(responseDTO);
+        return savedOrder;
 
     }
 
@@ -218,6 +222,7 @@ public class OrderService {
     @Transactional
     public ResponseEntity<OrderStatus> updateOrderStatus(Long id, OrderStatus newStatus, Jwt jwt) {
         Order order = orderRepository.findById(id).get();
+        OrderStatus currentStatus = order.getStatus();
 
         this.validateStatusTransition(order, newStatus, jwt);
 
@@ -235,6 +240,9 @@ public class OrderService {
         orderStatusHistory.setStatus(savedOrder.getStatus());
 
         orderStatusHistoryRepository.save(orderStatusHistory);
+        applicationEventPublisher.publishEvent(
+                new OrderStatusChangedEvent(savedOrder.getId(), currentStatus, savedOrder.getStatus(),
+                        userService.resolveUserFromJwt(jwt).getId()));
 
         return ResponseEntity.ok(savedOrder.getStatus());
     }
@@ -302,6 +310,18 @@ public class OrderService {
                 .filter(entry -> entry.getValue().contains(status))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
+    }
+
+    public Optional<String> getOrderNumber(Order order) {
+        if (order.getPrimaryCostCenterId() == null || order.getBookingYear() == null || order.getAutoIndex() == null) {
+            return Optional.empty();
+        }
+
+        String[] orderNumberParts = { orderNumberPrefix + order.getPrimaryCostCenterId(), order.getBookingYear(),
+                String.format("%03d", order.getAutoIndex()) };
+
+        return Optional.of(String.join(orderNumberSeparator, orderNumberParts));
+
     }
 
     /**

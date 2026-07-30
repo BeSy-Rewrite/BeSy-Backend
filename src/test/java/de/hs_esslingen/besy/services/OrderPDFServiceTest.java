@@ -26,7 +26,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.dtos.response.VatResponseDTO;
@@ -66,6 +65,9 @@ class OrderPDFServiceTest {
     @Mock
     private QuotationRepository quotationRepository;
 
+    @Mock
+    private OrderService orderService;
+
     private OrderPDFService orderPDFService;
 
     private Order order;
@@ -81,9 +83,7 @@ class OrderPDFServiceTest {
     @BeforeEach
     void setUp() {
         orderPDFService = new OrderPDFService(orderRepository, supplierRepository, itemRepository,
-                personRepository, quotationRepository, Locale.GERMANY);
-        ReflectionTestUtils.setField(orderPDFService, "orderNumberPrefix", "IT");
-        ReflectionTestUtils.setField(orderPDFService, "orderNumberSeparator", "_");
+                personRepository, quotationRepository, orderService, Locale.GERMANY);
 
         owner = new User();
         owner.setName("Jane");
@@ -124,7 +124,7 @@ class OrderPDFServiceTest {
         order.setCreatedDate(LocalDateTime.of(2025, 1, 15, 10, 30));
         order.setContentDescription("Test Order");
         order.setSupplierId(10);
-        order.setOwnerId(1);
+        order.setOwnerId(1l);
         order.setOwner(owner);
         order.setQuotePrice(BigDecimal.valueOf(100));
         order.setCommentForSupplier("Comment");
@@ -153,12 +153,6 @@ class OrderPDFServiceTest {
 
         verify(orderRepository).findById(orderId);
         verifyNoInteractions(supplierRepository, itemRepository, personRepository, quotationRepository);
-    }
-
-    @Test
-    void should_generate_order_number_format() {
-        String orderNumber = orderPDFService.generateOrderNumber("CC1", "25", (short) 7);
-        assertEquals("ITCC1_25_007", orderNumber);
     }
 
     @Test
@@ -211,6 +205,7 @@ class OrderPDFServiceTest {
         when(personRepository.findById(order.getDeliveryPersonId())).thenReturn(Optional.of(deliveryPerson));
         when(personRepository.findById(order.getInvoicePersonId())).thenReturn(Optional.of(invoicePerson));
         when(quotationRepository.getQuotationByOrderId(orderId)).thenReturn(List.of());
+        when(orderService.getOrderNumber(order)).thenReturn(Optional.of("IT_25_CC-1_7"));
 
         ResponseEntity<byte[]> response = orderPDFService.generateOrderPDF(orderId);
 
@@ -229,7 +224,7 @@ class OrderPDFServiceTest {
             String deliveryStreet = fieldValue(form, "Formular1[0].#subform[0].Header[0].Telefon[0]");
             String deliveryAddressField = fieldValue(form, "Formular1[0].#subform[0].Header[0].Fax[0]");
 
-            assertEquals(orderPDFService.generateOrderNumber("CC-1", "25", (short) 7), orderNumber);
+            assertEquals(orderService.getOrderNumber(order).get(), orderNumber);
             assertAmountEquals(subTotal, BigDecimal.valueOf(40));
             assertAmountEquals(netTotal, BigDecimal.valueOf(36));
             assertAmountEquals(total, BigDecimal.valueOf(42.84));
@@ -262,6 +257,7 @@ class OrderPDFServiceTest {
         when(personRepository.findById(order.getDeliveryPersonId())).thenReturn(Optional.empty());
         when(personRepository.findById(order.getInvoicePersonId())).thenReturn(Optional.empty());
         when(quotationRepository.getQuotationByOrderId(orderId)).thenReturn(List.of());
+        when(orderService.getOrderNumber(order)).thenReturn(Optional.of("IT_25_CC-1_7"));
 
         ResponseEntity<byte[]> response = orderPDFService.generateOrderPDF(orderId);
 
@@ -272,7 +268,7 @@ class OrderPDFServiceTest {
             PDAcroForm form = document.getDocumentCatalog().getAcroForm();
             assertNotNull(form);
             String orderNumber = fieldValue(form, "Formular1[0].#subform[0].Header[0].Rechnungsnummer[0]");
-            assertEquals(orderPDFService.generateOrderNumber("CC-1", "25", (short) 7), orderNumber);
+            assertEquals(orderService.getOrderNumber(order).get(), orderNumber);
         }
 
         verify(orderRepository).findById(orderId);

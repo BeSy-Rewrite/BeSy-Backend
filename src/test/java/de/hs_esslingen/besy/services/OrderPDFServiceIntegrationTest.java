@@ -1,5 +1,32 @@
 package de.hs_esslingen.besy.services;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
+
 import de.hs_esslingen.besy.enums.AddressOwnerType;
 import de.hs_esslingen.besy.enums.Gender;
 import de.hs_esslingen.besy.enums.OrderStatus;
@@ -27,33 +54,6 @@ import de.hs_esslingen.besy.repositories.QuotationRepository;
 import de.hs_esslingen.besy.repositories.SupplierRepository;
 import de.hs_esslingen.besy.repositories.UserRepository;
 import de.hs_esslingen.besy.repositories.VatRepository;
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
@@ -64,6 +64,9 @@ class OrderPDFServiceIntegrationTest {
 
     @Autowired
     private OrderPDFService orderPDFService;
+
+    @Autowired
+    private OrderService orderService;
 
     @Autowired
     private OrderRepository orderRepository;
@@ -233,7 +236,7 @@ class OrderPDFServiceIntegrationTest {
             String total = fieldValue(form, "Formular1[0].#subform[0].Body[0].Gesamtsumme[0]");
             String vat = fieldValue(form, "Formular1[0].#subform[0].Body[0].MwStSatz[0]");
 
-            assertEquals(orderPDFService.generateOrderNumber("CC-1", "25", (short) 7), orderNumber);
+            assertEquals(orderService.getOrderNumber(order).get(), orderNumber);
             assertTrue(companyAddress.contains("Supplier GmbH"));
             assertTrue(companyAddress.contains("Supplier St"));
             assertTrue(companyAddress.contains("12345"));
@@ -260,7 +263,8 @@ class OrderPDFServiceIntegrationTest {
         }
     }
 
-    private static Address address(AddressOwnerType ownerType, String street, String buildingNumber, String postalCode, String town) {
+    private static Address address(AddressOwnerType ownerType, String street, String buildingNumber, String postalCode,
+            String town) {
         Address address = new Address();
         address.setOwnerType(ownerType);
         address.setStreet(street);

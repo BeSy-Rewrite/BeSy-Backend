@@ -47,7 +47,7 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Long id;
+    private long id;
 
     @Column(name = "primary_cost_center_id", insertable = false, updatable = false)
     private String primaryCostCenterId;
@@ -70,7 +70,7 @@ public class Order {
     private String legacyAlias;
 
     @Column(name = "owner_user_id", insertable = false, updatable = false)
-    private Integer ownerId;
+    private Long ownerId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "owner_user_id", referencedColumnName = "id", nullable = true)
