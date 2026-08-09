@@ -93,7 +93,9 @@ public class OrderController {
             @RequestParam(name = "lastUpdatedTimeBefore", required = false) OffsetDateTime lastUpdatedTimeBefore,
             @RequestParam(name = "autoIndexGTE", required = false) Short autoIndexGTE,
             @RequestParam(name = "autoIndexLTE", required = false) Short autoIndexLTE,
-            @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable) {
+            @RequestParam(name = "searchTerm", required = false) String searchTerm,
+            @PageableDefault(size = 10, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable,
+            @AuthenticationPrincipal Jwt jwt) {
         return orderService.getAllOrders(
                 primaryCostCenterIds,
                 bookingYears,
@@ -113,7 +115,9 @@ public class OrderController {
                 lastUpdatedTimeBefore,
                 autoIndexGTE,
                 autoIndexLTE,
-                pageable);
+                searchTerm,
+                pageable,
+                jwt);
     }
 
     @PostMapping
@@ -143,7 +147,7 @@ public class OrderController {
             throw new NotFoundException("Bestellung nicht gefunden.");
         if (!orderService.isOrderStatusEqual(id, OrderStatus.IN_PROGRESS) && hasNonCommentUpdates(dto))
             throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
-        return orderService.updateOrder(dto, id);
+        return ResponseEntity.ok(orderResponseMapper.toDto(orderService.updateOrder(dto, id)));
     }
 
     private boolean hasNonCommentUpdates(OrderRequestDTO dto) {

@@ -31,6 +31,7 @@ public class ItemService {
     private final VatRepository vatRepository;
     private final ItemRequestMapper itemRequestMapper;
     private final ItemResponseMapper itemResponseMapper;
+    private final OrderService orderService;
 
     public ResponseEntity<List<ItemResponseDTO>> getItemsOfOrder(Long orderId) {
         List<Item> items = itemRepository.findByOrder_Id(orderId);
@@ -63,6 +64,7 @@ public class ItemService {
         });
         List<Item> itemsPersisted = itemRepository.saveAll(items);
         List<ItemResponseDTO> itemResponseDTOS = itemResponseMapper.toDto(itemsPersisted);
+        orderService.refreshSearchIndex(orderId);
         return ResponseEntity.ok(itemResponseDTOS);
     }
 
@@ -74,12 +76,14 @@ public class ItemService {
         itemRequestMapper.partialUpdate(item, dto);
         Item updatedItem = itemRepository.save(item);
         ItemResponseDTO responseDTO = itemResponseMapper.toDto(updatedItem);
+        orderService.refreshSearchIndex(orderId);
         return ResponseEntity.ok(responseDTO);
     }
 
     @Transactional
     public ResponseEntity<String> deleteItemOfOrder(Long orderId, Integer itemId) {
         itemRepository.deleteItemByOrderIdAndItemId(orderId, itemId);
+        orderService.refreshSearchIndex(orderId);
         return ResponseEntity.noContent().build();
     }
 

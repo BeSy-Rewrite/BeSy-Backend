@@ -12,8 +12,10 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,7 +53,9 @@ import de.hs_esslingen.besy.repositories.OrderStatusHistoryRepository;
 import de.hs_esslingen.besy.repositories.PersonRepository;
 import de.hs_esslingen.besy.repositories.SupplierRepository;
 import de.hs_esslingen.besy.repositories.UserRepository;
+import de.hs_esslingen.besy.searchlog.SearchLogService;
 import de.hs_esslingen.besy.security.KeycloakAuthenticationConverter;
+import jakarta.persistence.EntityManager;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 
@@ -72,6 +76,8 @@ public class OrderService {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     private final UserService userService;
+    private final EntityManager entityManager;
+    private final SearchLogService searchLogService;
 
     private final OrderResponseMapper orderResponseMapper;
     private final OrderRequestMapper orderRequestMapper;
@@ -127,28 +133,63 @@ public class OrderService {
             OffsetDateTime lastUpdatedTimeBefore,
             Short autoIndexGTE,
             Short autoIndexLTE,
-            Pageable pageable
-
-    ) {
+            String search,
+            Pageable pageable,
+            Jwt jwt) {
         org.springframework.data.jpa.domain.Specification<Order> spec = SpecificationHelper
                 .contains(primaryCostCentersIds, "primaryCostCenterId")
-                .and(SpecificationHelper.contains(bookingYears, "bookingYear")
-                        .and(SpecificationHelper.isBetween(createdAfter, createdBefore, "createdDate"))
-                        .and(SpecificationHelper.contains(ownerIds, "ownerId"))
-                        .and(SpecificationHelper.contains(statuses, "status"))
-                        .and(SpecificationHelper.isBetween(quotePriceMin, quotePriceMax, "quotePrice"))
-                        .and(SpecificationHelper.contains(deliveryPersonIds, "deliveryPersonId"))
-                        .and(SpecificationHelper.contains(invoicePersonIds, "invoicePersonId"))
-                        .and(SpecificationHelper.contains(queriesPersonIds, "queriesPersonId"))
-                        .and(SpecificationHelper.contains(customerIds, "customerId"))
-                        .and(SpecificationHelper.contains(supplierIds, "supplierId"))
-                        .and(SpecificationHelper.contains(secondaryCostCenterIds, "secondaryCostCenterId"))
-                        .and(SpecificationHelper.isBetween(lastUpdatedTimeAfter, lastUpdatedTimeBefore,
-                                "lastUpdatedTime"))
-                        .and(SpecificationHelper.isBetween(autoIndexGTE, autoIndexLTE, "autoIndex")));
+                .and(SpecificationHelper.contains(bookingYears, "bookingYear"))
+                .and(SpecificationHelper.isBetween(createdAfter, createdBefore, "createdDate"))
+                .and(SpecificationHelper.contains(ownerIds, "ownerId"))
+                .and(SpecificationHelper.contains(statuses, "status"))
+                .and(SpecificationHelper.isBetween(quotePriceMin, quotePriceMax, "quotePrice"))
+                .and(SpecificationHelper.contains(deliveryPersonIds, "deliveryPersonId"))
+                .and(SpecificationHelper.contains(invoicePersonIds, "invoicePersonId"))
+                .and(SpecificationHelper.contains(queriesPersonIds, "queriesPersonId"))
+                .and(SpecificationHelper.contains(customerIds, "customerId"))
+                .and(SpecificationHelper.contains(supplierIds, "supplierId"))
+                .and(SpecificationHelper.contains(secondaryCostCenterIds, "secondaryCostCenterId"))
+                .and(SpecificationHelper.isBetween(lastUpdatedTimeAfter, lastUpdatedTimeBefore,
+                        "lastUpdatedTime"))
+                .and(SpecificationHelper.isBetween(autoIndexGTE, autoIndexLTE, "autoIndex"))
+                .and(SpecificationHelper.fullTextSearch(search));
 
         Page<Order> orders = orderPageableRepository.findAll(spec, pageable);
+
+        // Log only actual searches (not plain grid browsing / filter-only calls)
+        if (search != null && !search.isBlank()) {
+            String filtersJsonString = "{"
+                    + "\"primaryCostCentersIds\":" + primaryCostCentersIds + ","
+                    + "\"bookingYears\":" + bookingYears + ","
+                    + "\"createdAfter\":" + createdAfter + ","
+                    + "\"createdBefore\":" + createdBefore + ","
+                    + "\"ownerIds\":" + ownerIds + ","
+                    + "\"statuses\":" + statuses + ","
+                    + "\"quotePriceMin\":" + quotePriceMin + ","
+                    + "\"quotePriceMax\":" + quotePriceMax + ","
+                    + "\"deliveryPersonIds\":" + deliveryPersonIds + ","
+                    + "\"invoicePersonIds\":" + invoicePersonIds + ","
+                    + "\"queriesPersonIds\":" + queriesPersonIds + ","
+                    + "\"customerIds\":" + customerIds + ","
+                    + "\"supplierIds\":" + supplierIds + ","
+                    + "\"secondaryCostCenterIds\":" + secondaryCostCenterIds
+                    + "\"lastUpdatedTimeAfter\":" + lastUpdatedTimeAfter + ","
+                    + "\"lastUpdatedTimeBefore\":" + lastUpdatedTimeBefore + ","
+                    + "\"autoIndexGTE\":" + autoIndexGTE + ","
+                    + "\"autoIndexLTE\":" + autoIndexLTE + ","
+                    + "\"sorting\":" + pageable.getSort().toString()
+                    + "}";
+            searchLogService.log(search, filtersJsonString, orders.getTotalElements(),
+                    userService.resolveUserFromJwt(jwt).getId());
+        }
+
         return orders.map(orderResponseMapper::toDto);
+    }
+
+    public Page<OrderResponseDTO> searchOrdersByRelevance(String q, Pageable pageable) {
+        Pageable unsorted = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        return orderPageableRepository.searchByRelevance(q, unsorted)
+                .map(orderResponseMapper::toDto);
     }
 
     public Optional<Order> getOrderById(Long id) throws IllegalArgumentException {
@@ -182,16 +223,19 @@ public class OrderService {
                 .build();
         orderStatusHistoryRepository.save(orderStatusHistory);
 
+        refreshSearchIndex(savedOrder.getId());
+
         return savedOrder;
 
     }
 
-    public ResponseEntity<OrderResponseDTO> updateOrder(OrderRequestDTO dto, Long id) {
+    public Order updateOrder(OrderRequestDTO dto, Long id) {
         Order order = orderRepository.findById(id).get();
         orderRequestMapper.partialUpdate(order, dto);
         this.mapForeignRelationships(order, dto, null);
         Order updatedOrder = orderRepository.save(order);
-        return ResponseEntity.ok(orderResponseMapper.toDto(updatedOrder));
+        refreshSearchIndex(updatedOrder.getId());
+        return updatedOrder;
     }
 
     public ResponseEntity<String> deleteOrderById(Long id) {
@@ -440,4 +484,83 @@ public class OrderService {
         }
     }
 
+    private static final String SEARCH_INDEX_UPDATE = """
+            UPDATE "order" o
+            SET search_vector =
+                    setweight(to_tsvector('simple', coalesce(src.order_number, '')),         'A') ||
+                    setweight(to_tsvector('simple', coalesce(src.quote_number, '')),         'A') ||
+                    setweight(to_tsvector('simple', coalesce(src.quote_sign, '')),           'A') ||
+                    setweight(to_tsvector('german', coalesce(src.content_description, '')),  'B') ||
+                    setweight(to_tsvector('simple', coalesce(src.supplier_name, '')),        'B') ||
+                    setweight(to_tsvector('simple', coalesce(src.customer_id, '')),          'B') ||
+                    setweight(to_tsvector('simple', coalesce(src.dfg_key, '')),              'B') ||
+                    setweight(to_tsvector('german', coalesce(src.primary_cc_name, '') || ' ' ||
+                                                    coalesce(src.secondary_cc_name, '')),    'B') ||
+                    setweight(to_tsvector('simple', coalesce(src.owner_name, '')),           'B') ||
+                    setweight(to_tsvector('german', coalesce(src.comment, '') || ' ' ||
+                                                    coalesce(src.comment_for_supplier, '')), 'C') ||
+                    setweight(to_tsvector('german', coalesce(src.items, '')),                'C'),
+                search_text = concat_ws(' ',
+                    src.order_number, src.quote_number, src.quote_sign,
+                    src.content_description, src.supplier_name, src.customer_id,
+                    src.dfg_key, src.primary_cc_name, src.secondary_cc_name,
+                    src.owner_name, src.comment, src.comment_for_supplier, src.items)
+            FROM (
+                SELECT ord.id,
+                       CASE
+                           WHEN ord.primary_cost_center_id IS NOT NULL
+                            AND ord.booking_year IS NOT NULL
+                            AND ord.auto_index IS NOT NULL
+                           THEN concat(
+                                    :orderPrefix, ord.primary_cost_center_id, :orderSeparator,
+                                    ord.booking_year, :orderSeparator,
+                                    lpad(ord.auto_index::text, 3, '0'))
+                           ELSE NULL
+                       END                                   AS order_number,
+                       ord.quote_number,
+                       ord.quote_sign,
+                       ord.content_description,
+                       ord.customer_id,
+                       ord.dfg_key,
+                       ord.comment,
+                       ord.comment_for_supplier,
+                       s.name                                AS supplier_name,
+                       pcc.name                              AS primary_cc_name,
+                       scc.name                              AS secondary_cc_name,
+                       concat_ws(' ', u.name, u.surname)     AS owner_name,
+                       it.items
+                FROM "order" ord
+                LEFT JOIN supplier    s   ON s.id   = ord.supplier_id
+                LEFT JOIN cost_center pcc ON pcc.id = ord.primary_cost_center_id
+                LEFT JOIN cost_center scc ON scc.id = ord.secondary_cost_center_id
+                LEFT JOIN "user"      u   ON u.id   = ord.owner_user_id
+                LEFT JOIN (
+                    SELECT i.order_id,
+                           string_agg(
+                               concat_ws(' ', i.name, i.comment, i.article_id), ' '
+                           ) AS items
+                    FROM item i
+                    GROUP BY i.order_id
+                ) it ON it.order_id = ord.id
+            ) src
+            WHERE o.id = src.id
+            """;
+
+    @Transactional
+    public void refreshSearchIndex(Long orderId) {
+        entityManager.createNativeQuery(SEARCH_INDEX_UPDATE + " AND o.id = :id")
+                .setParameter("orderPrefix", orderNumberPrefix)
+                .setParameter("orderSeparator", orderNumberSeparator)
+                .setParameter("id", orderId)
+                .executeUpdate();
+    }
+
+    @Scheduled(cron = "0 0 3 * * *")
+    @Transactional
+    public void refreshAllSearchIndexes() {
+        entityManager.createNativeQuery(SEARCH_INDEX_UPDATE)
+                .setParameter("orderPrefix", orderNumberPrefix)
+                .setParameter("orderSeparator", orderNumberSeparator)
+                .executeUpdate();
+    }
 }

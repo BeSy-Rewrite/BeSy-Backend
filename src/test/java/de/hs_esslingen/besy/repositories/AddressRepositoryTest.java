@@ -1,21 +1,25 @@
 package de.hs_esslingen.besy.repositories;
 
-import de.hs_esslingen.besy.enums.AddressOwnerType;
-import de.hs_esslingen.besy.models.Address;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.ActiveProfiles;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+
+import de.hs_esslingen.besy.PostgresTestContainerConfig;
+import de.hs_esslingen.besy.enums.AddressOwnerType;
+import de.hs_esslingen.besy.models.Address;
+
 @DataJpaTest
-@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@Import(PostgresTestContainerConfig.class)
+@AutoConfigureTestDatabase(replace = Replace.NONE)
 @ActiveProfiles("test")
 class AddressRepositoryTest {
 

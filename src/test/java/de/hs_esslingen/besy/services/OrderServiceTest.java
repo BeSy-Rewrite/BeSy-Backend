@@ -6,9 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -69,6 +71,8 @@ import de.hs_esslingen.besy.repositories.OrderStatusHistoryRepository;
 import de.hs_esslingen.besy.repositories.PersonRepository;
 import de.hs_esslingen.besy.repositories.SupplierRepository;
 import de.hs_esslingen.besy.repositories.UserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import jakarta.validation.ConstraintViolationException;
 
 @ExtendWith(MockitoExtension.class)
@@ -125,6 +129,12 @@ class OrderServiceTest {
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
 
+    @Mock
+    private EntityManager entityManager;
+
+    @Mock
+    private Query query;
+
     @InjectMocks
     private OrderService orderService;
     private Order order;
@@ -135,6 +145,8 @@ class OrderServiceTest {
 
     @BeforeEach
     void setUp() {
+        lenient().when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        lenient().when(query.setParameter(anyString(), any())).thenReturn(query);
         ReflectionTestUtils.setField(orderService, "dekanRoleName", "dekan");
         ReflectionTestUtils.setField(de.hs_esslingen.besy.security.KeycloakAuthenticationConverter.class, "clientId",
                 "test-client");
@@ -261,7 +273,9 @@ class OrderServiceTest {
                 null,
                 null,
                 null,
-                pageable);
+                null,
+                pageable,
+                jwtWithRole);
 
         assertEquals(1, result.getTotalElements());
         assertEquals(responseDto, result.getContent().get(0));
@@ -355,7 +369,6 @@ class OrderServiceTest {
 
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
         when(orderRepository.save(order)).thenReturn(order);
-        when(orderResponseMapper.toDto(order)).thenReturn(responseDto);
         when(currencyRepository.getReferenceById("EUR")).thenReturn(new Currency());
         when(personRepository.getReferenceById(10L)).thenReturn(new Person());
         when(personRepository.getReferenceById(11L)).thenReturn(new Person());
@@ -368,9 +381,9 @@ class OrderServiceTest {
         when(addressRepository.getReferenceById(101)).thenReturn(new Address());
         when(userRepository.getReferenceById(1l)).thenReturn(new User());
 
-        ResponseEntity<OrderResponseDTO> response = orderService.updateOrder(requestDto, 1L);
+        Order updatedOrder = orderService.updateOrder(requestDto, 1L);
 
-        assertSame(responseDto, response.getBody());
+        assertSame(order, updatedOrder);
         verify(orderRequestMapper).partialUpdate(order, requestDto);
         verify(orderRepository).save(order);
     }
