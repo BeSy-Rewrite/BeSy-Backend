@@ -571,11 +571,11 @@ ALTER TABLE ONLY migrated_data.customer_id
 
 --
 -- TOC entry 3514 (class 2606 OID 17245)
--- Name: order fkd5whoe5rx0p723swdc3wk4ymh; Type: FK CONSTRAINT; Schema: migrated_data; Owner: besy
+-- Name: order order_customer_id_supplier_id_fkey; Type: FK CONSTRAINT; Schema: migrated_data; Owner: besy
 --
 
 ALTER TABLE ONLY migrated_data."order"
-    ADD CONSTRAINT fkd5whoe5rx0p723swdc3wk4ymh FOREIGN KEY (customer_id, supplier_id) REFERENCES migrated_data.customer_id(customer_id, supplier_id);
+    ADD CONSTRAINT order_customer_id_supplier_id_fkey FOREIGN KEY (customer_id, supplier_id) REFERENCES migrated_data.customer_id(customer_id, supplier_id);
 
 
 --
