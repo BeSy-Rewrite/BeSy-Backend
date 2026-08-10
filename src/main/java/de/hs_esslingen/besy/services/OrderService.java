@@ -160,11 +160,11 @@ public class OrderService {
         if (search != null && !search.isBlank()) {
             String filtersJsonString = "{"
                     + "\"primaryCostCentersIds\":" + primaryCostCentersIds + ","
-                    + "\"bookingYears\":" + bookingYears + ","
-                    + "\"createdAfter\":" + createdAfter + ","
-                    + "\"createdBefore\":" + createdBefore + ","
+                    + "\"bookingYears\":\"" + bookingYears + "\","
+                    + "\"createdAfter\": \"" + createdAfter + "\","
+                    + "\"createdBefore\": \"" + createdBefore + "\","
                     + "\"ownerIds\":" + ownerIds + ","
-                    + "\"statuses\":" + statuses + ","
+                    + "\"statuses\":\"" + statuses + "\","
                     + "\"quotePriceMin\":" + quotePriceMin + ","
                     + "\"quotePriceMax\":" + quotePriceMax + ","
                     + "\"deliveryPersonIds\":" + deliveryPersonIds + ","
@@ -172,15 +172,15 @@ public class OrderService {
                     + "\"queriesPersonIds\":" + queriesPersonIds + ","
                     + "\"customerIds\":" + customerIds + ","
                     + "\"supplierIds\":" + supplierIds + ","
-                    + "\"secondaryCostCenterIds\":" + secondaryCostCenterIds
-                    + "\"lastUpdatedTimeAfter\":" + lastUpdatedTimeAfter + ","
-                    + "\"lastUpdatedTimeBefore\":" + lastUpdatedTimeBefore + ","
+                    + "\"secondaryCostCenterIds\":" + secondaryCostCenterIds + ","
+                    + "\"lastUpdatedTimeAfter\": \"" + lastUpdatedTimeAfter + "\","
+                    + "\"lastUpdatedTimeBefore\": \"" + lastUpdatedTimeBefore + "\","
                     + "\"autoIndexGTE\":" + autoIndexGTE + ","
                     + "\"autoIndexLTE\":" + autoIndexLTE + ","
                     + "\"sorting\":" + pageable.getSort().toString()
                     + "}";
-            searchLogService.log(search, filtersJsonString, orders.getTotalElements(),
-                    userService.resolveUserFromJwt(jwt).getId());
+            Long userId = (jwt != null) ? userService.resolveUserFromJwt(jwt).getId() : null;
+            searchLogService.log(search, filtersJsonString, orders.getTotalElements(), userId);
         }
 
         return orders.map(orderResponseMapper::toDto);
@@ -485,7 +485,7 @@ public class OrderService {
     }
 
     private static final String SEARCH_INDEX_UPDATE = """
-            UPDATE "order" o
+            UPDATE migrated_data."order" o
             SET search_vector =
                     setweight(to_tsvector('simple', coalesce(src.order_number, '')),         'A') ||
                     setweight(to_tsvector('simple', coalesce(src.quote_number, '')),         'A') ||
@@ -529,17 +529,17 @@ public class OrderService {
                        scc.name                              AS secondary_cc_name,
                        concat_ws(' ', u.name, u.surname)     AS owner_name,
                        it.items
-                FROM "order" ord
-                LEFT JOIN supplier    s   ON s.id   = ord.supplier_id
-                LEFT JOIN cost_center pcc ON pcc.id = ord.primary_cost_center_id
-                LEFT JOIN cost_center scc ON scc.id = ord.secondary_cost_center_id
-                LEFT JOIN "user"      u   ON u.id   = ord.owner_user_id
+                FROM migrated_data."order" ord
+                LEFT JOIN migrated_data.supplier    s   ON s.id   = ord.supplier_id
+                LEFT JOIN migrated_data.cost_center pcc ON pcc.id = ord.primary_cost_center_id
+                LEFT JOIN migrated_data.cost_center scc ON scc.id = ord.secondary_cost_center_id
+                LEFT JOIN migrated_data."user"      u   ON u.id   = ord.owner_user_id
                 LEFT JOIN (
                     SELECT i.order_id,
                            string_agg(
                                concat_ws(' ', i.name, i.comment, i.article_id), ' '
                            ) AS items
-                    FROM item i
+                    FROM migrated_data.item i
                     GROUP BY i.order_id
                 ) it ON it.order_id = ord.id
             ) src

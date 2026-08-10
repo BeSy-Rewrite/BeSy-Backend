@@ -14,7 +14,7 @@ public interface OrderPageableRepository
 
     @Query(value = """
             SELECT o.*
-            FROM "order" o
+            FROM migrated_data."order" o
             WHERE o.search_vector @@ websearch_to_tsquery('german', :q)
                OR similarity(o.search_text, :q) > 0.2
             ORDER BY
@@ -22,7 +22,7 @@ public interface OrderPageableRepository
                 + similarity(o.search_text, :q) DESC
             """, countQuery = """
             SELECT count(*)
-            FROM "order" o
+            FROM migrated_data."order" o
             WHERE o.search_vector @@ websearch_to_tsquery('german', :q)
                OR similarity(o.search_text, :q) > 0.2
             """, nativeQuery = true)
