@@ -228,4 +228,10 @@ public class Order {
         this.approval.setOrder(this);
     }
 
+    @Column(name = "search_vector", columnDefinition = "tsvector", insertable = false, updatable = false)
+    private String searchVector;
+
+    @Column(name = "search_text", columnDefinition = "text", insertable = false, updatable = false)
+    private String searchText;
+
 }
