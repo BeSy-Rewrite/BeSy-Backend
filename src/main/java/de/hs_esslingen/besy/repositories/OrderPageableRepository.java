@@ -16,15 +16,15 @@ public interface OrderPageableRepository
             SELECT o.*
             FROM migrated_data."order" o
             WHERE o.search_vector @@ websearch_to_tsquery('german', :q)
-               OR similarity(o.search_text, :q) > 0.2
+               OR migrated_data.similarity(o.search_text, :q) > 0.2
             ORDER BY
                 ts_rank(o.search_vector, websearch_to_tsquery('german', :q))
-                + similarity(o.search_text, :q) DESC
+                + migrated_data.similarity(o.search_text, :q) DESC
             """, countQuery = """
             SELECT count(*)
             FROM migrated_data."order" o
             WHERE o.search_vector @@ websearch_to_tsquery('german', :q)
-               OR similarity(o.search_text, :q) > 0.2
+               OR migrated_data.similarity(o.search_text, :q) > 0.2
             """, nativeQuery = true)
     Page<Order> searchByRelevance(@Param("q") String q, Pageable pageable);
 }
