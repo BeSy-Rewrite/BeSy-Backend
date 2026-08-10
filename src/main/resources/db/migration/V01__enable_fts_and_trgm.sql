@@ -1,5 +1,6 @@
 -- Extensions (idempotent; require appropriate DB privileges)
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
+ALTER EXTENSION pg_trgm SET SCHEMA public;
 
 -- FTS + trigram columns on the order table
 ALTER TABLE migrated_data."order" ADD COLUMN IF NOT EXISTS search_vector tsvector;
