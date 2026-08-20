@@ -223,7 +223,13 @@ public class OrderService {
                 .build();
         orderStatusHistoryRepository.save(orderStatusHistory);
 
-        refreshSearchIndex(savedOrder.getId());
+        try {
+            refreshSearchIndex(savedOrder.getId());
+        } catch (Exception e) {
+            // Log the error but do not prevent the order from being created
+            System.err.println(
+                    "Failed to refresh search index for order ID " + savedOrder.getId() + ": " + e.getMessage());
+        }
 
         return savedOrder;
 
@@ -234,7 +240,13 @@ public class OrderService {
         orderRequestMapper.partialUpdate(order, dto);
         this.mapForeignRelationships(order, dto, null);
         Order updatedOrder = orderRepository.save(order);
-        refreshSearchIndex(updatedOrder.getId());
+        try {
+            refreshSearchIndex(updatedOrder.getId());
+        } catch (Exception e) {
+            // Log the error but do not prevent the order from being updated
+            System.err.println(
+                    "Failed to refresh search index for order ID " + updatedOrder.getId() + ": " + e.getMessage());
+        }
         return updatedOrder;
     }
 
