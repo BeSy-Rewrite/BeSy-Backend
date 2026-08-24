@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -19,13 +18,11 @@ import java.util.stream.Collectors;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import de.hs_esslingen.besy.enums.VatType;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
-import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.models.Address;
 import de.hs_esslingen.besy.models.Approval;
 import de.hs_esslingen.besy.models.Item;
@@ -34,11 +31,6 @@ import de.hs_esslingen.besy.models.Person;
 import de.hs_esslingen.besy.models.Quotation;
 import de.hs_esslingen.besy.models.Supplier;
 import de.hs_esslingen.besy.models.Vat;
-import de.hs_esslingen.besy.repositories.ItemRepository;
-import de.hs_esslingen.besy.repositories.OrderRepository;
-import de.hs_esslingen.besy.repositories.PersonRepository;
-import de.hs_esslingen.besy.repositories.QuotationRepository;
-import de.hs_esslingen.besy.repositories.SupplierRepository;
 import de.hs_esslingen.besy.services.OrderService;
 import de.hs_esslingen.besy.services.PriceConversionService;
 import lombok.RequiredArgsConstructor;
@@ -47,11 +39,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OrderPDFService {
 
-    private final OrderRepository orderRepository;
-    private final SupplierRepository supplierRepository;
-    private final ItemRepository itemRepository;
-    private final PersonRepository personRepository;
-    private final QuotationRepository quotationRepository;
+    private final OrderPdfDataLoader dataLoader;
     private final OrderService orderService;
 
     private final Locale locale;
@@ -83,33 +71,19 @@ public class OrderPDFService {
             order.parseOrder(acroForm);
             acroForm.setXFA(null);
 
-            // Print form fields for debugging
-            // printFormFields(acroForm);
-
             // Retrieve Order and necessary relations for PDF
-            Optional<Order> orderOpt = Optional.ofNullable(orderId)
-                    .flatMap(orderRepository::findById);
-            if (orderOpt.isEmpty())
-                throw new NotFoundException("Order with id " + orderId + " does not exist.");
+            OrderPdfData data = dataLoader.load(orderId);
 
-            Order orderDAO = orderOpt.get();
-            Optional<Supplier> supplierDAO = Optional.ofNullable(orderDAO.getSupplierId())
-                    .flatMap(supplierRepository::findById);
-
-            Approval approvals = orderDAO.getApproval();
-
-            List<Item> itemsDAO = itemRepository.findByOrder_Id(orderDAO.getId());
-            Optional<Person> deliveryPersonOpt = Optional.ofNullable(orderDAO.getDeliveryPersonId())
-                    .flatMap(personRepository::findById);
-            Optional<Person> invoicePersonOpt = Optional.ofNullable(orderDAO.getInvoicePersonId())
-                    .flatMap(personRepository::findById);
-            Optional<Person> queriesPersonOpt = Optional.ofNullable(orderDAO.getQueriesPerson())
-                    .or(() -> Optional.ofNullable(orderDAO.getQueriesPersonId())
-                            .flatMap(personRepository::findById));
-            List<Quotation> quotations = quotationRepository.getQuotationByOrderId(Long.valueOf(orderId));
-
-            Address deliveryAddress = orderDAO.getDeliveryAddress();
-            Address invoiceAddress = orderDAO.getInvoiceAddress();
+            Order orderDAO = data.order();
+            Optional<Supplier> supplierDAO = data.supplier();
+            Approval approvals = data.approval();
+            List<Item> itemsDAO = data.items();
+            Optional<Person> deliveryPersonOpt = data.deliveryPerson();
+            Optional<Person> invoicePersonOpt = data.invoicePerson();
+            Optional<Person> queriesPersonOpt = data.queriesPerson();
+            List<Quotation> quotations = data.quotations();
+            Address deliveryAddress = data.deliveryAddress();
+            Address invoiceAddress = data.invoiceAddress();
 
             // Write to PDF
 
@@ -301,21 +275,4 @@ public class OrderPDFService {
     private String formatPostalAndTown(Address address) {
         return (getPostalCode(address) + " " + getTown(address)).trim();
     }
-
-    private void printFormFields(PDAcroForm acroForm) {
-        Iterable<PDField> fieldTree = acroForm.getFieldTree();
-
-        List<PDField> allFields = new ArrayList<>();
-        fieldTree.forEach(allFields::add);
-
-        System.out.println("Total fields (including nested): " + allFields.size());
-
-        for (PDField field : allFields) {
-            System.out.println("Name:  " + field.getFullyQualifiedName());
-            System.out.println("Type:  " + field.getClass().getSimpleName());
-            System.out.println("Value: " + field.getValueAsString());
-            System.out.println("----------------------------");
-        }
-    }
-
 }

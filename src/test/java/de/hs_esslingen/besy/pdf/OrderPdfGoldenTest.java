@@ -95,14 +95,14 @@ class OrderPdfGoldenTest {
 
     @BeforeEach
     void setUp() {
-        service = new OrderPDFService(
+        OrderPdfDataLoader dataLoader = new OrderPdfDataLoader(
                 orderRepository,
                 supplierRepository,
                 itemRepository,
                 personRepository,
-                quotationRepository,
-                orderService,
-                Locale.GERMANY);
+                quotationRepository);
+
+        service = new OrderPDFService(dataLoader, orderService, Locale.GERMANY);
     }
 
     // ------------------------------------------------------------------- Testfälle
