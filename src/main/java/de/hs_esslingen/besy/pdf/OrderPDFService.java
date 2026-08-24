@@ -10,9 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.pdfbox.Loader;
@@ -21,7 +19,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import de.hs_esslingen.besy.enums.VatType;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.models.Address;
 import de.hs_esslingen.besy.models.Approval;
@@ -32,7 +29,6 @@ import de.hs_esslingen.besy.models.Quotation;
 import de.hs_esslingen.besy.models.Supplier;
 import de.hs_esslingen.besy.models.Vat;
 import de.hs_esslingen.besy.services.OrderService;
-import de.hs_esslingen.besy.services.PriceConversionService;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -135,25 +131,16 @@ public class OrderPDFService {
                 throw new BadRequestException("Error while mapping order items for PDF generation: " + e.getMessage());
             }
 
-            BigDecimal subTotal = itemsDAO
-                    .stream()
-                    .map(item -> {
-                        BigDecimal netPrice = item.getVatType() == VatType.netto ? item.getPricePerUnit()
-                                : PriceConversionService.convertGrossPriceToNetPrice(item.getPricePerUnit(),
-                                        item.getVat());
-                        return netPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
-                    })
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            OrderPdfTotals totals = OrderPdfCalculator.calculate(
+                    itemsDAO,
+                    orderDAO.getPercentageDiscount(),
+                    MEHRWERTSTEUER_DEFAULT);
 
-            order.setSubTotal(String.valueOf(
-                    subTotal)
+            order.setSubTotal(String.valueOf(totals.subTotal())
                     .replace('.', ',')
                     .concat(" €"));
 
-            BigDecimal netTotal = subTotal.multiply((BigDecimal.valueOf(100).subtract(
-                    orderDAO.getPercentageDiscount() != null ? orderDAO.getPercentageDiscount() : BigDecimal.ZERO))
-                    .divide(BigDecimal.valueOf(100))).setScale(2, RoundingMode.HALF_UP);
-            order.setNetTotal(String.valueOf(netTotal).replace('.', ',').concat(" €"));
+            order.setNetTotal(String.valueOf(totals.netTotal()).replace('.', ',').concat(" €"));
 
             String comment = orderDAO.getCommentForSupplier() != null ? orderDAO.getCommentForSupplier() : "";
 
@@ -162,24 +149,14 @@ public class OrderPDFService {
             }
 
             // TODO: VAT should be stored by the order itself
-            Set<Vat> vats = itemsDAO.stream()
-                    .map(Item::getVat)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toSet());
-
-            if (vats.size() <= 1) {
-                BigDecimal vatValue = vats.stream()
-                        .map(Vat::getValue)
-                        .findFirst()
-                        .orElse(BigDecimal.valueOf(Double.parseDouble(MEHRWERTSTEUER_DEFAULT)));
-                BigDecimal total = netTotal.multiply(
-                        (BigDecimal.valueOf(100).add(vatValue)).divide(BigDecimal.valueOf(100)))
-                        .setScale(2, RoundingMode.HALF_UP);
-                order.setTotal(String.valueOf(total).replace('.', ',').concat(" €"));
-
+            if (totals.vats().size() <= 1) {
+                BigDecimal vatValue = totals.vatValue().orElseThrow();
+                order.setTotal(String.valueOf(totals.total().orElseThrow())
+                        .replace('.', ',')
+                        .concat(" €"));
                 order.setVat(String.valueOf(vatValue.intValue()));
             } else {
-                comment = "Unterschiedlichen Mehrwertsteuersätze: " + vats.stream()
+                comment = "Unterschiedlichen Mehrwertsteuersätze: " + totals.vats().stream()
                         .map(Vat::getValue)
                         .distinct()
                         .sorted()
