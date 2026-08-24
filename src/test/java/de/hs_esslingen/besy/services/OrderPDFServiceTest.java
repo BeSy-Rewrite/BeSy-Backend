@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
 
 import de.hs_esslingen.besy.dtos.response.ItemResponseDTO;
 import de.hs_esslingen.besy.dtos.response.VatResponseDTO;
@@ -176,10 +175,10 @@ class OrderPDFServiceTest {
         when(personRepository.findById(order.getInvoicePersonId())).thenReturn(Optional.of(invoicePerson));
         when(quotationRepository.getQuotationByOrderId(orderId)).thenReturn(List.of());
 
-        ResponseEntity<byte[]> response = orderPDFService.generateOrderPDF(orderId);
+        byte[] response = orderPDFService.generateOrderPDF(orderId);
 
-        assertNotNull(response.getBody());
-        try (PDDocument document = Loader.loadPDF(response.getBody())) {
+        assertNotNull(response);
+        try (PDDocument document = Loader.loadPDF(response)) {
             PDAcroForm form = document.getDocumentCatalog().getAcroForm();
             String date = fieldValue(form, "Formular1[0].#subform[0].Header[0].Rechnungsdatum[0]");
             assertEquals("15.01.2025", date);
@@ -208,12 +207,12 @@ class OrderPDFServiceTest {
         when(quotationRepository.getQuotationByOrderId(orderId)).thenReturn(List.of());
         when(orderService.getOrderNumber(order)).thenReturn(Optional.of("IT_25_CC-1_7"));
 
-        ResponseEntity<byte[]> response = orderPDFService.generateOrderPDF(orderId);
+        byte[] response = orderPDFService.generateOrderPDF(orderId);
 
-        assertNotNull(response.getBody());
-        assertTrue(response.getBody().length > 0);
+        assertNotNull(response);
+        assertTrue(response.length > 0);
 
-        try (PDDocument document = Loader.loadPDF(response.getBody())) {
+        try (PDDocument document = Loader.loadPDF(response)) {
             PDAcroForm form = document.getDocumentCatalog().getAcroForm();
             assertNotNull(form);
 
@@ -260,12 +259,12 @@ class OrderPDFServiceTest {
         when(quotationRepository.getQuotationByOrderId(orderId)).thenReturn(List.of());
         when(orderService.getOrderNumber(order)).thenReturn(Optional.of("IT_25_CC-1_7"));
 
-        ResponseEntity<byte[]> response = orderPDFService.generateOrderPDF(orderId);
+        byte[] response = orderPDFService.generateOrderPDF(orderId);
 
-        assertNotNull(response.getBody());
-        assertTrue(response.getBody().length > 0);
+        assertNotNull(response);
+        assertTrue(response.length > 0);
 
-        try (PDDocument document = Loader.loadPDF(response.getBody())) {
+        try (PDDocument document = Loader.loadPDF(response)) {
             PDAcroForm form = document.getDocumentCatalog().getAcroForm();
             assertNotNull(form);
             String orderNumber = fieldValue(form, "Formular1[0].#subform[0].Header[0].Rechnungsnummer[0]");
@@ -299,12 +298,12 @@ class OrderPDFServiceTest {
         when(personRepository.findById(order.getInvoicePersonId())).thenReturn(Optional.of(invoicePerson));
         when(quotationRepository.getQuotationByOrderId(orderId)).thenReturn(List.of());
 
-        ResponseEntity<byte[]> response = orderPDFService.generateOrderPDF(orderId);
+        byte[] response = orderPDFService.generateOrderPDF(orderId);
 
-        assertNotNull(response.getBody());
-        assertTrue(response.getBody().length > 0);
+        assertNotNull(response);
+        assertTrue(response.length > 0);
 
-        try (PDDocument document = Loader.loadPDF(response.getBody())) {
+        try (PDDocument document = Loader.loadPDF(response)) {
             PDAcroForm form = document.getDocumentCatalog().getAcroForm();
             assertNotNull(form);
 

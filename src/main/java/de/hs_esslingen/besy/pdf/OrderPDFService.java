@@ -21,8 +21,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import de.hs_esslingen.besy.enums.VatType;
@@ -68,7 +66,7 @@ public class OrderPDFService {
 
     // TODO: Ensure that this method is only called when the Order is in a state
     // where all necessary constraints and relationships are satisfied
-    public ResponseEntity<byte[]> generateOrderPDF(Long orderId) throws IOException {
+    public byte[] generateOrderPDF(Long orderId) throws IOException {
 
         // Parse empty Order PDF's acro form elements (load from classpath stream for
         // jar compatibility)
@@ -235,10 +233,7 @@ public class OrderPDFService {
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             document.save(baos);
-            return ResponseEntity
-                    .ok()
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .body(baos.toByteArray());
+            return baos.toByteArray();
         } finally {
             if (document != null) {
                 try {

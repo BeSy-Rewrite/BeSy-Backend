@@ -185,7 +185,7 @@ class OrderPdfGoldenTest {
      * Formularfelder.
      */
     private Map<String, String> renderAndExtractFields(Long orderId) throws IOException {
-        byte[] pdf = service.generateOrderPDF(orderId).getBody();
+        byte[] pdf = service.generateOrderPDF(orderId);
         assertThat(pdf).isNotNull().isNotEmpty();
 
         try (PDDocument doc = Loader.loadPDF(pdf)) {

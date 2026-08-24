@@ -22,8 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -210,16 +208,14 @@ class OrderPDFServiceIntegrationTest {
         quotationRepository.save(quotation);
 
         // Execute
-        ResponseEntity<byte[]> response = orderPDFService.generateOrderPDF(order.getId());
+        byte[] generatedPdf = orderPDFService.generateOrderPDF(order.getId());
 
         // Basic response checks
-        assertEquals(200, response.getStatusCode().value());
-        assertEquals(MediaType.APPLICATION_PDF, response.getHeaders().getContentType());
-        assertNotNull(response.getBody());
-        assertTrue(response.getBody().length > 0);
+        assertNotNull(generatedPdf);
+        assertTrue(generatedPdf.length > 0);
 
         // Parse PDF and verify key fields
-        try (PDDocument document = Loader.loadPDF(response.getBody())) {
+        try (PDDocument document = Loader.loadPDF(generatedPdf)) {
             PDAcroForm form = document.getDocumentCatalog().getAcroForm();
             assertNotNull(form);
 

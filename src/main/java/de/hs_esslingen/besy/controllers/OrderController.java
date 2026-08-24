@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -347,7 +348,10 @@ public class OrderController {
         // if(!orderService.isOrderStatusEqual(orderId, List.of(OrderStatus.SETTLED,
         // OrderStatus.ARCHIVED))) throw new BadRequestException("Bestellstatus muss auf
         // 'abgerechnet' oder 'archiviert' stehen!");
-        return this.orderPDFService.generateOrderPDF(orderId);
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(this.orderPDFService.generateOrderPDF(orderId));
     }
 
 }
