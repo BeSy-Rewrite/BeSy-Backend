@@ -5,9 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -94,8 +91,7 @@ public class OrderPDFService {
             // Bestell-Nr.
             order.setOrderNumber(orderService.getOrderNumber(orderDAO).orElse(""));
             // Datum:
-            order.setDate(orderDAO.getCreatedDate()
-                    .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)));
+            order.setDate(PdfValueFormatter.formatDate(orderDAO.getCreatedDate(), locale));
             // Besteller:in
             if (queriesPersonOpt.isPresent()) {
                 Person queriesPerson = queriesPersonOpt.get();
@@ -136,11 +132,8 @@ public class OrderPDFService {
                     orderDAO.getPercentageDiscount(),
                     MEHRWERTSTEUER_DEFAULT);
 
-            order.setSubTotal(String.valueOf(totals.subTotal())
-                    .replace('.', ',')
-                    .concat(" €"));
-
-            order.setNetTotal(String.valueOf(totals.netTotal()).replace('.', ',').concat(" €"));
+            order.setSubTotal(PdfValueFormatter.formatCurrency(totals.subTotal()));
+            order.setNetTotal(PdfValueFormatter.formatCurrency(totals.netTotal()));
 
             String comment = orderDAO.getCommentForSupplier() != null ? orderDAO.getCommentForSupplier() : "";
 
@@ -150,25 +143,21 @@ public class OrderPDFService {
 
             // TODO: VAT should be stored by the order itself
             if (totals.vats().size() <= 1) {
-                BigDecimal vatValue = totals.vatValue().orElseThrow();
-                order.setTotal(String.valueOf(totals.total().orElseThrow())
-                        .replace('.', ',')
-                        .concat(" €"));
-                order.setVat(String.valueOf(vatValue.intValue()));
+                order.setTotal(PdfValueFormatter.formatCurrency(totals.total().orElseThrow()));
+                order.setVat(PdfValueFormatter.formatVatRate(totals.vatValue().orElseThrow()));
             } else {
                 comment = "Unterschiedlichen Mehrwertsteuersätze: " + totals.vats().stream()
                         .map(Vat::getValue)
                         .distinct()
                         .sorted()
-                        .map(value -> value.setScale(0, RoundingMode.HALF_UP).toString().replace('.', ',') + "%")
+                        .map(PdfValueFormatter::formatPercentage)
                         .collect(Collectors.joining(", ")) + "\n" + comment;
             }
 
             order.setCommentForSupplier(comment);
 
-            order.setPercentageDiscount(String.valueOf(
-                    orderDAO.getPercentageDiscount() != null ? orderDAO.getPercentageDiscount() : BigDecimal.ZERO)
-                    .replace('.', ','));
+            order.setPercentageDiscount(PdfValueFormatter.formatDecimal(
+                    orderDAO.getPercentageDiscount() != null ? orderDAO.getPercentageDiscount() : BigDecimal.ZERO));
             order.setCostCenter(orderDAO.getPrimaryCostCenterId());
             order.setCostCenterSecondary(orderDAO.getSecondaryCostCenterId());
             order.setDfgKey(orderDAO.getDfgKey());

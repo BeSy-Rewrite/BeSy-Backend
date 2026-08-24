@@ -398,9 +398,9 @@ public class PDFOrder {
 
                 pdfItem.setPosition(String.valueOf(itemPosition++));
                 pdfItem.setQuantity(String.valueOf(item.getQuantity()));
-                pdfItem.setPrice((netPrice + " €").replace('.', ','));
-                pdfItem.setAmount((BigDecimal.valueOf(item.getQuantity()).multiply(netPrice) + " €")
-                        .replace('.', ','));
+                pdfItem.setPrice(PdfValueFormatter.formatCurrency(netPrice));
+                pdfItem.setAmount(PdfValueFormatter.formatCurrency(
+                        BigDecimal.valueOf(item.getQuantity()).multiply(netPrice)));
             }
             pdfItem.setDescription(item.getName());
         }
