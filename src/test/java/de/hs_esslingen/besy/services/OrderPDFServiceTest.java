@@ -42,6 +42,7 @@ import de.hs_esslingen.besy.models.User;
 import de.hs_esslingen.besy.models.Vat;
 import de.hs_esslingen.besy.pdf.OrderPDFService;
 import de.hs_esslingen.besy.pdf.OrderPdfDataLoader;
+import de.hs_esslingen.besy.pdf.OrderPdfFormWriter;
 import de.hs_esslingen.besy.pdf.OrderPdfProperties;
 import de.hs_esslingen.besy.pdf.PdfTemplateLoader;
 import de.hs_esslingen.besy.repositories.ItemRepository;
@@ -85,11 +86,21 @@ class OrderPDFServiceTest {
 
     @BeforeEach
     void setUp() {
+        OrderPdfDataLoader dataLoader = new OrderPdfDataLoader(
+                orderRepository,
+                supplierRepository,
+                itemRepository,
+                personRepository,
+                quotationRepository);
+
         OrderPdfProperties pdfProperties = OrderPdfProperties.defaults();
+
         orderPDFService = new OrderPDFService(
-                new OrderPdfDataLoader(orderRepository, supplierRepository, itemRepository,
-                        personRepository, quotationRepository),
-                orderService, Locale.GERMANY, pdfProperties, new PdfTemplateLoader(pdfProperties));
+                dataLoader,
+                orderService,
+                pdfProperties,
+                new PdfTemplateLoader(pdfProperties),
+                new OrderPdfFormWriter(Locale.GERMANY, pdfProperties));
 
         owner = new User();
         owner.setName("Jane");

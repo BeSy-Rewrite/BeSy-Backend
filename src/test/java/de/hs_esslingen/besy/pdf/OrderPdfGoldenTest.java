@@ -107,9 +107,9 @@ class OrderPdfGoldenTest {
         service = new OrderPDFService(
                 dataLoader,
                 orderService,
-                Locale.GERMANY,
                 properties,
-                new PdfTemplateLoader(properties));
+                new PdfTemplateLoader(properties),
+                new OrderPdfFormWriter(Locale.GERMANY, properties));
     }
 
     // ------------------------------------------------------------------- Testfälle
