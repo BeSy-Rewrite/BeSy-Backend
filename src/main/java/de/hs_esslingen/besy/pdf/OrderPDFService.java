@@ -1,19 +1,15 @@
 package de.hs_esslingen.besy.pdf;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import de.hs_esslingen.besy.exceptions.BadRequestException;
@@ -37,28 +33,15 @@ public class OrderPDFService {
 
     private final Locale locale;
 
-    static final String FORMULAR_URI = "static/Bestellformular_V01_empty.pdf";
-
-    static final String ANSCHRIFT_FAKULTAET_DEFAULT = "IT";
-    static final String ANSCHRIFT_STRASSE_DEFAULT = "Flandernstraße 101";
-    static final String ANSCHRIFT_PLZ_ORT_DEFAULT = "73732 Esslingen";
-    static final String LAUFENDE_NUMMER_DEFAULT = "1";
-    static final String MEHRWERTSTEUER_DEFAULT = "19";
+    private final OrderPdfProperties properties;
+    private final PdfTemplateLoader templateLoader;
 
     // TODO: Ensure that this method is only called when the Order is in a state
     // where all necessary constraints and relationships are satisfied
     public byte[] generateOrderPDF(Long orderId) throws IOException {
-
-        // Parse empty Order PDF's acro form elements (load from classpath stream for
-        // jar compatibility)
-        ClassPathResource pdfResource = new ClassPathResource(FORMULAR_URI);
-        if (!pdfResource.exists()) {
-            throw new FileNotFoundException("Order PDF template not found at classpath: " + FORMULAR_URI);
-        }
-
         PDDocument document = null;
-        try (InputStream pdfStream = pdfResource.getInputStream()) {
-            document = Loader.loadPDF(pdfStream.readAllBytes());
+        try {
+            document = templateLoader.loadOrderTemplate();
             PDAcroForm acroForm = document.getDocumentCatalog().getAcroForm();
             PDFOrder order = new PDFOrder();
             order.parseOrder(acroForm);
@@ -107,7 +90,7 @@ public class OrderPDFService {
             order.setInvoiceId(orderDAO.getQuoteNumber());
 
             // Lieferanschrift
-            order.setDeliveryFaculty(ANSCHRIFT_FAKULTAET_DEFAULT);
+            order.setDeliveryFaculty(properties.getDefaultFaculty());
             if (deliveryPersonOpt.isPresent())
                 order.setDeliveryOrderer(
                         deliveryPersonOpt.get().getName() + " " + deliveryPersonOpt.get().getSurname());
@@ -115,7 +98,7 @@ public class OrderPDFService {
             order.setDeliveryAddress(formatPostalAndTown(deliveryAddress));
 
             // Rechnungsanschrift
-            order.setInvoiceFaculty(ANSCHRIFT_FAKULTAET_DEFAULT);
+            order.setInvoiceFaculty(properties.getDefaultFaculty());
             if (invoicePersonOpt.isPresent())
                 order.setInvoiceOrderer(invoicePersonOpt.get().getName() + " " + invoicePersonOpt.get().getSurname());
             order.setInvoiceStreet(getStreet(invoiceAddress) + " " + getBuildingNumber(invoiceAddress));
@@ -130,7 +113,7 @@ public class OrderPDFService {
             OrderPdfTotals totals = OrderPdfCalculator.calculate(
                     itemsDAO,
                     orderDAO.getPercentageDiscount(),
-                    MEHRWERTSTEUER_DEFAULT);
+                    properties.getDefaultVatRate());
 
             order.setSubTotal(PdfValueFormatter.formatCurrency(totals.subTotal()));
             order.setNetTotal(PdfValueFormatter.formatCurrency(totals.netTotal()));
@@ -165,7 +148,7 @@ public class OrderPDFService {
             order.setQuotations(quotations);
 
             // lfd.Nr.
-            order.setLfdNr(LAUFENDE_NUMMER_DEFAULT);
+            order.setLfdNr(properties.getDefaultLfdNr());
 
             setDecisionFlags(order, orderDAO);
 

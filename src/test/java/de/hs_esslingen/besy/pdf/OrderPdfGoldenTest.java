@@ -102,7 +102,14 @@ class OrderPdfGoldenTest {
                 personRepository,
                 quotationRepository);
 
-        service = new OrderPDFService(dataLoader, orderService, Locale.GERMANY);
+        OrderPdfProperties properties = OrderPdfProperties.defaults();
+
+        service = new OrderPDFService(
+                dataLoader,
+                orderService,
+                Locale.GERMANY,
+                properties,
+                new PdfTemplateLoader(properties));
     }
 
     // ------------------------------------------------------------------- Testfälle
