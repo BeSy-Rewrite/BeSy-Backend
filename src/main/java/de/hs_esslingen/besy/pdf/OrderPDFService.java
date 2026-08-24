@@ -1,4 +1,4 @@
-package de.hs_esslingen.besy.services;
+package de.hs_esslingen.besy.pdf;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
 import de.hs_esslingen.besy.enums.VatType;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.exceptions.NotFoundException;
-import de.hs_esslingen.besy.interfaces.PDFOrder;
 import de.hs_esslingen.besy.models.Address;
 import de.hs_esslingen.besy.models.Approval;
 import de.hs_esslingen.besy.models.Item;
@@ -42,6 +41,8 @@ import de.hs_esslingen.besy.repositories.OrderRepository;
 import de.hs_esslingen.besy.repositories.PersonRepository;
 import de.hs_esslingen.besy.repositories.QuotationRepository;
 import de.hs_esslingen.besy.repositories.SupplierRepository;
+import de.hs_esslingen.besy.services.OrderService;
+import de.hs_esslingen.besy.services.PriceConversionService;
 import lombok.RequiredArgsConstructor;
 
 @Service
