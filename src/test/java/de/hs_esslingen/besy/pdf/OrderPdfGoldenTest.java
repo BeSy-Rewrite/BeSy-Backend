@@ -152,19 +152,18 @@ class OrderPdfGoldenTest {
     }
 
     @Test
-    @DisplayName("Documents the VAT-equals bug: two VAT instances set to 19% are considered different")
+    @DisplayName("Vat.equals fixed: two separate 19% instances now count as one rate")
     void goldenDuplicateVatInstances() throws IOException {
         Fixture f = Fixture.duplicateVatInstances();
         stub(f);
 
         Map<String, String> fields = renderAndExtractFields(f.orderId());
 
-        // Expected (Actual behavior!): The note contains the "different
-        // VAT" message,
-        // even though both items have a 19% VAT rate.
+        // Q1 fixed: two Vat instances with the same numeric value are now equal,
+        // so Set<Vat> has size 1 and the single-VAT branch is taken.
         assertThat(fields.get("Formular1[0].#subform[0].Body[0].Textfeld1[1]"))
-                .as("Vat without equals/hashCode => Set size 2 => wrong branch")
-                .contains("Unterschiedlichen Mehrwertsteuersätze");
+                .as("Vat.equals fixed => Set size 1 => single-VAT branch, no mixed-VAT hint")
+                .doesNotContain("Unterschiedlichen Mehrwertsteuersätze");
 
         assertMatchesGolden("order-duplicate-vat-instances.snapshot", fields);
     }
