@@ -108,8 +108,10 @@ public class OrderPdfFormWriter {
     private void writeDeliveryAddress(PDFOrder order, OrderPdfData data) throws IOException {
         Address deliveryAddress = data.deliveryAddress();
         order.setDeliveryFaculty(properties.getDefaultFaculty());
-        if (data.deliveryPerson().isPresent()) {
-            Person person = data.deliveryPerson().get();
+
+        Optional<Person> deliveryPersonOpt = data.deliveryPerson();
+        if (deliveryPersonOpt.isPresent()) {
+            Person person = deliveryPersonOpt.get();
             order.setDeliveryOrderer(person.getName() + " " + person.getSurname());
         }
         order.setDeliveryStreet(getStreet(deliveryAddress) + " " + getBuildingNumber(deliveryAddress));
@@ -119,8 +121,10 @@ public class OrderPdfFormWriter {
     private void writeInvoiceAddress(PDFOrder order, OrderPdfData data) throws IOException {
         Address invoiceAddress = data.invoiceAddress();
         order.setInvoiceFaculty(properties.getDefaultFaculty());
-        if (data.invoicePerson().isPresent()) {
-            Person person = data.invoicePerson().get();
+
+        Optional<Person> invoicePersonOpt = data.invoicePerson();
+        if (invoicePersonOpt.isPresent()) {
+            Person person = invoicePersonOpt.get();
             order.setInvoiceOrderer(person.getName() + " " + person.getSurname());
         }
         order.setInvoiceStreet(getStreet(invoiceAddress) + " " + getBuildingNumber(invoiceAddress));
@@ -128,9 +132,10 @@ public class OrderPdfFormWriter {
     }
 
     /**
-     * Writes total and VAT rate for the single-VAT case and returns the comment.
-     * In the mixed-VAT case both fields stay empty and the comment is prefixed
-     * with the VAT hint — unchanged behaviour, see the frozen Vat.equals quirk.
+     * Writes the total (always known now, computed per VAT rate and summed)
+     * and the VAT rate for the single-VAT case, and returns the comment. In the
+     * mixed-VAT case the VAT rate field stays blank — there is no single rate —
+     * and the comment is prefixed with the VAT hint.
      */
     private String writeTotalsAndBuildComment(PDFOrder order, Order orderDAO, OrderPdfTotals totals)
             throws IOException {
@@ -141,14 +146,15 @@ public class OrderPdfFormWriter {
             comment = "Kundennummer: " + orderDAO.getCustomer().getCustomerId() + "\n" + comment;
         }
 
+        order.setTotal(PdfValueFormatter.formatCurrency(totals.total().orElseThrow()));
+
         // TODO: VAT should be stored by the order itself
         if (totals.vats().size() <= 1) {
-            order.setTotal(PdfValueFormatter.formatCurrency(totals.total().orElseThrow()));
             order.setVat(PdfValueFormatter.formatVatRate(totals.vatValue().orElseThrow()));
             return comment;
         }
 
-        return "Unterschiedlichen Mehrwertsteuersätze: " + totals.vats().stream()
+        return "Unterschiedliche Mehrwertsteuersätze: " + totals.vats().stream()
                 .map(Vat::getValue)
                 .distinct()
                 .sorted()

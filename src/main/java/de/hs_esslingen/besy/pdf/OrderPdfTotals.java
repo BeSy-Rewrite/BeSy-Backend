@@ -10,18 +10,16 @@ import de.hs_esslingen.besy.models.Vat;
  * Numeric values calculated for an order PDF.
  *
  * <p>
- * The VAT set deliberately contains {@link Vat} entities rather than VAT
- * values. Vat currently uses identity-based equality, and changing that would
- * alter the frozen mixed-VAT behaviour.
- *
- * <p>
- * Total and VAT value are empty for the existing multi-VAT path, where the
- * respective PDF fields remain untouched.
+ * {@code total} is always present: for a single VAT rate it is the net total
+ * grossed up by that rate; for mixed VAT rates it is the sum of the per-rate
+ * gross totals. {@code vatValue} is only present when a single rate
+ * applies — the corresponding PDF field is left blank otherwise, since there
+ * is no single rate to show.
  */
 public record OrderPdfTotals(
-        BigDecimal subTotal,
-        BigDecimal netTotal,
-        Optional<BigDecimal> total,
-        Optional<BigDecimal> vatValue,
-        Set<Vat> vats) {
+                BigDecimal subTotal,
+                BigDecimal netTotal,
+                Optional<BigDecimal> total,
+                Optional<BigDecimal> vatValue,
+                Set<Vat> vats) {
 }
