@@ -56,20 +56,21 @@ import de.hs_esslingen.besy.repositories.SupplierRepository;
 import de.hs_esslingen.besy.services.OrderService;
 
 /**
- * GOLDEN / SNAPSHOT TEST — Sicherheitsnetz für das PDF-Refactoring.
+ * GOLDEN / SNAPSHOT TEST — Safety net for PDF refactoring.
  *
- * Rendert fixe Fixture-Bestellungen und vergleicht ALLE AcroForm-Feldwerte des
- * erzeugten PDFs gegen einen eingecheckten Snapshot. Der Test muss durch jeden
- * Refactoring-Schritt grün bleiben (reines Refactoring => identische
- * Feldwerte).
+ * Renders fixed fixture orders and compares ALL AcroForm field values in the
+ * generated PDF against a checked-in snapshot. The test must remain green
+ * through every
+ * refactoring step (pure refactoring => identical
+ * field values).
  *
- * Er friert bewusst auch aktuelles FEHLVERHALTEN ein (Locale-Formatierung,
- * " " bei fehlender Adresse, identitätsbasiertes Vat-Set). Erst wenn ein
- * Verhalten absichtlich korrigiert wird, den Snapshot neu erzeugen:
+ * It also intentionally preserves current BUGGY BEHAVIOR (locale formatting,
+ * “ ” for missing addresses, identity-based VAT settings). Only when a
+ * behavior is intentionally corrected should you regenerate the snapshot:
  *
  * mvn test -Dtest=OrderPdfGoldenTest -Dpdf.golden.update=true
  *
- * und den Diff VOR dem Commit reviewen.
+ * and review the diff BEFORE committing.
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -104,18 +105,18 @@ class OrderPdfGoldenTest {
 
         OrderPdfProperties properties = OrderPdfProperties.defaults();
 
-        service = new OrderPDFService(
+        service = new OrderPDFService(new OrderPdfGenerator(
                 dataLoader,
                 orderService,
                 properties,
                 new PdfTemplateLoader(properties),
-                new OrderPdfFormWriter(Locale.GERMANY, properties));
+                new OrderPdfFormWriter(Locale.GERMANY, properties)));
     }
 
-    // ------------------------------------------------------------------- Testfälle
+    // ------------------------------------------------------------------- Tests
 
     @Test
-    @DisplayName("golden: vollständige Bestellung, ein MwSt-Satz (geteilte Vat-Instanz), 10% Rabatt, 2 Angebote")
+    @DisplayName("golden: complete order, one VAT rate (split VAT), 10% discount, 2 offers")
     void goldenSingleVat() throws IOException {
         Fixture f = Fixture.completeSingleVat();
         stub(f);
@@ -124,7 +125,7 @@ class OrderPdfGoldenTest {
     }
 
     @Test
-    @DisplayName("golden: gemischte MwSt-Sätze -> Bemerkungs-Zweig")
+    @DisplayName("golden: mixed VAT rates -> comment branch")
     void goldenMixedVat() throws IOException {
         Fixture f = Fixture.mixedVat();
         stub(f);
@@ -133,7 +134,7 @@ class OrderPdfGoldenTest {
     }
 
     @Test
-    @DisplayName("golden: brutto-Preis + Kundennummer + langer Text (Zeilenumbruch-Logik)")
+    @DisplayName("golden: gross price + customer number + long text (line break logic)")
     void goldenGrossAndWrapping() throws IOException {
         Fixture f = Fixture.grossPriceAndWrapping();
         stub(f);
@@ -142,7 +143,7 @@ class OrderPdfGoldenTest {
     }
 
     @Test
-    @DisplayName("golden: minimale Bestellung (kein Lieferant, keine Personen, keine Adressen, keine Positionen)")
+    @DisplayName("golden: minimum order (no suppliers, no people, no addresses, no items)")
     void goldenMinimal() throws IOException {
         Fixture f = Fixture.minimal();
         stub(f);
@@ -151,18 +152,18 @@ class OrderPdfGoldenTest {
     }
 
     @Test
-    @DisplayName("dokumentiert den Vat-equals-Bug: zwei Vat-Instanzen mit 19% gelten als unterschiedlich")
+    @DisplayName("Documents the VAT-equals bug: two VAT instances set to 19% are considered different")
     void goldenDuplicateVatInstances() throws IOException {
         Fixture f = Fixture.duplicateVatInstances();
         stub(f);
 
         Map<String, String> fields = renderAndExtractFields(f.orderId());
 
-        // Erwartet (Ist-Verhalten!): Bemerkung enthält den "unterschiedliche
-        // MwSt"-Hinweis,
-        // obwohl beide Positionen 19% haben.
+        // Expected (Actual behavior!): The note contains the "different
+        // VAT" message,
+        // even though both items have a 19% VAT rate.
         assertThat(fields.get("Formular1[0].#subform[0].Body[0].Textfeld1[1]"))
-                .as("Vat ohne equals/hashCode => Set-Größe 2 => falscher Zweig")
+                .as("Vat without equals/hashCode => Set size 2 => wrong branch")
                 .contains("Unterschiedlichen Mehrwertsteuersätze");
 
         assertMatchesGolden("order-duplicate-vat-instances.snapshot", fields);
@@ -188,8 +189,8 @@ class OrderPdfGoldenTest {
     }
 
     /**
-     * Erzeugt das PDF und liefert eine deterministische, sortierte Sicht auf alle
-     * Formularfelder.
+     * Generates the PDF and provides a deterministic, sorted view of all
+     * form fields.
      */
     private Map<String, String> renderAndExtractFields(Long orderId) throws IOException {
         byte[] pdf = service.generateOrderPDF(orderId);
@@ -197,8 +198,8 @@ class OrderPdfGoldenTest {
 
         try (PDDocument doc = Loader.loadPDF(pdf)) {
             PDAcroForm form = doc.getDocumentCatalog().getAcroForm();
-            assertThat(form).as("erzeugtes PDF muss weiterhin ein AcroForm enthalten").isNotNull();
-            assertThat(form.getXFA()).as("XFA muss entfernt sein").isNull();
+            assertThat(form).as("generated PDF must still contain an AcroForm").isNotNull();
+            assertThat(form.getXFA()).as("XFA must be removed").isNull();
 
             Map<String, String> fields = new TreeMap<>();
             for (PDField field : form.getFieldTree()) {
@@ -207,7 +208,7 @@ class OrderPdfGoldenTest {
                 }
                 fields.put(field.getFullyQualifiedName(), nullSafe(field.getValueAsString()));
             }
-            assertThat(fields).as("Template sollte Formularfelder liefern").isNotEmpty();
+            assertThat(fields).as("The template should provide form fields").isNotEmpty();
             return fields;
         }
     }
@@ -219,15 +220,15 @@ class OrderPdfGoldenTest {
             Path target = Path.of("src", "test", "resources", GOLDEN_DIR, name);
             Files.createDirectories(target.getParent());
             Files.writeString(target, serialized, StandardCharsets.UTF_8);
-            throw new AssertionError("Golden-File neu erzeugt: " + target
-                    + " — Diff reviewen, dann ohne -Dpdf.golden.update erneut laufen lassen.");
+            throw new AssertionError("Golden file regenerated: " + target
+                    + " — Review the diff, then run it again without -Dpdf.golden.update.");
         }
 
         String expected = readGolden(name, serialized);
         if (!expected.equals(serialized)) {
             Path dump = writeActual(name, serialized);
             assertThat(serialized)
-                    .as("PDF-Feldwerte haben sich geändert (Ist-Stand geschrieben nach %s)", dump)
+                    .as("PDF field values have changed (current status as of %s)", dump)
                     .isEqualTo(expected);
         }
     }
@@ -236,9 +237,9 @@ class OrderPdfGoldenTest {
         try (InputStream in = getClass().getClassLoader().getResourceAsStream(GOLDEN_DIR + name)) {
             if (in == null) {
                 Path dump = writeActual(name, actualForBootstrap);
-                throw new AssertionError("Golden-File fehlt: 'src/test/resources/" + GOLDEN_DIR + name
-                        + "'. Aktuelle Ausgabe liegt in " + dump
-                        + " — manuell prüfen und übernehmen (oder -Dpdf.golden.update=true nutzen).");
+                throw new AssertionError("Golden file missing: 'src/test/resources/" + GOLDEN_DIR + name
+                        + "'. The current output is located in " + dump
+                        + " — check it manually and apply it (or use -Dpdf.golden.update=true).");
             }
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
@@ -252,8 +253,8 @@ class OrderPdfGoldenTest {
     }
 
     /**
-     * Eine Zeile pro Feld; Zeilenumbrüche escaped, damit der Snapshot
-     * diff-freundlich bleibt.
+     * One line per field; line breaks are escaped so that the snapshot
+     * remains diff-friendly.
      */
     private static String serialize(Map<String, String> fields) {
         StringBuilder sb = new StringBuilder();
@@ -275,7 +276,7 @@ class OrderPdfGoldenTest {
         Supplier supplier;
         Person deliveryPerson;
         Person invoicePerson;
-        List<Item> items = new ArrayList<>(); // MUTABLE: setItems() sortiert die Liste
+        List<Item> items = new ArrayList<>(); // MUTABLE: setItems() sorts in place
         List<Quotation> quotations = new ArrayList<>();
         String orderNumber = "IT_26_CC-1_7";
 
@@ -297,8 +298,8 @@ class OrderPdfGoldenTest {
             f.order.setPercentageDiscount(new BigDecimal("10.00"));
             f.order.setCommentForSupplier("Bitte Lieferschein beilegen.");
 
-            // WICHTIG: eine gemeinsame Vat-Instanz => Set<Vat>.size() == 1 =>
-            // Single-VAT-Zweig
+            // IMPORTANT: a single VAT instance => Set<Vat>.size() == 1 =>
+            // Single-VAT branch
             Vat vat19 = vat("19.00");
             f.items.add(item(100L, 1, "Laptop 14 Zoll", "1200.00", 2L, vat19, VatType.netto));
             f.items.add(item(100L, 2, "Dockingstation", "200.00", 1L, vat19, VatType.netto));
@@ -319,7 +320,7 @@ class OrderPdfGoldenTest {
             f.order = baseOrder(101L);
             f.order.setPercentageDiscount(BigDecimal.ZERO);
             f.order.setCommentForSupplier("Nur ein Satz erwartet.");
-            // zwei SEPARATE Instanzen mit gleichem Wert -> identitätsbasiertes Set
+            // two SEPARATE instances with the same value -> identity-based set
             f.items.add(item(101L, 1, "Maus", "20.00", 1L, vat("19.00"), VatType.netto));
             f.items.add(item(101L, 2, "Tastatur", "30.00", 1L, vat("19.00"), VatType.netto));
             return f;
@@ -363,14 +364,14 @@ class OrderPdfGoldenTest {
             return f;
         }
 
-        // --- Bausteine -------------------------------------------------------
+        // --- Building Blocks -------------------------------------------------------
 
         private static Order baseOrder(long id) {
             Order o = new Order();
             o.setId(id);
             o.setContentDescription("Golden Test Order");
             o.setStatus(OrderStatus.IN_PROGRESS);
-            // fixer Zeitstempel -> deterministisches "Datum"-Feld
+            // Fixed timestamp -> deterministic “Date” field
             o.setCreatedDate(LocalDateTime.of(2026, 1, 15, 10, 30, 0));
             o.setBookingYear("26");
             o.setAutoIndex((short) 7);
@@ -387,7 +388,7 @@ class OrderPdfGoldenTest {
             o.setDecisionOtherReasonsDescription("Rahmenvertrag Hochschule");
             o.setDeliveryAddress(address("Flandernstraße", "101", "73732", "Esslingen"));
             o.setInvoiceAddress(address("Kanalstraße", "33", "73728", "Esslingen"));
-            o.setApproval(approval()); // Pflicht: setApprovalFlags prüft nicht auf null
+            o.setApproval(approval()); // Required: setApprovalFlags does not check for null
             return o;
         }
 
@@ -460,7 +461,7 @@ class OrderPdfGoldenTest {
         private static Quotation quotation(Long orderId, short index, String company,
                 String price, LocalDate date) {
             Quotation q = new Quotation();
-            q.setId(new QuotationId(orderId, index)); // Pflicht: getIndex() liest aus der ID
+            q.setId(new QuotationId(orderId, index)); // Required: getIndex() reads from the ID
             q.setCompanyName(company);
             q.setCompanyCity("Stuttgart");
             q.setPrice(new BigDecimal(price));
