@@ -1,7 +1,9 @@
 package de.hs_esslingen.besy.exceptions;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
@@ -10,16 +12,18 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<Map<String, Object>> handleNotFoundException(NotFoundException ex, HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> handleNotFoundException(NotFoundException ex,
+            HttpServletRequest request) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", Instant.now());
         body.put("status", HttpStatus.NOT_FOUND.value());
@@ -30,9 +34,32 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
+    /**
+     * Missing PDF template = server-side configuration/deployment fault, so 500
+     * (not 404 — the order itself exists). The technical location is logged, not
+     * returned to the client.
+     */
+    @ExceptionHandler(PdfTemplateNotFoundException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<Map<String, Object>> handlePdfTemplateNotFoundException(
+            PdfTemplateNotFoundException ex, HttpServletRequest request) {
+        log.error("PDF-Vorlage nicht gefunden: {}", ex.getLocation(), ex);
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", Instant.now());
+        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        body.put("error", "Internal Server Error");
+        body.put("message",
+                "Die PDF-Vorlage für die Bestellung konnte nicht geladen werden. Wenden Sie sich bitte an die Administration.");
+        body.put("path", request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+    }
+
     @ExceptionHandler(NotAuthorizedException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseEntity<Map<String, Object>> handleNotAuthorizedException(NotAuthorizedException ex, HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> handleNotAuthorizedException(NotAuthorizedException ex,
+            HttpServletRequest request) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", Instant.now());
         body.put("status", HttpStatus.UNAUTHORIZED.value());
@@ -53,7 +80,6 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
-
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConstraintViolationException(ConstraintViolationException ex) {
@@ -85,7 +111,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
 
-
     @ExceptionHandler(EntityAlreadyExistsException.class)
     public ResponseEntity<Map<String, Object>> handleEntityAlreadyExists(EntityAlreadyExistsException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
@@ -97,7 +122,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
 
-
     @ExceptionHandler(PropertyReferenceException.class)
     public ResponseEntity<Map<String, Object>> handlePropertyReferenceException(PropertyReferenceException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
@@ -108,7 +132,6 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
-
 
     private Throwable getRootCause(Throwable ex) {
         Throwable cause = ex.getCause();

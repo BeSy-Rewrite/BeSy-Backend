@@ -1,6 +1,5 @@
 package de.hs_esslingen.besy.pdf;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -9,6 +8,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
+import de.hs_esslingen.besy.exceptions.PdfTemplateNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -18,8 +18,9 @@ import lombok.RequiredArgsConstructor;
  *
  * <p>
  * The caller owns the returned document and must close it. The
- * FileNotFoundException message is unchanged; a later step replaces it with
- * PdfTemplateNotFoundException.
+ * {@link PdfTemplateNotFoundException} is a {@code FileNotFoundException}
+ * subclass and carries the same message as before, so the signature and the
+ * observable failure stay unchanged.
  */
 @Component
 @RequiredArgsConstructor
@@ -31,7 +32,7 @@ public class PdfTemplateLoader {
         String location = properties.getTemplateLocation();
         ClassPathResource resource = new ClassPathResource(location);
         if (!resource.exists()) {
-            throw new FileNotFoundException("Order PDF template not found at classpath: " + location);
+            throw new PdfTemplateNotFoundException(location);
         }
         try (InputStream pdfStream = resource.getInputStream()) {
             return Loader.loadPDF(pdfStream.readAllBytes());
