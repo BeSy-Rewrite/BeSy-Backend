@@ -12,26 +12,27 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 public class PDFQuotation {
     Integer index;
     PDField companyName;
     PDField date;
     PDField price;
+    private final PdfSafeFieldWriter fieldWriter;
 
     public void setIndex(Integer index) throws IOException {
         this.index = index;
     }
 
     public void setCompanyName(String companyName) throws IOException {
-        this.companyName.setValue(companyName);
+        fieldWriter.setValue(this.companyName, companyName);
     }
 
     public void setDate(String date) throws IOException {
-        this.date.setValue(date);
+        fieldWriter.setValue(this.date, date);
     }
 
     public void setPrice(String price) throws IOException {
-        this.price.setValue(price);
+        fieldWriter.setValue(this.price, price);
     }
 }

@@ -16,18 +16,19 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
-import org.slf4j.Logger;
 
 import de.hs_esslingen.besy.enums.VatType;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
 import de.hs_esslingen.besy.models.Item;
 import de.hs_esslingen.besy.models.Quotation;
 import de.hs_esslingen.besy.services.PriceConversionService;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class PDFOrder {
     public static final int AMOUNT_ITEM_LINES = 15;
 
-    private static final Logger logger = org.slf4j.LoggerFactory.getLogger(PDFOrder.class);
+    private PdfSafeFieldWriter fieldWriter;
 
     // nach VOB (Bau-/Montageleistung)
     private PDCheckBox constructionAndAssemblyFlag;
@@ -163,6 +164,8 @@ public class PDFOrder {
     private PDCheckBox orderFlagMediaPermission;
 
     public PDFOrder parseOrder(PDAcroForm acroForm) {
+        fieldWriter = new PdfSafeFieldWriter(acroForm);
+
         constructionAndAssemblyFlag = (PDCheckBox) acroForm
                 .getField("Formular1[0].#subform[0].Header[0].Kontrollkästchen1[0]");
         deliveryAndServiceFlag = (PDCheckBox) acroForm.getField("Formular1[0].#subform[0].Kontrollkästchen1[1]");
@@ -191,7 +194,8 @@ public class PDFOrder {
                             .getField(String.format("Formular1[0].#subform[0].Body[0].Beschreibung[%d]", i)),
                     acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Menge[%d]", i)),
                     acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Stückpreis[%d]", i)),
-                    acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Betrag[%d]", i)));
+                    acroForm.getField(String.format("Formular1[0].#subform[0].Body[0].Betrag[%d]", i)),
+                    fieldWriter);
             items.add(article);
         }
         itemDescription = (PDTextField) acroForm.getField("Formular1[0].#subform[0].Body[0].Beschreibung[0]");
@@ -212,7 +216,8 @@ public class PDFOrder {
                     i + 1, // Index
                     acroForm.getField(String.format("Formular1[0].#subform[1].Textfeld7[%d]", i)),
                     acroForm.getField(String.format("Formular1[0].#subform[1].DateField3[%d]", i)),
-                    acroForm.getField(String.format("Formular1[0].#subform[1].Dezimalfeld1[%d]", i)));
+                    acroForm.getField(String.format("Formular1[0].#subform[1].Dezimalfeld1[%d]", i)),
+                    fieldWriter);
             quotations.add(quotation);
         }
 
@@ -290,7 +295,7 @@ public class PDFOrder {
     }
 
     public void setCompanyAddress(String address) throws IOException {
-        this.companyAddress.setValue(address != null ? address : "");
+        fieldWriter.setValue(this.companyAddress, address);
     }
 
     public void setSupplierName(String supplierName) throws IOException {
@@ -298,59 +303,59 @@ public class PDFOrder {
     }
 
     public void setInvoiceId(String invoiceId) throws IOException {
-        this.invoiceId.setValue(invoiceId != null ? invoiceId : "");
+        fieldWriter.setValue(this.invoiceId, invoiceId);
     }
 
     public void setDate(String date) throws IOException {
-        this.date.setValue(date != null ? date : "");
+        fieldWriter.setValue(this.date, date);
     }
 
     public void setOrderer(String orderer) throws IOException {
-        this.orderer.setValue(orderer != null ? orderer : "");
+        fieldWriter.setValue(this.orderer, orderer);
     }
 
     public void setPhone(String phone) throws IOException {
-        this.phone.setValue(phone != null ? phone : "");
+        fieldWriter.setValue(this.phone, phone);
     }
 
     public void setMobilePhone(String mobilePhone) throws IOException {
-        this.mobilePhone.setValue(mobilePhone != null ? mobilePhone : "");
+        fieldWriter.setValue(this.mobilePhone, mobilePhone);
     }
 
     public void setEmail(String email) throws IOException {
-        this.email.setValue(email != null ? email : "");
+        fieldWriter.setValue(this.email, email);
     }
 
     public void setDeliveryFaculty(String deliveryFaculty) throws IOException {
-        this.deliveryFaculty.setValue(deliveryFaculty != null ? deliveryFaculty : "");
+        fieldWriter.setValue(this.deliveryFaculty, deliveryFaculty);
     }
 
     public void setDeliveryOrderer(String deliveryOrderer) throws IOException {
-        this.deliveryOrderer.setValue(deliveryOrderer != null ? deliveryOrderer : "");
+        fieldWriter.setValue(this.deliveryOrderer, deliveryOrderer);
     }
 
     public void setDeliveryStreet(String deliveryStreet) throws IOException {
-        this.deliveryStreet.setValue(deliveryStreet != null ? deliveryStreet : "");
+        fieldWriter.setValue(this.deliveryStreet, deliveryStreet);
     }
 
     public void setDeliveryAddress(String deliveryAddress) throws IOException {
-        this.deliveryAddress.setValue(deliveryAddress != null ? deliveryAddress : "");
+        fieldWriter.setValue(this.deliveryAddress, deliveryAddress);
     }
 
     public void setInvoiceFaculty(String invoiceFaculty) throws IOException {
-        this.invoiceFaculty.setValue(invoiceFaculty != null ? invoiceFaculty : "");
+        fieldWriter.setValue(this.invoiceFaculty, invoiceFaculty);
     }
 
     public void setInvoiceOrderer(String invoiceOrderer) throws IOException {
-        this.invoiceOrderer.setValue(invoiceOrderer != null ? invoiceOrderer : "");
+        fieldWriter.setValue(this.invoiceOrderer, invoiceOrderer);
     }
 
     public void setInvoiceStreet(String invoiceStreet) throws IOException {
-        this.invoiceStreet.setValue(invoiceStreet != null ? invoiceStreet : "");
+        fieldWriter.setValue(this.invoiceStreet, invoiceStreet);
     }
 
     public void setInvoiceDeliveryAddress(String invoiceDeliveryAddress) throws IOException {
-        this.invoiceDeliveryAddress.setValue(invoiceDeliveryAddress != null ? invoiceDeliveryAddress : "");
+        fieldWriter.setValue(this.invoiceDeliveryAddress, invoiceDeliveryAddress);
     }
 
     /**
@@ -439,7 +444,7 @@ public class PDFOrder {
                     }
                 }
             } catch (IOException e) {
-                logger.error("Error measuring item description width for item ID {}: {}", item.getId().getItemId(),
+                log.error("Error measuring item description width for item ID {}: {}", item.getId().getItemId(),
                         e.getMessage());
                 wrappedItems.add(item);
             }
@@ -496,7 +501,7 @@ public class PDFOrder {
                 remainingDescription = remainingDescription.substring(fitLength).trim();
             }
         } catch (IOException e) {
-            logger.error("Error wrapping item description for item ID {}: {}", item.getId().getItemId(),
+            log.error("Error wrapping item description for item ID {}: {}", item.getId().getItemId(),
                     e.getMessage());
             wrappedItems.add(item);
         }
@@ -550,15 +555,15 @@ public class PDFOrder {
     }
 
     public void setSubTotal(String subTotal) throws IOException {
-        this.subTotal.setValue(subTotal != null ? subTotal : "");
+        fieldWriter.setValue(this.subTotal, subTotal);
     }
 
     public void setNetTotal(String netTotal) throws IOException {
-        this.netTotal.setValue(netTotal != null ? netTotal : "");
+        fieldWriter.setValue(this.netTotal, netTotal);
     }
 
     public void setTotal(String total) throws IOException {
-        this.total.setValue(total != null ? total : "");
+        fieldWriter.setValue(this.total, total);
     }
 
     /**
@@ -597,39 +602,39 @@ public class PDFOrder {
     }
 
     public void setPercentageDiscount(String percentageDiscount) throws IOException {
-        this.percentageDiscount.setValue(percentageDiscount != null ? percentageDiscount : "");
+        fieldWriter.setValue(this.percentageDiscount, percentageDiscount);
     }
 
     public void setVat(String vat) throws IOException {
-        this.vat.setValue(vat != null ? vat : "");
+        fieldWriter.setValue(this.vat, vat);
     }
 
     public void setCommentForSupplier(String commentForSupplier) throws IOException {
-        this.commentForSupplier.setValue(commentForSupplier != null ? commentForSupplier : "");
+        fieldWriter.setValue(this.commentForSupplier, commentForSupplier);
     }
 
     public void setCostCenter(String costCenter) throws IOException {
-        this.costCenter.setValue(costCenter != null ? costCenter : "");
+        fieldWriter.setValue(this.costCenter, costCenter);
     }
 
     public void setCostCenterSecondary(String costCenterSecondary) throws IOException {
-        this.costCenterSecondary.setValue(costCenterSecondary != null ? costCenterSecondary : "");
+        fieldWriter.setValue(this.costCenterSecondary, costCenterSecondary);
     }
 
     public void setDfgKey(String dfgKey) throws IOException {
-        this.dfgKey.setValue(dfgKey != null ? dfgKey : "");
+        fieldWriter.setValue(this.dfgKey, dfgKey);
     }
 
     public void setOrderNumber(String orderNumber) throws IOException {
-        this.orderNumber.setValue(orderNumber != null ? orderNumber : "");
+        fieldWriter.setValue(this.orderNumber, orderNumber);
     }
 
     public void setSupplierEmail(String supplierEmail) throws IOException {
-        this.supplierEmail.setValue(supplierEmail != null ? supplierEmail : "");
+        fieldWriter.setValue(this.supplierEmail, supplierEmail);
     }
 
     public void setLfdNr(String lfdNr) throws IOException {
-        this.lfdNr.setValue(lfdNr != null ? lfdNr : "");
+        fieldWriter.setValue(this.lfdNr, lfdNr);
     }
 
     public void setFlagDecisionCheapestOffer(Boolean flag) throws IOException {
@@ -681,7 +686,7 @@ public class PDFOrder {
     }
 
     public void setFlagDecisionOtherReasonsDescription(String description) throws IOException {
-        this.flagDecisionOtherReasonsDescription.setValue(description != null ? description : "");
+        fieldWriter.setValue(this.flagDecisionOtherReasonsDescription, description);
     }
 
     public void setOrderFlagEdvPermission(Boolean flag) throws IOException {
