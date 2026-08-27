@@ -23,9 +23,9 @@ import lombok.RequiredArgsConstructor;
  * <p>
  * Pure sink: no repository access, no PDDocument handling, no calculation.
  * The write sequence is intentionally identical to the previous inline code in
- * {@link OrderPDFService}, because a few {@link PDFOrder} setters have side
- * effects on the first quotation row ({@code setDate}, {@code setSupplierName},
- * {@code setNetTotal}).
+ * {@link OrderPDFService}. The supplier quotation row (row 0) is written
+ * explicitly via {@link PDFOrder#setSupplierQuotationRow(String, String, String)}
+ * once all three values (supplier name, date, net total) are known.
  */
 @Component
 @RequiredArgsConstructor
