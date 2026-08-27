@@ -302,9 +302,7 @@ public class PDFOrder {
     }
 
     public void setDate(String date) throws IOException {
-        String dateValue = date != null ? date : "";
-        this.date.setValue(dateValue);
-        quotations.get(0).setDate(dateValue);
+        this.date.setValue(date != null ? date : "");
     }
 
     public void setOrderer(String orderer) throws IOException {
@@ -543,9 +541,7 @@ public class PDFOrder {
     }
 
     public void setNetTotal(String netTotal) throws IOException {
-        String netTotalValue = netTotal != null ? netTotal : "";
-        this.netTotal.setValue(netTotalValue);
-        quotations.get(0).setPrice(netTotalValue);
+        this.netTotal.setValue(netTotal != null ? netTotal : "");
     }
 
     public void setTotal(String total) throws IOException {
@@ -555,7 +551,7 @@ public class PDFOrder {
     /**
      * Prices and dates are now routed through {@link PdfValueFormatter},
      * consistent with row 0 (which the writer feeds pre-formatted strings via
-     * {@code setSupplierName}/{@code setDate}/{@code setNetTotal}).
+     * {@link #setSupplierQuotationRow(String, String, String)}).
      */
     public void setQuotations(List<Quotation> items, Locale locale) throws IOException {
         // We only have 3 quotation fields in the PDF, so we can only set up to 2
@@ -569,6 +565,22 @@ public class PDFOrder {
             pdfQuotation.setCompanyName(quotation.getCompanyName());
             pdfQuotation.setDate(PdfValueFormatter.formatDate(quotation.getQuoteDate(), locale));
         }
+    }
+
+    /**
+     * Writes the supplier's own quotation row (row 0) explicitly.
+     * Previously this row was populated as a hidden side effect of
+     * {@code setDate}, {@code setSupplierName} and {@code setNetTotal} — each
+     * of which appeared to target an unrelated, single field but silently
+     * also wrote into {@code quotations.get(0)}. Row 0 represents the
+     * supplier's own quotation, alongside up to two competing quotations
+     * written by {@link #setQuotations(List, Locale)} (rows 1-2).
+     */
+    public void setSupplierQuotationRow(String companyName, String date, String netTotal) throws IOException {
+        PDFQuotation supplierQuotation = this.quotations.get(0);
+        supplierQuotation.setCompanyName(companyName != null ? companyName : "");
+        supplierQuotation.setDate(date != null ? date : "");
+        supplierQuotation.setPrice(netTotal != null ? netTotal : "");
     }
 
     public void setPercentageDiscount(String percentageDiscount) throws IOException {

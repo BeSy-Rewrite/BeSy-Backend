@@ -44,12 +44,13 @@ public class OrderPdfFormWriter {
         // nach VOL/UVgO (Liefer-/Dienstleistung)
         order.setDeliveryAndServiceFlag(true);
 
-        writeSupplier(order, data.supplier());
+        String supplierName = writeSupplier(order, data.supplier());
 
         // Bestell-Nr.
         order.setOrderNumber(orderNumber);
 
-        order.setDate(PdfValueFormatter.formatDate(orderDAO.getCreatedDate(), locale));
+        String formattedDate = PdfValueFormatter.formatDate(orderDAO.getCreatedDate(), locale);
+        order.setDate(formattedDate);
 
         writeQueriesPerson(order, data.queriesPerson());
 
@@ -62,11 +63,17 @@ public class OrderPdfFormWriter {
         try {
             order.setItems(data.items());
         } catch (BadRequestException e) {
-            throw new BadRequestException("Error while mapping order items for PDF generation: " + e.getMessage());
+            throw new BadRequestException("Error while mapping order items for PDF generation: " + e.getMessage(), e);
         }
 
         order.setSubTotal(PdfValueFormatter.formatCurrency(totals.subTotal()));
-        order.setNetTotal(PdfValueFormatter.formatCurrency(totals.netTotal()));
+        String formattedNetTotal = PdfValueFormatter.formatCurrency(totals.netTotal());
+        order.setNetTotal(formattedNetTotal);
+
+        // The supplier's quotation row is now written explicitly in one
+        // place, once all three of its values are known, instead of as a
+        // side effect of setDate/setSupplierName/setNetTotal.
+        order.setSupplierQuotationRow(supplierName, formattedDate, formattedNetTotal);
 
         order.setCommentForSupplier(writeTotalsAndBuildComment(order, orderDAO, totals));
 
@@ -153,17 +160,17 @@ public class OrderPdfFormWriter {
     }
 
     /**
-     * Always writes every supplier-related field, explicitly {@code ""}
-     * when there is no supplier — never leaves stale template state in
-     * {@code Textfeld1[0]}/{@code Firma[3]} (or the row-0 quotation company
-     * name written via {@code setSupplierName}).
+     * Writes the supplier's address/email fields, explicitly {@code ""} when
+     * there is no supplier — never leaves stale template state in
+     * {@code Textfeld1[0]}/{@code Firma[3]}. Returns the supplier's name (or
+     * {@code ""} if absent) for {@link PDFOrder#setSupplierQuotationRow},
+     * which writes it into quotation row 0 (Q7).
      */
-    private void writeSupplier(PDFOrder order, Optional<Supplier> supplierOpt) throws IOException {
+    private String writeSupplier(PDFOrder order, Optional<Supplier> supplierOpt) throws IOException {
         if (supplierOpt.isEmpty()) {
             order.setCompanyAddress("");
-            order.setSupplierName("");
             order.setSupplierEmail("");
-            return;
+            return "";
         }
 
         Supplier supplier = supplierOpt.get();
@@ -177,9 +184,9 @@ public class OrderPdfFormWriter {
                 joinNonBlank(getStreet(supplierAddress), getBuildingNumber(supplierAddress)),
                 formatPostalAndTown(supplierAddress)).trim();
         order.setCompanyAddress(supplierAddressString);
-        order.setSupplierName(supplier.getName());
         // Fax-Nr./E-Mail:
         order.setSupplierEmail(supplier.getEmail());
+        return supplier.getName();
     }
 
     private void writeDecisionFlags(PDFOrder order, Order orderDAO) throws IOException {
