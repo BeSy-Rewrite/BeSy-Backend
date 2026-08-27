@@ -1,5 +1,7 @@
 package de.hs_esslingen.besy.pdf;
 
+import java.math.BigDecimal;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -17,10 +19,6 @@ import lombok.Setter;
  * on
  * the properties file charset. Override via {@code besy.pdf.order.*} only if a
  * snapshot update is intended.
- *
- * <p>
- * {@code defaultVatRate} stays a String because the calculator still parses it
- * via {@code Double.parseDouble} — frozen until a later step.
  */
 @Component
 @ConfigurationProperties(prefix = "besy.pdf.order")
@@ -46,7 +44,12 @@ public class OrderPdfProperties {
 
     private String defaultLfdNr = "1";
 
-    private String defaultVatRate = "19";
+    /**
+     * Fallback VAT rate used when an order has no items with a VAT rate at
+     * all. A {@code BigDecimal} now — no more string-parsing detour in
+     * the calculator.
+     */
+    private BigDecimal defaultVatRate = new BigDecimal("19");
 
     /**
      * Production defaults, for tests that construct the service without a Spring

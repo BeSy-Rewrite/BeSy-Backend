@@ -25,7 +25,7 @@ public final class OrderPdfCalculator {
         public static OrderPdfTotals calculate(
                         List<Item> items,
                         BigDecimal percentageDiscount,
-                        String defaultVatValue) {
+                        BigDecimal defaultVatValue) {
 
                 BigDecimal discount = percentageDiscount != null ? percentageDiscount : BigDecimal.ZERO;
 
@@ -50,7 +50,7 @@ public final class OrderPdfCalculator {
                         BigDecimal vatValue = vats.stream()
                                         .map(Vat::getValue)
                                         .findFirst()
-                                        .orElse(BigDecimal.valueOf(Double.parseDouble(defaultVatValue)));
+                                        .orElse(defaultVatValue);
 
                         BigDecimal total = netTotal.multiply(
                                         (BigDecimal.valueOf(100).add(vatValue)).divide(BigDecimal.valueOf(100)))
