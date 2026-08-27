@@ -7,6 +7,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
@@ -551,7 +552,12 @@ public class PDFOrder {
         this.total.setValue(total != null ? total : "");
     }
 
-    public void setQuotations(List<Quotation> items) throws IOException {
+    /**
+     * Prices and dates are now routed through {@link PdfValueFormatter},
+     * consistent with row 0 (which the writer feeds pre-formatted strings via
+     * {@code setSupplierName}/{@code setDate}/{@code setNetTotal}).
+     */
+    public void setQuotations(List<Quotation> items, Locale locale) throws IOException {
         // We only have 3 quotation fields in the PDF, so we can only set up to 2
         // quotations as the first one is used for the main supplier info
         int maxQuotations = Math.min(items.size(), this.quotations.size() - 1);
@@ -559,9 +565,9 @@ public class PDFOrder {
             Quotation quotation = items.get(i);
             PDFQuotation pdfQuotation = this.quotations.get(i + 1);
             pdfQuotation.setIndex(Integer.valueOf(quotation.getIndex()));
-            pdfQuotation.setPrice(String.valueOf(quotation.getPrice()));
+            pdfQuotation.setPrice(PdfValueFormatter.formatCurrency(quotation.getPrice()));
             pdfQuotation.setCompanyName(quotation.getCompanyName());
-            pdfQuotation.setDate(String.valueOf(quotation.getQuoteDate()));
+            pdfQuotation.setDate(PdfValueFormatter.formatDate(quotation.getQuoteDate(), locale));
         }
     }
 

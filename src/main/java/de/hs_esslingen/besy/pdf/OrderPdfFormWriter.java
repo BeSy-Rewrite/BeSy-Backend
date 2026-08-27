@@ -84,7 +84,7 @@ public class OrderPdfFormWriter {
         order.setCostCenterSecondary(orderDAO.getSecondaryCostCenterId());
         order.setDfgKey(orderDAO.getDfgKey());
 
-        order.setQuotations(data.quotations());
+        order.setQuotations(data.quotations(), locale);
 
         order.setLfdNr(properties.getDefaultLfdNr());
 
