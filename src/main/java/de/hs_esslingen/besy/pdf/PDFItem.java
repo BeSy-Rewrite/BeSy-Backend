@@ -18,24 +18,25 @@ public class PDFItem {
     PDField quantity;
     PDField price;
     PDField amount;
+    private final PdfSafeFieldWriter fieldWriter;
 
     public void setPosition(String pos) throws IOException {
-        this.position.setValue(pos);
+        fieldWriter.setValue(this.position, pos);
     }
 
     public void setDescription(String desc) throws IOException {
-        this.description.setValue(desc);
+        fieldWriter.setValue(this.description, desc);
     }
 
     public void setQuantity(String quantity) throws IOException {
-        this.quantity.setValue(quantity);
+        fieldWriter.setValue(this.quantity, quantity);
     }
 
     public void setPrice(String price) throws IOException {
-        this.price.setValue(price);
+        fieldWriter.setValue(this.price, price);
     }
 
     public void setAmount(String amount) throws IOException {
-        this.amount.setValue(amount);
+        fieldWriter.setValue(this.amount, amount);
     }
 }
