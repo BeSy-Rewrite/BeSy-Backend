@@ -1,12 +1,13 @@
-package de.hs_esslingen.besy.interfaces;
+package de.hs_esslingen.besy.pdf;
+
+import java.io.IOException;
+
+import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.pdfbox.pdmodel.interactive.form.PDField;
-
-import java.io.IOException;
 
 @Getter
 @Setter

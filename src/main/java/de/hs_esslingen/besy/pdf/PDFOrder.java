@@ -1,4 +1,4 @@
-package de.hs_esslingen.besy.interfaces;
+package de.hs_esslingen.besy.pdf;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -7,6 +7,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
@@ -301,9 +302,7 @@ public class PDFOrder {
     }
 
     public void setDate(String date) throws IOException {
-        String dateValue = date != null ? date : "";
-        this.date.setValue(dateValue);
-        quotations.get(0).setDate(dateValue);
+        this.date.setValue(date != null ? date : "");
     }
 
     public void setOrderer(String orderer) throws IOException {
@@ -357,19 +356,31 @@ public class PDFOrder {
     /**
      * Set the items of a pdf order.
      * The PDF must have no less than {@link PDFOrder.AMOUNT_ITEM_LINES} lines.
-     * 
+     *
+     * <p>
+     * Takes a defensive copy before sorting — the caller's list is never
+     * mutated. A price/VAT combination that cannot be converted for a real
+     * (quantity &gt; 0) item is surfaced as a {@link BadRequestException}
+     * instead of silently defaulting to a net price of 0. Continuation lines
+     * produced by line-wrapping (quantity == 0) never attempt the
+     * conversion, since they carry no price by design.
+     *
      * @param items The list of items to set
      * @throws IOException
      * @throws BadRequestException if the resulting lines after wrapping
      *                             descriptions exceeds
-     *                             {@link PDFOrder.AMOUNT_ITEM_LINES}
+     *                             {@link PDFOrder.AMOUNT_ITEM_LINES}, or if a
+     *                             quantity-bearing item has an invalid
+     *                             price/VAT combination
      */
     public void setItems(List<Item> items) throws IOException {
         int amountInitialItems = items.size();
-        items.sort((o1, o2) -> Integer.compare(o1.getId().getItemId(), o2.getId().getItemId()));
-        items = wrapItemLines(items);
 
-        if (items.size() > AMOUNT_ITEM_LINES) {
+        List<Item> sortedItems = new ArrayList<>(items);
+        sortedItems.sort((o1, o2) -> Integer.compare(o1.getId().getItemId(), o2.getId().getItemId()));
+        List<Item> wrappedItems = wrapItemLines(sortedItems);
+
+        if (wrappedItems.size() > AMOUNT_ITEM_LINES) {
             if (amountInitialItems > AMOUNT_ITEM_LINES) {
                 throw new BadRequestException(
                         "Number of items must be less than or equal to " + AMOUNT_ITEM_LINES + ".");
@@ -381,26 +392,27 @@ public class PDFOrder {
 
         int itemPosition = 1;
 
-        for (int i = 0; i < items.size(); i++) {
-            Item item = items.get(i);
+        for (int i = 0; i < wrappedItems.size(); i++) {
+            Item item = wrappedItems.get(i);
             PDFItem pdfItem = this.items.get(i);
 
-            BigDecimal netPrice;
-            try {
-                netPrice = item.getVatType() == VatType.netto ? item.getPricePerUnit()
-                        : PriceConversionService.convertGrossPriceToNetPrice(item.getPricePerUnit(),
-                                item.getVat());
-            } catch (IllegalArgumentException e) {
-                netPrice = BigDecimal.ZERO;
-            }
-
             if (item.getQuantity() > 0) {
+                BigDecimal netPrice;
+                try {
+                    netPrice = item.getVatType() == VatType.netto
+                            ? item.getPricePerUnit()
+                            : PriceConversionService.convertGrossPriceToNetPrice(item.getPricePerUnit(),
+                                    item.getVat());
+                } catch (IllegalArgumentException e) {
+                    throw new BadRequestException(
+                            "Invalid price or VAT for item " + item.getId().getItemId() + ": " + e.getMessage(), e);
+                }
 
                 pdfItem.setPosition(String.valueOf(itemPosition++));
                 pdfItem.setQuantity(String.valueOf(item.getQuantity()));
-                pdfItem.setPrice((netPrice + " €").replace('.', ','));
-                pdfItem.setAmount((BigDecimal.valueOf(item.getQuantity()).multiply(netPrice) + " €")
-                        .replace('.', ','));
+                pdfItem.setPrice(PdfValueFormatter.formatCurrency(netPrice));
+                pdfItem.setAmount(PdfValueFormatter.formatCurrency(
+                        BigDecimal.valueOf(item.getQuantity()).multiply(netPrice)));
             }
             pdfItem.setDescription(item.getName());
         }
@@ -542,16 +554,19 @@ public class PDFOrder {
     }
 
     public void setNetTotal(String netTotal) throws IOException {
-        String netTotalValue = netTotal != null ? netTotal : "";
-        this.netTotal.setValue(netTotalValue);
-        quotations.get(0).setPrice(netTotalValue);
+        this.netTotal.setValue(netTotal != null ? netTotal : "");
     }
 
     public void setTotal(String total) throws IOException {
         this.total.setValue(total != null ? total : "");
     }
 
-    public void setQuotations(List<Quotation> items) throws IOException {
+    /**
+     * Prices and dates are now routed through {@link PdfValueFormatter},
+     * consistent with row 0 (which the writer feeds pre-formatted strings via
+     * {@link #setSupplierQuotationRow(String, String, String)}).
+     */
+    public void setQuotations(List<Quotation> items, Locale locale) throws IOException {
         // We only have 3 quotation fields in the PDF, so we can only set up to 2
         // quotations as the first one is used for the main supplier info
         int maxQuotations = Math.min(items.size(), this.quotations.size() - 1);
@@ -559,10 +574,26 @@ public class PDFOrder {
             Quotation quotation = items.get(i);
             PDFQuotation pdfQuotation = this.quotations.get(i + 1);
             pdfQuotation.setIndex(Integer.valueOf(quotation.getIndex()));
-            pdfQuotation.setPrice(String.valueOf(quotation.getPrice()));
+            pdfQuotation.setPrice(PdfValueFormatter.formatCurrency(quotation.getPrice()));
             pdfQuotation.setCompanyName(quotation.getCompanyName());
-            pdfQuotation.setDate(String.valueOf(quotation.getQuoteDate()));
+            pdfQuotation.setDate(PdfValueFormatter.formatDate(quotation.getQuoteDate(), locale));
         }
+    }
+
+    /**
+     * Writes the supplier's own quotation row (row 0) explicitly.
+     * Previously this row was populated as a hidden side effect of
+     * {@code setDate}, {@code setSupplierName} and {@code setNetTotal} — each
+     * of which appeared to target an unrelated, single field but silently
+     * also wrote into {@code quotations.get(0)}. Row 0 represents the
+     * supplier's own quotation, alongside up to two competing quotations
+     * written by {@link #setQuotations(List, Locale)} (rows 1-2).
+     */
+    public void setSupplierQuotationRow(String companyName, String date, String netTotal) throws IOException {
+        PDFQuotation supplierQuotation = this.quotations.get(0);
+        supplierQuotation.setCompanyName(companyName != null ? companyName : "");
+        supplierQuotation.setDate(date != null ? date : "");
+        supplierQuotation.setPrice(netTotal != null ? netTotal : "");
     }
 
     public void setPercentageDiscount(String percentageDiscount) throws IOException {

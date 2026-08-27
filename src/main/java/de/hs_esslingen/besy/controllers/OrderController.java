@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -48,11 +49,11 @@ import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.OrderRequestMapper;
 import de.hs_esslingen.besy.mappers.response.OrderResponseMapper;
 import de.hs_esslingen.besy.models.Order;
+import de.hs_esslingen.besy.pdf.OrderPDFService;
 import de.hs_esslingen.besy.services.ApprovalService;
 import de.hs_esslingen.besy.services.CostCenterService;
 import de.hs_esslingen.besy.services.InvoiceService;
 import de.hs_esslingen.besy.services.ItemService;
-import de.hs_esslingen.besy.services.OrderPDFService;
 import de.hs_esslingen.besy.services.OrderService;
 import de.hs_esslingen.besy.services.PaperlessService;
 import de.hs_esslingen.besy.services.QuotationService;
@@ -347,7 +348,10 @@ public class OrderController {
         // if(!orderService.isOrderStatusEqual(orderId, List.of(OrderStatus.SETTLED,
         // OrderStatus.ARCHIVED))) throw new BadRequestException("Bestellstatus muss auf
         // 'abgerechnet' oder 'archiviert' stehen!");
-        return this.orderPDFService.generateOrderPDF(orderId);
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(this.orderPDFService.generateOrderPDF(orderId));
     }
 
 }
