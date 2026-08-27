@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
  * mvn test -Dtest=FieldGeometryDiagnostic
  * and paste the console output.
  */
+@org.junit.jupiter.api.Disabled("Diagnostic helper; run explicitly via -Dtest=FieldGeometryDiagnostic")
 class FieldGeometryDiagnostic {
 
     private static final String[] FULLY_QUALIFIED_NAMES = {
