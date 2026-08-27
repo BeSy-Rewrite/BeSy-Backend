@@ -15,13 +15,6 @@ import de.hs_esslingen.besy.models.Supplier;
  * Everything the PDF generation needs from the persistence layer, loaded once
  * by {@link OrderPdfDataLoader}. Pure data holder — no repository access, no
  * formatting, no calculation.
- *
- * <p>
- * <strong>Note on mutability:</strong> {@code items} is intentionally the
- * live list returned by the repository and is <em>not</em> defensively copied,
- * because {@link PDFOrder#setItems(List)} currently sorts it in place. Copying
- * it here would be a behaviour change (This will be addressed in a future
- * update).
  */
 public record OrderPdfData(
         Order order,

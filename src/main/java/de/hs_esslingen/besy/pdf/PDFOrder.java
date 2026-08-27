@@ -356,19 +356,31 @@ public class PDFOrder {
     /**
      * Set the items of a pdf order.
      * The PDF must have no less than {@link PDFOrder.AMOUNT_ITEM_LINES} lines.
-     * 
+     *
+     * <p>
+     * Takes a defensive copy before sorting — the caller's list is never
+     * mutated. A price/VAT combination that cannot be converted for a real
+     * (quantity &gt; 0) item is surfaced as a {@link BadRequestException}
+     * instead of silently defaulting to a net price of 0. Continuation lines
+     * produced by line-wrapping (quantity == 0) never attempt the
+     * conversion, since they carry no price by design.
+     *
      * @param items The list of items to set
      * @throws IOException
      * @throws BadRequestException if the resulting lines after wrapping
      *                             descriptions exceeds
-     *                             {@link PDFOrder.AMOUNT_ITEM_LINES}
+     *                             {@link PDFOrder.AMOUNT_ITEM_LINES}, or if a
+     *                             quantity-bearing item has an invalid
+     *                             price/VAT combination
      */
     public void setItems(List<Item> items) throws IOException {
         int amountInitialItems = items.size();
-        items.sort((o1, o2) -> Integer.compare(o1.getId().getItemId(), o2.getId().getItemId()));
-        items = wrapItemLines(items);
 
-        if (items.size() > AMOUNT_ITEM_LINES) {
+        List<Item> sortedItems = new ArrayList<>(items);
+        sortedItems.sort((o1, o2) -> Integer.compare(o1.getId().getItemId(), o2.getId().getItemId()));
+        List<Item> wrappedItems = wrapItemLines(sortedItems);
+
+        if (wrappedItems.size() > AMOUNT_ITEM_LINES) {
             if (amountInitialItems > AMOUNT_ITEM_LINES) {
                 throw new BadRequestException(
                         "Number of items must be less than or equal to " + AMOUNT_ITEM_LINES + ".");
@@ -380,20 +392,21 @@ public class PDFOrder {
 
         int itemPosition = 1;
 
-        for (int i = 0; i < items.size(); i++) {
-            Item item = items.get(i);
+        for (int i = 0; i < wrappedItems.size(); i++) {
+            Item item = wrappedItems.get(i);
             PDFItem pdfItem = this.items.get(i);
 
-            BigDecimal netPrice;
-            try {
-                netPrice = item.getVatType() == VatType.netto ? item.getPricePerUnit()
-                        : PriceConversionService.convertGrossPriceToNetPrice(item.getPricePerUnit(),
-                                item.getVat());
-            } catch (IllegalArgumentException e) {
-                netPrice = BigDecimal.ZERO;
-            }
-
             if (item.getQuantity() > 0) {
+                BigDecimal netPrice;
+                try {
+                    netPrice = item.getVatType() == VatType.netto
+                            ? item.getPricePerUnit()
+                            : PriceConversionService.convertGrossPriceToNetPrice(item.getPricePerUnit(),
+                                    item.getVat());
+                } catch (IllegalArgumentException e) {
+                    throw new BadRequestException(
+                            "Invalid price or VAT for item " + item.getId().getItemId() + ": " + e.getMessage(), e);
+                }
 
                 pdfItem.setPosition(String.valueOf(itemPosition++));
                 pdfItem.setQuantity(String.valueOf(item.getQuantity()));
