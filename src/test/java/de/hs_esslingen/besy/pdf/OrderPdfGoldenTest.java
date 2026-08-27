@@ -168,6 +168,24 @@ class OrderPdfGoldenTest {
         assertMatchesGolden("order-duplicate-vat-instances.snapshot", fields);
     }
 
+    @Test
+    @DisplayName("golden (new): order without Approval -> every approval checkbox unchecked (Q3)")
+    void goldenNoApproval() throws IOException {
+        Fixture f = Fixture.noApproval();
+        stub(f);
+
+        assertMatchesGolden("order-no-approval.snapshot", renderAndExtractFields(f.orderId()));
+    }
+
+    @Test
+    @DisplayName("golden (new): non-integral VAT rate + amount above 1000 (Q2 + Q6)")
+    void goldenFractionalVatRate() throws IOException {
+        Fixture f = Fixture.fractionalVatRate();
+        stub(f);
+
+        assertMatchesGolden("order-fractional-vat-rate.snapshot", renderAndExtractFields(f.orderId()));
+    }
+
     // -------------------------------------------------------------------- Plumbing
 
     private void stub(Fixture f) {
@@ -360,6 +378,38 @@ class OrderPdfGoldenTest {
             f.order.setCommentForSupplier(null);
             f.order.setQuoteNumber(null);
             f.order.setDecisionOtherReasonsDescription(null);
+            return f;
+        }
+
+        /**
+         * No Approval row at all — every approval checkbox must render unchecked.
+         */
+        static Fixture noApproval() {
+            Fixture f = new Fixture();
+            f.order = baseOrder(104L);
+            f.order.setApproval(null);
+            f.supplier = supplier();
+            f.order.setSupplierId(f.supplier.getId());
+            f.order.setPercentageDiscount(BigDecimal.ZERO);
+            f.order.setCommentForSupplier("Keine Genehmigung vorhanden.");
+
+            f.items.add(item(104L, 1, "Ersatzteil", "50.00", 1L, vat("19.00"), VatType.netto));
+            return f;
+        }
+
+        /**
+         * Non-integral VAT rate (7.9%); amount above 1000 (thousands
+         * separator).
+         */
+        static Fixture fractionalVatRate() {
+            Fixture f = new Fixture();
+            f.order = baseOrder(105L);
+            f.supplier = supplier();
+            f.order.setSupplierId(f.supplier.getId());
+            f.order.setPercentageDiscount(BigDecimal.ZERO);
+            f.order.setCommentForSupplier("Ermäßigter Steuersatz.");
+
+            f.items.add(item(105L, 1, "Fachliteratur-Paket", "1050.00", 1L, vat("7.90"), VatType.netto));
             return f;
         }
 
