@@ -235,8 +235,16 @@ class OrderPdfGeneratorTest {
         return i;
     }
 
-    static {
-        // Keep it locale-independent in case assertions format numbers
+    private static Locale previousDefaultLocale;
+
+    @org.junit.jupiter.api.BeforeAll
+    static void forceGermanLocale() {
+        previousDefaultLocale = Locale.getDefault();
         Locale.setDefault(Locale.GERMANY);
+    }
+
+    @org.junit.jupiter.api.AfterAll
+    static void restoreDefaultLocale() {
+        Locale.setDefault(previousDefaultLocale);
     }
 }
