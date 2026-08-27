@@ -163,7 +163,7 @@ class OrderPdfGoldenTest {
         // so Set<Vat> has size 1 and the single-VAT branch is taken.
         assertThat(fields.get("Formular1[0].#subform[0].Body[0].Textfeld1[1]"))
                 .as("Vat.equals fixed => Set size 1 => single-VAT branch, no mixed-VAT hint")
-                .doesNotContain("Unterschiedlichen Mehrwertsteuersätze");
+                .doesNotContain("Unterschiedliche Mehrwertsteuersätze");
 
         assertMatchesGolden("order-duplicate-vat-instances.snapshot", fields);
     }
