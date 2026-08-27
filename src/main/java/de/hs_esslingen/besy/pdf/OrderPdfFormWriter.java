@@ -26,11 +26,6 @@ import lombok.RequiredArgsConstructor;
  * {@link OrderPDFService}, because a few {@link PDFOrder} setters have side
  * effects on the first quotation row ({@code setDate}, {@code setSupplierName},
  * {@code setNetTotal}).
- *
- * <p>
- * Frozen quirks preserved here: missing addresses yield {@code " "} /
- * trimmed empty strings, and the mixed-VAT branch leaves the total and VAT
- * fields untouched.
  */
 @Component
 @RequiredArgsConstructor
@@ -49,10 +44,7 @@ public class OrderPdfFormWriter {
         // nach VOL/UVgO (Liefer-/Dienstleistung)
         order.setDeliveryAndServiceFlag(true);
 
-        Optional<Supplier> supplier = data.supplier();
-        if (supplier.isPresent()) {
-            writeSupplier(order, supplier.get());
-        }
+        writeSupplier(order, data.supplier());
 
         // Bestell-Nr.
         order.setOrderNumber(orderNumber);
@@ -109,12 +101,11 @@ public class OrderPdfFormWriter {
         Address deliveryAddress = data.deliveryAddress();
         order.setDeliveryFaculty(properties.getDefaultFaculty());
 
-        Optional<Person> deliveryPersonOpt = data.deliveryPerson();
-        if (deliveryPersonOpt.isPresent()) {
-            Person person = deliveryPersonOpt.get();
-            order.setDeliveryOrderer(person.getName() + " " + person.getSurname());
-        }
-        order.setDeliveryStreet(getStreet(deliveryAddress) + " " + getBuildingNumber(deliveryAddress));
+        order.setDeliveryOrderer(data.deliveryPerson()
+                .map(person -> joinNonBlank(person.getName(), person.getSurname()))
+                .orElse(""));
+
+        order.setDeliveryStreet(joinNonBlank(getStreet(deliveryAddress), getBuildingNumber(deliveryAddress)));
         order.setDeliveryAddress(formatPostalAndTown(deliveryAddress));
     }
 
@@ -122,12 +113,11 @@ public class OrderPdfFormWriter {
         Address invoiceAddress = data.invoiceAddress();
         order.setInvoiceFaculty(properties.getDefaultFaculty());
 
-        Optional<Person> invoicePersonOpt = data.invoicePerson();
-        if (invoicePersonOpt.isPresent()) {
-            Person person = invoicePersonOpt.get();
-            order.setInvoiceOrderer(person.getName() + " " + person.getSurname());
-        }
-        order.setInvoiceStreet(getStreet(invoiceAddress) + " " + getBuildingNumber(invoiceAddress));
+        order.setInvoiceOrderer(data.invoicePerson()
+                .map(person -> joinNonBlank(person.getName(), person.getSurname()))
+                .orElse(""));
+
+        order.setInvoiceStreet(joinNonBlank(getStreet(invoiceAddress), getBuildingNumber(invoiceAddress)));
         order.setInvoiceDeliveryAddress(formatPostalAndTown(invoiceAddress));
     }
 
@@ -162,18 +152,30 @@ public class OrderPdfFormWriter {
                 .collect(Collectors.joining(", ")) + "\n" + comment;
     }
 
-    private void writeSupplier(PDFOrder order, Supplier supplier) throws IOException {
+    /**
+     * Always writes every supplier-related field, explicitly {@code ""}
+     * when there is no supplier — never leaves stale template state in
+     * {@code Textfeld1[0]}/{@code Firma[3]} (or the row-0 quotation company
+     * name written via {@code setSupplierName}).
+     */
+    private void writeSupplier(PDFOrder order, Optional<Supplier> supplierOpt) throws IOException {
+        if (supplierOpt.isEmpty()) {
+            order.setCompanyAddress("");
+            order.setSupplierName("");
+            order.setSupplierEmail("");
+            return;
+        }
+
+        Supplier supplier = supplierOpt.get();
         Address supplierAddress = supplier.getAddress();
         String supplierAddressString = """
                 %s
-                %s %s
-                %s %s
+                %s
+                %s
                 """.formatted(
                 supplier.getName(),
-                getStreet(supplierAddress),
-                getBuildingNumber(supplierAddress),
-                getPostalCode(supplierAddress),
-                getTown(supplierAddress)).trim();
+                joinNonBlank(getStreet(supplierAddress), getBuildingNumber(supplierAddress)),
+                formatPostalAndTown(supplierAddress)).trim();
         order.setCompanyAddress(supplierAddressString);
         order.setSupplierName(supplier.getName());
         // Fax-Nr./E-Mail:
@@ -190,14 +192,20 @@ public class OrderPdfFormWriter {
         order.setFlagDecisionOtherReasonsDescription(orderDAO.getDecisionOtherReasonsDescription());
     }
 
-    /** Still assumes a non-null Approval — null-safety is a later step. */
-    private void writeApprovalFlags(PDFOrder order, Approval approvals) throws IOException {
-        order.setOrderFlagEdvPermission(approvals.getFlagEdvPermission());
-        order.setOrderFlagFurniturePermission(approvals.getFlagFurniturePermission());
-        order.setOrderFlagFurnitureRoom(approvals.getFlagFurnitureRoom());
-        order.setOrderFlagInvestmentRoom(approvals.getFlagInvestmentRoom());
-        order.setOrderFlagInvestmentStructuralMeasures(approvals.getFlagInvestmentStructuralMeasures());
-        order.setOrderFlagMediaPermission(approvals.getFlagMediaPermission());
+    /**
+     * An order without an {@link Approval} is valid — no approvals have
+     * been recorded yet. Falls back to a fresh {@link Approval}, whose flags
+     * default to {@code false}, so every approval checkbox ends up unchecked
+     * instead of throwing an NPE.
+     */
+    private void writeApprovalFlags(PDFOrder order, Approval approval) throws IOException {
+        Approval effective = approval != null ? approval : new Approval();
+        order.setOrderFlagEdvPermission(effective.getFlagEdvPermission());
+        order.setOrderFlagFurniturePermission(effective.getFlagFurniturePermission());
+        order.setOrderFlagFurnitureRoom(effective.getFlagFurnitureRoom());
+        order.setOrderFlagInvestmentRoom(effective.getFlagInvestmentRoom());
+        order.setOrderFlagInvestmentStructuralMeasures(effective.getFlagInvestmentStructuralMeasures());
+        order.setOrderFlagMediaPermission(effective.getFlagMediaPermission());
     }
 
     private String getStreet(Address address) {
@@ -217,6 +225,16 @@ public class OrderPdfFormWriter {
     }
 
     private String formatPostalAndTown(Address address) {
-        return (getPostalCode(address) + " " + getTown(address)).trim();
+        return joinNonBlank(getPostalCode(address), getTown(address));
+    }
+
+    /**
+     * Joins only the non-blank parts with a single space; never yields a stray
+     * space.
+     */
+    private String joinNonBlank(String... parts) {
+        return java.util.Arrays.stream(parts)
+                .filter(p -> p != null && !p.isBlank())
+                .collect(Collectors.joining(" "));
     }
 }
