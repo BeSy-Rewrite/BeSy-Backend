@@ -2,7 +2,6 @@ package de.hs_esslingen.besy.pdf;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.Normalizer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -93,6 +92,14 @@ public class PDFOrder {
     private PDFont itemDescriptionFont = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
     private float itemDescriptionFontSize = 12f;
     private float itemDescriptionMaxWidth = 200f;
+
+    /**
+     * Lazily computed width (in 1000-unit-per-em glyph space) of
+     * {@link PdfSafeFieldWriter#PLACEHOLDER}, used as the measured width for
+     * any code point {@link #itemDescriptionFont} cannot encode. See
+     * {@link #getCodePointWidth(int)}.
+     */
+    private Float placeholderGlyphWidth;
 
     // Zwischensumme
     private PDField subTotal;
@@ -546,12 +553,68 @@ public class PDFOrder {
         return lastWhitespace > 0 ? lastWhitespace : fitLength;
     }
 
+    /**
+     * Measures {@code input} against {@link #itemDescriptionFont} at
+     * {@link #itemDescriptionFontSize}, operating per Unicode code point
+     * (see {@link #getCodePointWidth(int)} for how unsupported/control
+     * characters are handled).
+     *
+     * <p>
+     * Previously this method NFD-normalized the input and stripped
+     * everything outside ASCII before measuring. That silently dropped
+     * non-decomposable characters entirely (e.g. {@code ß} has no ASCII
+     * decomposition and simply vanished, so {@code "Straße"} was measured
+     * as {@code "Strae"} — narrower than the real glyph) and collapsed
+     * CJK/emoji strings to {@code ""} (width {@code 0.0} — such
+     * descriptions were judged to always fit, however long). Latin-1
+     * characters that <em>do</em> decompose (e.g. {@code ü} -> {@code u} +
+     * combining diaeresis) were silently measured as their base letter
+     * instead of their real glyph.
+     */
     private float getStringWidth(String input) throws IOException {
-        String normalized = Normalizer
-                .normalize(input, Normalizer.Form.NFD)
-                .replaceAll("[^\\p{ASCII}]", "");
-        normalized = normalized.replaceAll("[^\\x00-\\x7F]", "");
-        return itemDescriptionFont.getStringWidth(normalized) * itemDescriptionFontSize / 1000f;
+        float totalWidth = 0f;
+        for (int codePoint : input.codePoints().toArray()) {
+            totalWidth += getCodePointWidth(codePoint);
+        }
+        return totalWidth * itemDescriptionFontSize / 1000f;
+    }
+
+    /**
+     * Returns the glyph width (in 1000-unit-per-em glyph space, i.e. before
+     * scaling by font size) of a single Unicode code point against
+     * {@link #itemDescriptionFont}.
+     *
+     * <p>
+     * Control characters (line breaks, tabs, ...) contribute no width —
+     * they are structural, never actual glyphs.
+     *
+     * <p>
+     * Code points {@link #itemDescriptionFont} cannot encode (currently:
+     * anything outside WinAnsi/Latin-1, e.g. CJK or emoji — see the
+     * Unicode diagnostic) are measured as the width of the placeholder
+     * glyph ({@link PdfSafeFieldWriter#PLACEHOLDER}) instead of
+     * contributing zero width. This keeps the wrap decision consistent
+     * with what {@link PdfSafeFieldWriter} will actually write into the
+     * field afterwards, instead of silently under-measuring unsupported
+     * runs as if they were empty.
+     */
+    private float getCodePointWidth(int codePoint) throws IOException {
+        if (Character.isISOControl(codePoint)) {
+            return 0f;
+        }
+        String glyph = new String(Character.toChars(codePoint));
+        try {
+            return itemDescriptionFont.getStringWidth(glyph);
+        } catch (IllegalArgumentException notEncodable) {
+            return getPlaceholderGlyphWidth();
+        }
+    }
+
+    private float getPlaceholderGlyphWidth() throws IOException {
+        if (placeholderGlyphWidth == null) {
+            placeholderGlyphWidth = itemDescriptionFont.getStringWidth(String.valueOf(PdfSafeFieldWriter.PLACEHOLDER));
+        }
+        return placeholderGlyphWidth;
     }
 
     public void setSubTotal(String subTotal) throws IOException {
