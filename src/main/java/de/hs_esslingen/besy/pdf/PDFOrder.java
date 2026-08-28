@@ -494,7 +494,9 @@ public class PDFOrder {
                 fitLength = adjustToWordBoundary(remainingDescription, fitLength);
 
                 if (fitLength == 0) {
-                    fitLength = 1; // Ensure progress even with very long words
+                    // Ensure progress even with very long words / wide code points --
+                    // never chop a leading surrogate pair in half.
+                    fitLength = firstCodePointLength(remainingDescription);
                 }
 
                 Item continuationItem = new Item();
@@ -533,7 +535,7 @@ public class PDFOrder {
             }
         }
 
-        return bestFit;
+        return avoidSurrogateSplit(text, bestFit);
     }
 
     private int adjustToWordBoundary(String text, int fitLength) {
@@ -551,6 +553,56 @@ public class PDFOrder {
 
         // Keep binary-search split for single long words, otherwise cut at whitespace.
         return lastWhitespace > 0 ? lastWhitespace : fitLength;
+    }
+
+    /**
+     * Moves {@code index} backward by one position if it currently sits
+     * between the two UTF-16 chars of a surrogate pair (e.g. an emoji) --
+     * such an index would otherwise split a single Unicode code point into
+     * two lone, invalid surrogates when used as a {@code substring} boundary.
+     *
+     * <p>
+     * Only ever moves backward, so a caller that arrived at {@code index}
+     * via a width-based search never ends up with a wider (out-of-budget)
+     * prefix -- shortening a prefix can only reduce its measured width.
+     *
+     * <p>
+     * Note: with the current WinAnsi-only template fonts, every supported
+     * character fits in a single UTF-16 char, and any surrogate pair is
+     * therefore always measured as a single "unsupported" placeholder width
+     * (see {@link #getCodePointWidth(int)}) whether whole or split -- which
+     * means {@link #findMaxFittingPrefixLength(String, float)} cannot
+     * currently land exactly mid-pair by the width math alone (a lone
+     * surrogate and its complete pair happen to tie in measured width). This
+     * method removes the reliance on that coincidence: once a Unicode-
+     * capable fallback font is embedded (planned separately) and a real
+     * supported non-BMP glyph exists, a whole pair and a lone half would
+     * measure differently, and this guard becomes load-bearing.
+     */
+    private int avoidSurrogateSplit(String text, int index) {
+        if (index > 0 && index < text.length()
+                && Character.isHighSurrogate(text.charAt(index - 1))
+                && Character.isLowSurrogate(text.charAt(index))) {
+            return index - 1;
+        }
+        return index;
+    }
+
+    /**
+     * Length (1 or 2 UTF-16 chars) of the first complete Unicode code point
+     * in {@code text}. Used as the minimum forced-progress length in
+     * {@link #wrapItem(Item)} so that a single very-wide/unsupported code
+     * point (e.g. an emoji, itself a surrogate pair) is never split into two
+     * lone, invalid surrogates by an unconditional "advance by 1 char"
+     * fallback.
+     */
+    private int firstCodePointLength(String text) {
+        if (text.length() > 1
+                && Character.isHighSurrogate(text.charAt(0))
+                && Character.isLowSurrogate(text.charAt(1))) {
+            return 2;
+        }
+        return 1;
     }
 
     /**
