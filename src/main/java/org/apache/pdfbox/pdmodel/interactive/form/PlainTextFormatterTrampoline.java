@@ -1,3 +1,13 @@
+
+/**
+ * This file is <strong>not</strong> part of Apache PDFBox.
+ * <p>
+ * It is a production bridge into PDFBox internals, deliberately placed in PDFBox's
+ * own package so it can access package-private classes and methods.
+ * It is part of BeSy and is therefore licensed under the
+ * GNU General Public License v3.0 or later.
+ * See the LICENSE file in the root of this project for details.
+ */
 package org.apache.pdfbox.pdmodel.interactive.form;
 
 import java.io.IOException;
@@ -14,7 +24,7 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
  *
  * <p>
  * <strong>MAINTENANCE WARNING:</strong> this relies entirely on PDFBox
- * 3.5.3's INTERNAL, UNDOCUMENTED implementation. A future PDFBox version
+ * 3.0.8's INTERNAL, UNDOCUMENTED implementation. A future PDFBox version
  * upgrade is very likely to require this class to be re-verified or
  * adjusted -- expect a COMPILE ERROR (safe failure mode) rather than a
  * silent behavior change, since this is real Java code in that package,

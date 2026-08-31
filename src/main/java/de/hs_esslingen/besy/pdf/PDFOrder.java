@@ -7,8 +7,12 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
@@ -27,6 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PDFOrder {
     public static final int AMOUNT_ITEM_LINES = 15;
+
+    private static final Pattern FONT_NAME_PATTERN = Pattern.compile("/(\\S+)\\s+[-\\d.]+\\s+Tf");
 
     private PdfSafeFieldWriter fieldWriter;
 
@@ -259,6 +265,7 @@ public class PDFOrder {
         orderFlagMediaPermission = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[13]");
 
         retrieveDescriptionFontSize();
+        retrieveItemDescriptionFont(acroForm);
         retrieveItemDescriptionMaxWidth();
 
         return this;
@@ -284,6 +291,62 @@ public class PDFOrder {
         } catch (Exception e) {
             itemDescriptionFontSize = 12f;
         }
+    }
+
+    /**
+     * Resolves the font actually referenced by {@code Beschreibung[0]}'s own
+     * {@code /DA} string (Calibri, per the template) from the AcroForm's
+     * {@code /DR}, and uses it for wrap-width measurement instead of the
+     * hardcoded Helvetica default.
+     *
+     * <p>
+     * Previously, wrap decisions were computed against Standard-14
+     * Helvetica metrics while {@link PdfSafeFieldWriter}'s fast path
+     * actually renders the field in Calibri -- a different typeface with
+     * measurably different glyph widths (e.g. Helvetica's {@code ä} is
+     * 556/1000 em vs. Calibri's 479/1000 em).
+     * {@link #retrieveDescriptionFontSize()}
+     * already correctly read the font SIZE from the same DA string; only
+     * the font FACE was mismatched.
+     *
+     * <p>
+     * Falls back to the existing Helvetica default (left untouched) if the
+     * DA string can't be parsed or the referenced font isn't found in
+     * {@code /DR} -- matching this method's pre-existing defensive style.
+     */
+    private void retrieveItemDescriptionFont(PDAcroForm acroForm) {
+        String da = itemDescription.getDefaultAppearance();
+        if (da == null || da.isBlank()) {
+            da = acroForm.getDefaultAppearance();
+        }
+
+        String fontResourceName = extractFontName(da);
+        if (fontResourceName == null) {
+            return;
+        }
+
+        PDResources dr = acroForm.getDefaultResources();
+        if (dr == null) {
+            return;
+        }
+
+        try {
+            PDFont resolved = dr.getFont(COSName.getPDFName(fontResourceName));
+            if (resolved != null) {
+                itemDescriptionFont = resolved;
+                placeholderGlyphWidth = null; // must be recomputed against the new font
+            }
+        } catch (IOException ignored) {
+            // keep the Helvetica default
+        }
+    }
+
+    private String extractFontName(String da) {
+        if (da == null) {
+            return null;
+        }
+        Matcher m = FONT_NAME_PATTERN.matcher(da);
+        return m.find() ? m.group(1) : null;
     }
 
     public void setConstructionAndAssemblyFlag(Boolean flag) throws IOException {

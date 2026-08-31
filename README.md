@@ -90,7 +90,7 @@ psql -h localhost -p 5432 -U besy -d besy -f migrated_data_schema_2025-10-25.sql
 `src/main/java/org/apache/pdfbox/pdmodel/interactive/form/PlainTextFormatterTrampoline.java`
 is deliberately placed inside PDFBox's own package to gain package-private
 access to `PlainTextFormatter`/`AppearanceStyle`/`PlainText` — none of
-which are public API. This exists because PDFBox 3.5.3's automatic AcroForm
+which are public API. This exists because PDFBox 3.0.8's automatic AcroForm
 appearance generation silently substitutes a broken fallback font
 (Liberation Sans) when re-resolving certain embedded CID-keyed fonts (e.g.
 Noto Sans SC) from `/DR` by name, making CJK/emoji field values either
@@ -105,3 +105,11 @@ adjusting this class — expect a **compile error** (safe failure mode)
 rather than a silent behavior change, since it's real Java code in that
 package, not reflection. Re-run the two diagnostic test classes above
 after any PDFBox version bump, before assuming this still works.
+
+## License
+This project's source code is licensed under GPLv3 (see LICENSE).
+
+Bundled fonts (Noto Sans) are licensed separately under the 
+SIL Open Font License 1.1 (see `src/*/resources/fonts/OFL.txt`) and are NOT covered 
+by the GPLv3 license.
+Source: https://fonts.google.com/noto
