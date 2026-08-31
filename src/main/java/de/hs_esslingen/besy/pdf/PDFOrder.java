@@ -98,7 +98,14 @@ public class PDFOrder {
     private PDTextField itemDescription;
     private PDFont itemDescriptionFont = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
     private float itemDescriptionFontSize = 12f;
-    private float itemDescriptionMaxWidth = 200f;
+
+    /**
+     * Maximum width (in 1000-unit-per-em glyph space) of the item description
+     * column, used for line-wrapping decisions.
+     * 
+     * This value is derived by experimenting with the template PDF.
+     */
+    private float itemDescriptionMaxWidth = 226f;
 
     /**
      * Lazily computed width (in 1000-unit-per-em glyph space) of
@@ -266,13 +273,8 @@ public class PDFOrder {
 
         retrieveDescriptionFontSize();
         retrieveItemDescriptionFont(acroForm);
-        retrieveItemDescriptionMaxWidth();
 
         return this;
-    }
-
-    private void retrieveItemDescriptionMaxWidth() {
-        itemDescriptionMaxWidth = itemDescription.getWidgets().get(0).getRectangle().getWidth();
     }
 
     private void retrieveDescriptionFontSize() {
