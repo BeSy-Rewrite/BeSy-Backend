@@ -2,13 +2,17 @@ package de.hs_esslingen.besy.pdf;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.Normalizer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
@@ -27,6 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PDFOrder {
     public static final int AMOUNT_ITEM_LINES = 15;
+
+    private static final Pattern FONT_NAME_PATTERN = Pattern.compile("/(\\S+)\\s+[-\\d.]+\\s+Tf");
 
     private PdfSafeFieldWriter fieldWriter;
 
@@ -93,6 +99,14 @@ public class PDFOrder {
     private PDFont itemDescriptionFont = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
     private float itemDescriptionFontSize = 12f;
     private float itemDescriptionMaxWidth = 200f;
+
+    /**
+     * Lazily computed width (in 1000-unit-per-em glyph space) of
+     * {@link PdfSafeFieldWriter#PLACEHOLDER}, used as the measured width for
+     * any code point {@link #itemDescriptionFont} cannot encode. See
+     * {@link #getCodePointWidth(int)}.
+     */
+    private Float placeholderGlyphWidth;
 
     // Zwischensumme
     private PDField subTotal;
@@ -163,8 +177,8 @@ public class PDFOrder {
     // 7. Zustimmung bei Bestellung von medientechnischen Einrichtungen und Geräten:
     private PDCheckBox orderFlagMediaPermission;
 
-    public PDFOrder parseOrder(PDAcroForm acroForm) {
-        fieldWriter = new PdfSafeFieldWriter(acroForm);
+    public PDFOrder parseOrder(PDAcroForm acroForm, PDDocument document, EmbeddedFontProvider fontProvider) {
+        fieldWriter = new PdfSafeFieldWriter(document, acroForm, fontProvider);
 
         constructionAndAssemblyFlag = (PDCheckBox) acroForm
                 .getField("Formular1[0].#subform[0].Header[0].Kontrollkästchen1[0]");
@@ -251,6 +265,7 @@ public class PDFOrder {
         orderFlagMediaPermission = (PDCheckBox) acroForm.getField("Formular1[0].#subform[1].Kontrollkästchen1[13]");
 
         retrieveDescriptionFontSize();
+        retrieveItemDescriptionFont(acroForm);
         retrieveItemDescriptionMaxWidth();
 
         return this;
@@ -276,6 +291,62 @@ public class PDFOrder {
         } catch (Exception e) {
             itemDescriptionFontSize = 12f;
         }
+    }
+
+    /**
+     * Resolves the font actually referenced by {@code Beschreibung[0]}'s own
+     * {@code /DA} string (Calibri, per the template) from the AcroForm's
+     * {@code /DR}, and uses it for wrap-width measurement instead of the
+     * hardcoded Helvetica default.
+     *
+     * <p>
+     * Previously, wrap decisions were computed against Standard-14
+     * Helvetica metrics while {@link PdfSafeFieldWriter}'s fast path
+     * actually renders the field in Calibri -- a different typeface with
+     * measurably different glyph widths (e.g. Helvetica's {@code ä} is
+     * 556/1000 em vs. Calibri's 479/1000 em).
+     * {@link #retrieveDescriptionFontSize()}
+     * already correctly read the font SIZE from the same DA string; only
+     * the font FACE was mismatched.
+     *
+     * <p>
+     * Falls back to the existing Helvetica default (left untouched) if the
+     * DA string can't be parsed or the referenced font isn't found in
+     * {@code /DR} -- matching this method's pre-existing defensive style.
+     */
+    private void retrieveItemDescriptionFont(PDAcroForm acroForm) {
+        String da = itemDescription.getDefaultAppearance();
+        if (da == null || da.isBlank()) {
+            da = acroForm.getDefaultAppearance();
+        }
+
+        String fontResourceName = extractFontName(da);
+        if (fontResourceName == null) {
+            return;
+        }
+
+        PDResources dr = acroForm.getDefaultResources();
+        if (dr == null) {
+            return;
+        }
+
+        try {
+            PDFont resolved = dr.getFont(COSName.getPDFName(fontResourceName));
+            if (resolved != null) {
+                itemDescriptionFont = resolved;
+                placeholderGlyphWidth = null; // must be recomputed against the new font
+            }
+        } catch (IOException ignored) {
+            // keep the Helvetica default
+        }
+    }
+
+    private String extractFontName(String da) {
+        if (da == null) {
+            return null;
+        }
+        Matcher m = FONT_NAME_PATTERN.matcher(da);
+        return m.find() ? m.group(1) : null;
     }
 
     public void setConstructionAndAssemblyFlag(Boolean flag) throws IOException {
@@ -487,7 +558,9 @@ public class PDFOrder {
                 fitLength = adjustToWordBoundary(remainingDescription, fitLength);
 
                 if (fitLength == 0) {
-                    fitLength = 1; // Ensure progress even with very long words
+                    // Ensure progress even with very long words / wide code points --
+                    // never chop a leading surrogate pair in half.
+                    fitLength = firstCodePointLength(remainingDescription);
                 }
 
                 Item continuationItem = new Item();
@@ -526,7 +599,7 @@ public class PDFOrder {
             }
         }
 
-        return bestFit;
+        return avoidSurrogateSplit(text, bestFit);
     }
 
     private int adjustToWordBoundary(String text, int fitLength) {
@@ -546,12 +619,118 @@ public class PDFOrder {
         return lastWhitespace > 0 ? lastWhitespace : fitLength;
     }
 
+    /**
+     * Moves {@code index} backward by one position if it currently sits
+     * between the two UTF-16 chars of a surrogate pair (e.g. an emoji) --
+     * such an index would otherwise split a single Unicode code point into
+     * two lone, invalid surrogates when used as a {@code substring} boundary.
+     *
+     * <p>
+     * Only ever moves backward, so a caller that arrived at {@code index}
+     * via a width-based search never ends up with a wider (out-of-budget)
+     * prefix -- shortening a prefix can only reduce its measured width.
+     *
+     * <p>
+     * Note: with the current WinAnsi-only template fonts, every supported
+     * character fits in a single UTF-16 char, and any surrogate pair is
+     * therefore always measured as a single "unsupported" placeholder width
+     * (see {@link #getCodePointWidth(int)}) whether whole or split -- which
+     * means {@link #findMaxFittingPrefixLength(String, float)} cannot
+     * currently land exactly mid-pair by the width math alone (a lone
+     * surrogate and its complete pair happen to tie in measured width). This
+     * method removes the reliance on that coincidence: once a Unicode-
+     * capable fallback font is embedded (planned separately) and a real
+     * supported non-BMP glyph exists, a whole pair and a lone half would
+     * measure differently, and this guard becomes load-bearing.
+     */
+    private int avoidSurrogateSplit(String text, int index) {
+        if (index > 0 && index < text.length()
+                && Character.isHighSurrogate(text.charAt(index - 1))
+                && Character.isLowSurrogate(text.charAt(index))) {
+            return index - 1;
+        }
+        return index;
+    }
+
+    /**
+     * Length (1 or 2 UTF-16 chars) of the first complete Unicode code point
+     * in {@code text}. Used as the minimum forced-progress length in
+     * {@link #wrapItem(Item)} so that a single very-wide/unsupported code
+     * point (e.g. an emoji, itself a surrogate pair) is never split into two
+     * lone, invalid surrogates by an unconditional "advance by 1 char"
+     * fallback.
+     */
+    private int firstCodePointLength(String text) {
+        if (text.length() > 1
+                && Character.isHighSurrogate(text.charAt(0))
+                && Character.isLowSurrogate(text.charAt(1))) {
+            return 2;
+        }
+        return 1;
+    }
+
+    /**
+     * Measures {@code input} against {@link #itemDescriptionFont} at
+     * {@link #itemDescriptionFontSize}, operating per Unicode code point
+     * (see {@link #getCodePointWidth(int)} for how unsupported/control
+     * characters are handled).
+     *
+     * <p>
+     * Previously this method NFD-normalized the input and stripped
+     * everything outside ASCII before measuring. That silently dropped
+     * non-decomposable characters entirely (e.g. {@code ß} has no ASCII
+     * decomposition and simply vanished, so {@code "Straße"} was measured
+     * as {@code "Strae"} — narrower than the real glyph) and collapsed
+     * CJK/emoji strings to {@code ""} (width {@code 0.0} — such
+     * descriptions were judged to always fit, however long). Latin-1
+     * characters that <em>do</em> decompose (e.g. {@code ü} -> {@code u} +
+     * combining diaeresis) were silently measured as their base letter
+     * instead of their real glyph.
+     */
     private float getStringWidth(String input) throws IOException {
-        String normalized = Normalizer
-                .normalize(input, Normalizer.Form.NFD)
-                .replaceAll("[^\\p{ASCII}]", "");
-        normalized = normalized.replaceAll("[^\\x00-\\x7F]", "");
-        return itemDescriptionFont.getStringWidth(normalized) * itemDescriptionFontSize / 1000f;
+        float totalWidth = 0f;
+        for (int codePoint : input.codePoints().toArray()) {
+            totalWidth += getCodePointWidth(codePoint);
+        }
+        return totalWidth * itemDescriptionFontSize / 1000f;
+    }
+
+    /**
+     * Returns the glyph width (in 1000-unit-per-em glyph space, i.e. before
+     * scaling by font size) of a single Unicode code point against
+     * {@link #itemDescriptionFont}.
+     *
+     * <p>
+     * Control characters (line breaks, tabs, ...) contribute no width —
+     * they are structural, never actual glyphs.
+     *
+     * <p>
+     * Code points {@link #itemDescriptionFont} cannot encode (currently:
+     * anything outside WinAnsi/Latin-1, e.g. CJK or emoji — see the
+     * Unicode diagnostic) are measured as the width of the placeholder
+     * glyph ({@link PdfSafeFieldWriter#PLACEHOLDER}) instead of
+     * contributing zero width. This keeps the wrap decision consistent
+     * with what {@link PdfSafeFieldWriter} will actually write into the
+     * field afterwards, instead of silently under-measuring unsupported
+     * runs as if they were empty.
+     */
+    private float getCodePointWidth(int codePoint) throws IOException {
+        if (Character.isISOControl(codePoint)) {
+            return 0f;
+        }
+        String glyph = new String(Character.toChars(codePoint));
+        try {
+            return itemDescriptionFont.getStringWidth(glyph);
+        } catch (IllegalArgumentException notEncodable) {
+            return getPlaceholderGlyphWidth();
+        }
+    }
+
+    private float getPlaceholderGlyphWidth() throws IOException {
+        if (placeholderGlyphWidth == null) {
+            placeholderGlyphWidth = itemDescriptionFont.getStringWidth(String.valueOf(PdfSafeFieldWriter.PLACEHOLDER));
+        }
+        return placeholderGlyphWidth;
     }
 
     public void setSubTotal(String subTotal) throws IOException {

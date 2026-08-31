@@ -68,6 +68,8 @@ class OrderPdfGeneratorTest {
     private PdfTemplateLoader templateLoader;
     @Mock
     private OrderPdfFormWriter formWriter;
+    @Mock
+    private EmbeddedFontProvider fontProvider;
 
     private OrderPdfProperties properties;
     private OrderPdfGenerator generator;
@@ -78,7 +80,8 @@ class OrderPdfGeneratorTest {
     @BeforeEach
     void setUp() {
         properties = OrderPdfProperties.defaults();
-        generator = new OrderPdfGenerator(dataLoader, orderService, properties, templateLoader, formWriter);
+        generator = new OrderPdfGenerator(dataLoader, orderService, properties, templateLoader, formWriter,
+                fontProvider);
 
         order = new Order();
         order.setId(ORDER_ID);
