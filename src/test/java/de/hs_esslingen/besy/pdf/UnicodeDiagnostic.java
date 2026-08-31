@@ -174,7 +174,9 @@ class UnicodeDiagnostic {
         PdfTemplateLoader loader = new PdfTemplateLoader(props);
         try (PDDocument doc = loader.loadOrderTemplate()) {
             PDAcroForm acroForm = doc.getDocumentCatalog().getAcroForm();
-            PDFOrder order = new PDFOrder().parseOrder(acroForm);
+            EmbeddedFontProvider fontProvider = new EmbeddedFontProvider();
+            fontProvider.init();
+            PDFOrder order = new PDFOrder().parseOrder(acroForm, doc, fontProvider);
 
             Method getStringWidth = PDFOrder.class.getDeclaredMethod("getStringWidth", String.class);
             getStringWidth.setAccessible(true);
@@ -197,7 +199,9 @@ class UnicodeDiagnostic {
         PdfTemplateLoader loader = new PdfTemplateLoader(props);
         try (PDDocument doc = loader.loadOrderTemplate()) {
             PDAcroForm acroForm = doc.getDocumentCatalog().getAcroForm();
-            PDFOrder order = new PDFOrder().parseOrder(acroForm);
+            EmbeddedFontProvider fontProvider = new EmbeddedFontProvider();
+            fontProvider.init();
+            PDFOrder order = new PDFOrder().parseOrder(acroForm, doc, fontProvider);
 
             Item umlautItem = buildItem(1, 1,
                     "Bürostuhl mit höhenverstellbarer Rückenlehne für Ergänzungsmöbel äöüÄÖÜß Testtexttesttext");
@@ -267,7 +271,9 @@ class UnicodeDiagnostic {
         PdfTemplateLoader loader = new PdfTemplateLoader(props);
         try (PDDocument doc = loader.loadOrderTemplate()) {
             PDAcroForm acroForm = doc.getDocumentCatalog().getAcroForm();
-            PDFOrder order = new PDFOrder().parseOrder(acroForm);
+            EmbeddedFontProvider fontProvider = new EmbeddedFontProvider();
+            fontProvider.init();
+            PDFOrder order = new PDFOrder().parseOrder(acroForm, doc, fontProvider);
 
             String probe = "Müller-Lüdenscheid Straße 😀 中文 é ñ ß";
 

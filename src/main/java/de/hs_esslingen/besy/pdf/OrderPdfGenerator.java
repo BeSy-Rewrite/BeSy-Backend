@@ -10,20 +10,6 @@ import org.springframework.stereotype.Component;
 import de.hs_esslingen.besy.services.OrderService;
 import lombok.RequiredArgsConstructor;
 
-/**
- * Orchestrates the order PDF generation: template -> AcroForm binding ->
- * data -> totals -> form writer -> bytes.
- *
- * <p>
- * The step order is intentionally identical to the previous inline code in
- * {@link OrderPDFService} (document first, then data), so that both the
- * produced field values and the order in which failures surface stay
- * unchanged.
- *
- * <p>
- * The document is owned and closed here; {@link OrderPdfFormWriter} never sees
- * a {@link PDDocument}.
- */
 @Component
 @RequiredArgsConstructor
 public class OrderPdfGenerator {
@@ -33,9 +19,8 @@ public class OrderPdfGenerator {
     private final OrderPdfProperties properties;
     private final PdfTemplateLoader templateLoader;
     private final OrderPdfFormWriter formWriter;
+    private final EmbeddedFontProvider fontProvider;
 
-    // TODO: Ensure that this method is only called when the Order is in a state
-    // where all necessary constraints and relationships are satisfied
     public byte[] generate(Long orderId) throws IOException {
         try (PDDocument document = templateLoader.loadOrderTemplate()) {
             PDFOrder form = bindForm(document);
@@ -54,11 +39,10 @@ public class OrderPdfGenerator {
         }
     }
 
-    /** Parses the AcroForm into the typed binding and drops the XFA layer. */
-    private PDFOrder bindForm(PDDocument document) throws IOException {
+    private PDFOrder bindForm(PDDocument document) {
         PDAcroForm acroForm = document.getDocumentCatalog().getAcroForm();
         PDFOrder form = new PDFOrder();
-        form.parseOrder(acroForm);
+        form.parseOrder(acroForm, document, fontProvider);
         acroForm.setXFA(null);
         return form;
     }

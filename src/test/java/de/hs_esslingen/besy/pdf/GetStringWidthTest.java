@@ -22,7 +22,9 @@ class GetStringWidthTest {
         PdfTemplateLoader loader = new PdfTemplateLoader(properties);
         document = loader.loadOrderTemplate();
         PDAcroForm acroForm = document.getDocumentCatalog().getAcroForm();
-        order = new PDFOrder().parseOrder(acroForm);
+        EmbeddedFontProvider fontProvider = new EmbeddedFontProvider();
+        fontProvider.init();
+        order = new PDFOrder().parseOrder(acroForm, document, fontProvider);
 
         getStringWidth = PDFOrder.class.getDeclaredMethod("getStringWidth", String.class);
         getStringWidth.setAccessible(true);

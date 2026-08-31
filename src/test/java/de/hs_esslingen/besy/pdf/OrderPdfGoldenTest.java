@@ -95,7 +95,7 @@ class OrderPdfGoldenTest {
     private OrderPDFService service;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         OrderPdfDataLoader dataLoader = new OrderPdfDataLoader(
                 orderRepository,
                 supplierRepository,
@@ -105,12 +105,16 @@ class OrderPdfGoldenTest {
 
         OrderPdfProperties properties = OrderPdfProperties.defaults();
 
+        EmbeddedFontProvider fontProvider = new EmbeddedFontProvider();
+        fontProvider.init();
+
         service = new OrderPDFService(new OrderPdfGenerator(
                 dataLoader,
                 orderService,
                 properties,
                 new PdfTemplateLoader(properties),
-                new OrderPdfFormWriter(Locale.GERMANY, properties)));
+                new OrderPdfFormWriter(Locale.GERMANY, properties),
+                fontProvider));
     }
 
     // ------------------------------------------------------------------- Tests

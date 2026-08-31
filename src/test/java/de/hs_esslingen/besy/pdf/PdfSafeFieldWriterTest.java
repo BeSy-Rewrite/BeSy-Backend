@@ -20,7 +20,9 @@ class PdfSafeFieldWriterTest {
 
         try (PDDocument doc = loader.loadOrderTemplate()) {
             PDAcroForm acroForm = doc.getDocumentCatalog().getAcroForm();
-            PDFOrder order = new PDFOrder().parseOrder(acroForm);
+            EmbeddedFontProvider fontProvider = new EmbeddedFontProvider();
+            fontProvider.init();
+            PDFOrder order = new PDFOrder().parseOrder(acroForm, doc, fontProvider);
 
             // Must not throw despite emoji + CJK + Latin-1 mix.
             order.setCompanyAddress("Müller-Lüdenscheid Straße 😀 中文 é ñ ß");
@@ -40,10 +42,10 @@ class PdfSafeFieldWriterTest {
                 // Latin-1 range (umlauts, ß, é, ñ) is preserved as-is.
                 assertThat(companyAddress).contains("Müller-Lüdenscheid Straße", "é", "ñ", "ß");
 
-                // Unsupported code points (emoji, CJK) are replaced with the
-                // placeholder -- never a crash, never a lone surrogate.
-                assertThat(companyAddress).doesNotContain("😀", "中", "文");
-                assertThat(comment).doesNotContain("😀", "中", "文");
+                // CJK/emoji are now REAL GLYPHS (fallback font), not placeholders --
+                // see PdfSafeFieldWriterFallbackFontTest for the embedding proof.
+                assertThat(companyAddress).contains("中", "文");
+                assertThat(comment).contains("中", "文");
                 assertThat(containsLoneSurrogate(companyAddress)).isFalse();
                 assertThat(containsLoneSurrogate(comment)).isFalse();
             }
@@ -57,7 +59,9 @@ class PdfSafeFieldWriterTest {
 
         try (PDDocument doc = loader.loadOrderTemplate()) {
             PDAcroForm acroForm = doc.getDocumentCatalog().getAcroForm();
-            PDFOrder order = new PDFOrder().parseOrder(acroForm);
+            EmbeddedFontProvider fontProvider = new EmbeddedFontProvider();
+            fontProvider.init();
+            PDFOrder order = new PDFOrder().parseOrder(acroForm, doc, fontProvider);
 
             String value = "Büro Straße äöüÄÖÜß";
             order.setCompanyAddress(value);

@@ -8,6 +8,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
@@ -170,8 +171,8 @@ public class PDFOrder {
     // 7. Zustimmung bei Bestellung von medientechnischen Einrichtungen und Geräten:
     private PDCheckBox orderFlagMediaPermission;
 
-    public PDFOrder parseOrder(PDAcroForm acroForm) {
-        fieldWriter = new PdfSafeFieldWriter(acroForm);
+    public PDFOrder parseOrder(PDAcroForm acroForm, PDDocument document, EmbeddedFontProvider fontProvider) {
+        fieldWriter = new PdfSafeFieldWriter(document, acroForm, fontProvider);
 
         constructionAndAssemblyFlag = (PDCheckBox) acroForm
                 .getField("Formular1[0].#subform[0].Header[0].Kontrollkästchen1[0]");
