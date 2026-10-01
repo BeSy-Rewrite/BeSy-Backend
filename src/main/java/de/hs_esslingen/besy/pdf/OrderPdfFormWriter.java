@@ -24,7 +24,8 @@ import lombok.RequiredArgsConstructor;
  * Pure sink: no repository access, no PDDocument handling, no calculation.
  * The write sequence is intentionally identical to the previous inline code in
  * {@link OrderPDFService}. The supplier quotation row (row 0) is written
- * explicitly via {@link PDFOrder#setSupplierQuotationRow(String, String, String)}
+ * explicitly via
+ * {@link PDFOrder#setSupplierQuotationRow(String, String, String)}
  * once all three values (supplier name, date, net total) are known.
  */
 @Component
@@ -66,8 +67,8 @@ public class OrderPdfFormWriter {
             throw new BadRequestException("Error while mapping order items for PDF generation: " + e.getMessage(), e);
         }
 
-        order.setSubTotal(PdfValueFormatter.formatCurrency(totals.subTotal()));
-        String formattedNetTotal = PdfValueFormatter.formatCurrency(totals.netTotal());
+        order.setSubTotal(PdfValueFormatter.formatCurrency(totals.subTotal(), orderDAO.getCurrency()));
+        String formattedNetTotal = PdfValueFormatter.formatCurrency(totals.netTotal(), orderDAO.getCurrency());
         order.setNetTotal(formattedNetTotal);
 
         // The supplier's quotation row is now written explicitly in one
@@ -143,7 +144,7 @@ public class OrderPdfFormWriter {
             comment = "Kundennummer: " + orderDAO.getCustomer().getCustomerId() + "\n" + comment;
         }
 
-        order.setTotal(PdfValueFormatter.formatCurrency(totals.total().orElseThrow()));
+        order.setTotal(PdfValueFormatter.formatCurrency(totals.total().orElseThrow(), orderDAO.getCurrency()));
 
         // TODO: VAT should be stored by the order itself
         if (totals.vats().size() <= 1) {

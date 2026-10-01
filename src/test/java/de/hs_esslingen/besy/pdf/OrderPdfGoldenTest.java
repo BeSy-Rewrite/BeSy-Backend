@@ -39,6 +39,7 @@ import de.hs_esslingen.besy.enums.PreferredList;
 import de.hs_esslingen.besy.enums.VatType;
 import de.hs_esslingen.besy.models.Address;
 import de.hs_esslingen.besy.models.Approval;
+import de.hs_esslingen.besy.models.Currency;
 import de.hs_esslingen.besy.models.CustomerId;
 import de.hs_esslingen.besy.models.Item;
 import de.hs_esslingen.besy.models.ItemId;
@@ -188,6 +189,21 @@ class OrderPdfGoldenTest {
         stub(f);
 
         assertMatchesGolden("order-fractional-vat-rate.snapshot", renderAndExtractFields(f.orderId()));
+    }
+
+    @Test
+    @DisplayName("writes the order currency to subtotal, net total, and total")
+    void writesOrderCurrencyForTotals() throws IOException {
+        Fixture f = Fixture.completeSingleVat();
+        f.order.setCurrency(new Currency("USD", "US Dollar"));
+        stub(f);
+
+        Map<String, String> fields = renderAndExtractFields(f.orderId());
+
+        assertThat(fields)
+                .containsEntry("Formular1[0].#subform[0].Body[0].Zwischensumme[0]", "2.600,00 $")
+                .containsEntry("Formular1[0].#subform[0].Body[0].Nettosumme[1]", "2.340,00 $")
+                .containsEntry("Formular1[0].#subform[0].Body[0].Gesamtsumme[0]", "2.784,60 $");
     }
 
     // -------------------------------------------------------------------- Plumbing
