@@ -10,6 +10,8 @@ import java.time.temporal.TemporalAccessor;
 import java.util.Locale;
 import java.util.Objects;
 
+import de.hs_esslingen.besy.models.Currency;
+
 /**
  * Single place for all value-to-string conversions used in the order PDF.
  *
@@ -28,14 +30,27 @@ import java.util.Objects;
  */
 public final class PdfValueFormatter {
 
-    private static final String CURRENCY_SUFFIX = " €";
+    private static final String DEFAULT_CURRENCY_SYMBOL = "€";
 
     private PdfValueFormatter() {
     }
 
+    public static String formatCurrency(BigDecimal amount, Currency currency) {
+        if (currency == null) {
+            return formatCurrency(amount);
+        }
+        return formatCurrency(amount, java.util.Currency.getInstance(currency.getCode()).getSymbol());
+    }
+
     /** e.g. {@code 2400} -> {@code "2.400,00 €"}. */
     public static String formatCurrency(BigDecimal amount) {
-        return formatDecimal(amount).concat(CURRENCY_SUFFIX);
+        return formatCurrency(amount, DEFAULT_CURRENCY_SYMBOL);
+    }
+
+    public static String formatCurrency(BigDecimal amount, String currencySymbol) {
+        Objects.requireNonNull(amount, "amount must not be null");
+        Objects.requireNonNull(currencySymbol, "currencySymbol must not be null");
+        return formatDecimal(amount).concat(" ").concat(currencySymbol);
     }
 
     /**
