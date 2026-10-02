@@ -25,6 +25,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDVariableText;
 import org.junit.jupiter.api.Test;
 
 import de.hs_esslingen.besy.enums.VatType;
+import de.hs_esslingen.besy.models.Currency;
 import de.hs_esslingen.besy.models.Item;
 import de.hs_esslingen.besy.models.ItemId;
 import de.hs_esslingen.besy.models.Vat;
@@ -209,7 +210,7 @@ class UnicodeDiagnostic {
                     "Wichtiger Artikel 😀😀😀😀😀 mit chinesischen Schriftzeichen 中文测试字符串 "
                             + "und weiterem Text der zum Zeilenumbruch führen sollte");
 
-            order.setItems(List.of(umlautItem, emojiCjkItem));
+            order.setItems(List.of(umlautItem, emojiCjkItem), new Currency("EUR", "Euro"));
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             doc.save(out);

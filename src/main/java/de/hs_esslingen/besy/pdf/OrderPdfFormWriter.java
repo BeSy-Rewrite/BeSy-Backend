@@ -62,7 +62,7 @@ public class OrderPdfFormWriter {
         writeInvoiceAddress(order, data);
 
         try {
-            order.setItems(data.items());
+            order.setItems(data.items(), orderDAO.getCurrency());
         } catch (BadRequestException e) {
             throw new BadRequestException("Error while mapping order items for PDF generation: " + e.getMessage(), e);
         }

@@ -206,6 +206,22 @@ class OrderPdfGoldenTest {
                 .containsEntry("Formular1[0].#subform[0].Body[0].Gesamtsumme[0]", "2.784,60 $");
     }
 
+    @Test
+    @DisplayName("writes the order currency to item prices and amounts")
+    void writesOrderCurrencyForItems() throws IOException {
+        Fixture f = Fixture.completeSingleVat();
+        f.order.setCurrency(new Currency("USD", "US Dollar"));
+        stub(f);
+
+        Map<String, String> fields = renderAndExtractFields(f.orderId());
+
+        assertThat(fields)
+                .containsEntry("Formular1[0].#subform[0].Body[0].Stückpreis[0]", "1.200,00 $")
+                .containsEntry("Formular1[0].#subform[0].Body[0].Stückpreis[1]", "200,00 $")
+                .containsEntry("Formular1[0].#subform[0].Body[0].Betrag[0]", "2.400,00 $")
+                .containsEntry("Formular1[0].#subform[0].Body[0].Betrag[1]", "200,00 $");
+    }
+
     // -------------------------------------------------------------------- Plumbing
 
     private void stub(Fixture f) {

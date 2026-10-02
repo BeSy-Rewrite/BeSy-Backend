@@ -23,6 +23,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
 
 import de.hs_esslingen.besy.enums.VatType;
 import de.hs_esslingen.besy.exceptions.BadRequestException;
+import de.hs_esslingen.besy.models.Currency;
 import de.hs_esslingen.besy.models.Item;
 import de.hs_esslingen.besy.models.Quotation;
 import de.hs_esslingen.besy.services.PriceConversionService;
@@ -451,7 +452,8 @@ public class PDFOrder {
      *                             quantity-bearing item has an invalid
      *                             price/VAT combination
      */
-    public void setItems(List<Item> items) throws IOException {
+    public void setItems(List<Item> items, Currency currency) throws IOException {
+        String currencySymbol = currency != null ? java.util.Currency.getInstance(currency.getCode()).getSymbol() : "";
         int amountInitialItems = items.size();
 
         List<Item> sortedItems = new ArrayList<>(items);
@@ -488,9 +490,9 @@ public class PDFOrder {
 
                 pdfItem.setPosition(String.valueOf(itemPosition++));
                 pdfItem.setQuantity(String.valueOf(item.getQuantity()));
-                pdfItem.setPrice(PdfValueFormatter.formatCurrency(netPrice));
+                pdfItem.setPrice(PdfValueFormatter.formatCurrency(netPrice, currencySymbol));
                 pdfItem.setAmount(PdfValueFormatter.formatCurrency(
-                        BigDecimal.valueOf(item.getQuantity()).multiply(netPrice)));
+                        BigDecimal.valueOf(item.getQuantity()).multiply(netPrice), currencySymbol));
             }
             pdfItem.setDescription(item.getName());
         }
