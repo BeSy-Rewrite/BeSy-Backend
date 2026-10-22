@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Value;
 
 /**
@@ -12,9 +14,11 @@ import lombok.Value;
 @Value
 public class OrderRequestDTO implements Serializable {
     String primaryCostCenterId;
+    @Size(min = 2, max = 2)
     String bookingYear;
     String legacyAlias;
     Long ownerId;
+    @NotNull
     String contentDescription;
     String currencyShort;
     String comment;

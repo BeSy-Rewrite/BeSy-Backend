@@ -1,13 +1,13 @@
 package de.hs_esslingen.besy.dtos.response;
 
-import de.hs_esslingen.besy.enums.OrderStatus;
-import lombok.Value;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
+
+import de.hs_esslingen.besy.enums.OrderStatus;
+import jakarta.validation.constraints.Size;
+import lombok.Value;
 
 /**
  * DTO for {@link de.hs_esslingen.besy.models.Order}
@@ -16,11 +16,12 @@ import java.time.OffsetDateTime;
 public class OrderResponseDTO implements Serializable {
     Long id;
     String primaryCostCenterId;
+    @Size(min = 2, max = 2)
     String bookingYear;
     Short autoIndex;
     LocalDateTime createdDate;
     String legacyAlias;
-    Integer ownerId;
+    Long ownerId;
     String contentDescription;
     OrderStatus status;
     CurrencyResponseDTO currency;
