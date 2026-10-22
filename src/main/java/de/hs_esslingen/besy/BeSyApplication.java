@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 @SpringBootApplication
 @EnableJpaAuditing
 @EnableAsync
-@SecurityScheme(name = "Keycloak", type = SecuritySchemeType.OAUTH2, bearerFormat = "JWT", scheme = "bearer", in = SecuritySchemeIn.HEADER, flows = @OAuthFlows(password = @OAuthFlow(authorizationUrl = "https://auth.insy.hs-esslingen.com/realms/insy/protocol/openid-connect/auth", tokenUrl = "https://auth.insy.hs-esslingen.com/realms/insy/protocol/openid-connect/token")))
+@SecurityScheme(name = "Keycloak", type = SecuritySchemeType.OAUTH2, bearerFormat = "JWT", scheme = "bearer", in = SecuritySchemeIn.HEADER, flows = @OAuthFlows(password = @OAuthFlow(authorizationUrl = "${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/auth", tokenUrl = "${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/token")))
 @OpenAPIDefinition(info = @Info(title = "BeSy API", version = "${spring.application.version}", description = "API des Bestellsystems"))
 public class BeSyApplication {
 
