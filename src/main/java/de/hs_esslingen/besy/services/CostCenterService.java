@@ -1,18 +1,20 @@
 package de.hs_esslingen.besy.services;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
 import de.hs_esslingen.besy.dtos.request.CostCenterRequestDTO;
+import de.hs_esslingen.besy.dtos.request.UpdateCostCenterDTO;
 import de.hs_esslingen.besy.dtos.response.CostCenterResponseDTO;
-import de.hs_esslingen.besy.enums.OrderStatus;
+import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.CostCenterRequestMapper;
 import de.hs_esslingen.besy.mappers.response.CostCenterResponseMapper;
 import de.hs_esslingen.besy.models.CostCenter;
 import de.hs_esslingen.besy.repositories.CostCenterRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -29,7 +31,8 @@ public class CostCenterService {
     }
 
     public ResponseEntity<CostCenterResponseDTO> createCostCenter(CostCenterRequestDTO dto) {
-        if(costCenterRepository.existsById(dto.getId())) return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        if (costCenterRepository.existsById(dto.getId()))
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
 
         CostCenter costCenter = costCenterRequestMapper.toEntity(dto);
         CostCenter costCenterPersisted = costCenterRepository.save(costCenter);
@@ -38,6 +41,17 @@ public class CostCenterService {
 
     public boolean existsById(String id) {
         return costCenterRepository.existsById(id);
+    }
+
+    public CostCenter updateCostCenter(String id, UpdateCostCenterDTO dto) {
+        CostCenter currentCostCenter = costCenterRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Kostenstelle mit ID " + id + " nicht gefunden."));
+        currentCostCenter.setName(dto.getName());
+        currentCostCenter.setBeginDate(dto.getBeginDate());
+        currentCostCenter.setEndDate(dto.getEndDate());
+        currentCostCenter.setComment(dto.getComment());
+
+        return costCenterRepository.save(currentCostCenter);
     }
 
 }

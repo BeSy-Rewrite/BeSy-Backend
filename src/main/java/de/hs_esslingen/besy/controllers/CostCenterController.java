@@ -42,4 +42,15 @@ public class CostCenterController {
     public ResponseEntity<CostCenterResponseDTO> createCostCenter(@RequestBody CostCenterRequestDTO costCenterRequest) {
         return costCenterService.createCostCenter(costCenterRequest);
     }
+
+    @PatchMapping("/{id}")
+    @Operation(description = "Aktualisiert eine bestehende Kostenstelle.")
+    @ApiResponse(responseCode = "200", description = "Kostenstelle erfolgreich aktualisiert.")
+    @ApiResponse(responseCode = "404", description = "Kostenstelle nicht gefunden.")
+    @ApiResponse(responseCode = "500", description = "Interner Serverfehler.")
+    public ResponseEntity<CostCenterResponseDTO> updateCostCenter(@PathVariable String id,
+            @RequestBody UpdateCostCenterDTO costCenterRequest) {
+        return ResponseEntity
+                .ok(costCenterResponseMapper.toDto(costCenterService.updateCostCenter(id, costCenterRequest)));
+    }
 }
