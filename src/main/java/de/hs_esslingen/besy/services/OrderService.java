@@ -58,7 +58,9 @@ import de.hs_esslingen.besy.security.KeycloakAuthenticationConverter;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -227,8 +229,7 @@ public class OrderService {
             refreshSearchIndex(savedOrder.getId());
         } catch (Exception e) {
             // Log the error but do not prevent the order from being created
-            System.err.println(
-                    "Failed to refresh search index for order ID " + savedOrder.getId() + ": " + e.getMessage());
+            log.error("Failed to refresh search index for order ID " + savedOrder.getId() + ": " + e.getMessage());
         }
 
         return savedOrder;
@@ -244,20 +245,19 @@ public class OrderService {
             refreshSearchIndex(updatedOrder.getId());
         } catch (Exception e) {
             // Log the error but do not prevent the order from being updated
-            System.err.println(
+            log.error(
                     "Failed to refresh search index for order ID " + updatedOrder.getId() + ": " + e.getMessage());
         }
         return updatedOrder;
     }
 
-    public ResponseEntity<String> deleteOrderById(Long id) {
+    public void deleteOrderById(Long id) {
         Optional<Order> orderOpt = orderRepository.findById(id);
         if (orderOpt.isPresent()) {
             Order order = orderOpt.get();
             order.setStatus(OrderStatus.DELETED);
             orderRepository.save(order);
         }
-        return ResponseEntity.noContent().build();
     }
 
     /**

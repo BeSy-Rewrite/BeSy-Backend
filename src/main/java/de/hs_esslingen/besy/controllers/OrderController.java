@@ -216,13 +216,14 @@ public class OrderController {
     @ApiResponse(responseCode = "400", description = "Bestellstatus befindet sich nicht in gültigem Bestellstatus!")
     @ApiResponse(responseCode = "404", description = "Bestellung mit der angegebenen ID nicht gefunden.")
     @ApiResponse(responseCode = "500", description = "Interner Serverfehler.")
-    public ResponseEntity<String> deleteOrder(
+    public ResponseEntity<Void> deleteOrder(
             @Parameter(description = "ID der zu löschenden Bestellung.") @PathVariable("order-id") Long id) {
         if (!orderService.existsOrderById(id))
             throw new NotFoundException("Bestellung nicht gefunden.");
         if (!orderService.isOrderStatusEqual(id, orderService.getStatusesAllowingTransitionTo(OrderStatus.DELETED)))
             throw new BadRequestException("Bestellstatus befindet sich nicht in gültigem Bestellstatus!");
-        return orderService.deleteOrderById(id);
+        orderService.deleteOrderById(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("{order-id}/items")
@@ -276,7 +277,7 @@ public class OrderController {
     @ApiResponse(responseCode = "400", description = "Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!")
     @ApiResponse(responseCode = "404", description = "Bestellung nicht gefunden. Artikel nicht gefunden.")
     @ApiResponse(responseCode = "500", description = "Interner Serverfehler.")
-    public ResponseEntity<String> deleteOrderItem(
+    public ResponseEntity<Void> deleteOrderItem(
             @Parameter(description = "ID der Bestellung, deren Artikel gelöscht werden soll.") @PathVariable("order-id") Long orderId,
             @Parameter(description = "ID des Artikels, der gelöscht werden soll.") @PathVariable("item-id") Integer itemId) {
         if (!orderService.existsOrderById(orderId))
@@ -285,7 +286,8 @@ public class OrderController {
             return ResponseEntity.noContent().build();
         if (!orderService.isOrderStatusEqual(orderId, OrderStatus.IN_PROGRESS))
             throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
-        return itemService.deleteItemOfOrder(orderId, itemId);
+        itemService.deleteItemOfOrder(orderId, itemId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("{order-id}/invoices")
@@ -336,7 +338,7 @@ public class OrderController {
     @ApiResponse(responseCode = "400", description = "Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!")
     @ApiResponse(responseCode = "404", description = "Bestellung nicht gefunden. Vergleichsartikel nicht gefunden.")
     @ApiResponse(responseCode = "500", description = "Interner Serverfehler.")
-    public ResponseEntity<String> deleteOrderQuotation(
+    public ResponseEntity<Void> deleteOrderQuotation(
             @Parameter(description = "ID der Bestellung, deren Vergleichsartikel gelöscht werden soll.") @PathVariable("order-id") Long orderId,
             @Parameter(description = "ID des Vergleichsartikels, der gelöscht werden soll.") @PathVariable("quotation-id") Short quotationId) {
         if (!orderService.existsOrderById(orderId))
@@ -345,7 +347,8 @@ public class OrderController {
             return ResponseEntity.noContent().build();
         if (!orderService.isOrderStatusEqual(orderId, OrderStatus.IN_PROGRESS))
             throw new BadRequestException("Bestellstatus befindet sich nicht in Bearbeitung!");
-        return quotationService.deleteQuotation(orderId, quotationId);
+        quotationService.deleteQuotation(orderId, quotationId);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("{order-id}/quotations")

@@ -81,10 +81,9 @@ public class ItemService {
     }
 
     @Transactional
-    public ResponseEntity<String> deleteItemOfOrder(Long orderId, Integer itemId) {
+    public void deleteItemOfOrder(Long orderId, Integer itemId) {
         itemRepository.deleteItemByOrderIdAndItemId(orderId, itemId);
         orderService.refreshSearchIndex(orderId);
-        return ResponseEntity.noContent().build();
     }
 
     public boolean existsItemOfOrder(Long orderId, Integer itemId) {
