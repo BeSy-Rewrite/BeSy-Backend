@@ -45,7 +45,7 @@ public class UserController {
         @Operation(description = "Gibt einen Benutzer anhand seiner ID zurück.")
         @ApiResponse(responseCode = "200", description = "Benutzer erfolgreich abgerufen.")
         @ApiResponse(responseCode = "404", description = "Benutzer nicht gefunden.")
-        public ResponseEntity<UserResponseDTO> getUser(
+        public ResponseEntity<UserResponseDTO> getUserById(
                         @Parameter(description = "Die ID des abzurufenden Benutzers.") @PathVariable("id") long id) {
                 return ResponseEntity.ok(userResponseMapper.toDto(userService.getUserById(id)
                                 .orElseThrow(() -> new NotFoundException(
