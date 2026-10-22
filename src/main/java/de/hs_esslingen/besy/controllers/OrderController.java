@@ -66,6 +66,7 @@ import de.hs_esslingen.besy.services.QuotationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -91,7 +92,7 @@ public class OrderController {
     @Operation(description = "Gibt Bestellungen paginiert zurück und ermöglicht die Filterung nach Kostenstellen, Personen, Status, Preisen, Lieferanten, Zeitpunkten und Suchbegriffen.", parameters = {
             @Parameter(name = "page", in = ParameterIn.QUERY, required = false, schema = @Schema(type = "integer", defaultValue = "0")),
             @Parameter(name = "size", in = ParameterIn.QUERY, required = false, schema = @Schema(type = "integer", defaultValue = "10")),
-            @Parameter(name = "sort", in = ParameterIn.QUERY, required = false, schema = @Schema(type = "string", defaultValue = "createdDate,desc"), description = "Sortierung der Ergebnisse. Standardmäßig nach Erstellungsdatum absteigend sortiert.\nUnterstützt mehrfache Sortierungen. Erster Parameter ist die Hauptsortierung, der letzte die niedrigste Sortierung. Anders ausgedrückt: Die Sortierungen werden von rechts nach links angewendet.")
+            @Parameter(name = "sort", in = ParameterIn.QUERY, required = false, array = @ArraySchema(schema = @Schema(type = "string", example = "bookingYear,desc")), description = "Sortierung der Ergebnisse. Standardmäßig nach Erstellungsdatum absteigend sortiert.\nUnterstützt mehrfache Sortierungen. Erster Parameter ist die Hauptsortierung, der letzte die niedrigste Sortierung. Anders ausgedrückt: Die Sortierungen werden von rechts nach links angewendet.")
     })
     @ApiResponse(responseCode = "200", description = "Liste der Bestellungen mit Paginierungsinformationen.")
     public Page<OrderResponseDTO> getAllOrders(

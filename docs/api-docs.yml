@@ -878,8 +878,10 @@ paths:
             Sortierung der Ergebnisse. Standardmäßig nach Erstellungsdatum absteigend sortiert.
             Unterstützt mehrfache Sortierungen. Erster Parameter ist die Hauptsortierung, der letzte die niedrigste Sortierung. Anders ausgedrückt: Die Sortierungen werden von rechts nach links angewendet.
           schema:
-            type: string
-            default: "createdDate,desc"
+            type: array
+            items:
+              type: string
+              example: "bookingYear,desc"
         - name: primaryCostCenters
           in: query
           description: Filtert nach IDs der primären Kostenstellen.
@@ -1480,14 +1482,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "401":
-          description: Unauthorized
+        "500":
+          description: Interner Serverfehler.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Interner Serverfehler.
+        "401":
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -1547,14 +1549,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "401":
-          description: Unauthorized
+        "500":
+          description: Fehler beim Hochladen des Dokumentes. Interner Serverfehler.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Fehler beim Hochladen des Dokumentes. Interner Serverfehler.
+        "401":
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -2641,14 +2643,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "401":
-          description: Unauthorized
+        "500":
+          description: Interner Serverfehler.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Interner Serverfehler.
+        "401":
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -2738,14 +2740,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "401":
-          description: Unauthorized
+        "500":
+          description: Interner Serverfehler.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "500":
-          description: Interner Serverfehler.
+        "401":
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -3647,13 +3649,13 @@ components:
         offset:
           type: integer
           format: int64
-        paged:
-          type: boolean
         sort:
           $ref: "#/components/schemas/SortObject"
         page_number:
           type: integer
           format: int32
+        paged:
+          type: boolean
         page_size:
           type: integer
           format: int32
