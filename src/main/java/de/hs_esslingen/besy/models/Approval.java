@@ -1,8 +1,14 @@
 package de.hs_esslingen.besy.models;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -25,25 +31,28 @@ public class Approval {
     @JoinColumn(name = "order_id")
     private Order order;
 
+    @Builder.Default
     @Column(name = "flag_edv_permission")
     private Boolean flagEdvPermission = false;
 
+    @Builder.Default
     @Column(name = "flag_furniture_permission")
     private Boolean flagFurniturePermission = false;
 
+    @Builder.Default
     @Column(name = "flag_furniture_room")
     private Boolean flagFurnitureRoom = false;
 
+    @Builder.Default
     @Column(name = "flag_investment_room")
     private Boolean flagInvestmentRoom = false;
 
+    @Builder.Default
     @Column(name = "flag_investment_structural_measures")
     private Boolean flagInvestmentStructuralMeasures = false;
 
+    @Builder.Default
     @Column(name = "flag_media_permission")
     private Boolean flagMediaPermission = false;
 
 }
-
-
-
