@@ -74,7 +74,7 @@ class UserServiceTest {
         user.setEmail("jane.doe@example.com");
         user.setKeycloakUUID("kc-123");
 
-        userResponseDTO = new UserResponseDTO("Jane", "Doe", "jane.doe@example.com", "kc-123");
+        userResponseDTO = new UserResponseDTO(0, "Jane", "Doe", "jane.doe@example.com");
 
         preferences = new UserPreferences();
         preferences.setId(10);

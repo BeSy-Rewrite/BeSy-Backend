@@ -1,20 +1,17 @@
 package de.hs_esslingen.besy.services;
 
-import de.hs_esslingen.besy.dtos.request.AddressRequestDTO;
-import de.hs_esslingen.besy.dtos.request.SupplierRequestDTO;
-import de.hs_esslingen.besy.dtos.response.AddressResponseDTO;
-import de.hs_esslingen.besy.dtos.response.CreateSupplierResponseDTO;
-import de.hs_esslingen.besy.dtos.response.SupplierResponseDTO;
-import de.hs_esslingen.besy.enums.AddressOwnerType;
-import de.hs_esslingen.besy.exceptions.BadRequestException;
-import de.hs_esslingen.besy.exceptions.NotFoundException;
-import de.hs_esslingen.besy.mappers.request.AddressRequestMapper;
-import de.hs_esslingen.besy.mappers.request.SupplierRequestMapper;
-import de.hs_esslingen.besy.mappers.response.CreateSupplierResponseMapper;
-import de.hs_esslingen.besy.mappers.response.SupplierResponseMapper;
-import de.hs_esslingen.besy.models.Address;
-import de.hs_esslingen.besy.models.Supplier;
-import de.hs_esslingen.besy.repositories.SupplierRepository;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,17 +21,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import de.hs_esslingen.besy.dtos.request.AddressRequestDTO;
+import de.hs_esslingen.besy.dtos.request.SupplierRequestDTO;
+import de.hs_esslingen.besy.dtos.response.AddressResponseDTO;
+import de.hs_esslingen.besy.dtos.response.SupplierResponseDTO;
+import de.hs_esslingen.besy.dtos.response.SupplierWithAddressResponseDTO;
+import de.hs_esslingen.besy.enums.AddressOwnerType;
+import de.hs_esslingen.besy.exceptions.BadRequestException;
+import de.hs_esslingen.besy.exceptions.NotFoundException;
+import de.hs_esslingen.besy.mappers.request.AddressRequestMapper;
+import de.hs_esslingen.besy.mappers.request.SupplierRequestMapper;
+import de.hs_esslingen.besy.mappers.response.SupplierResponseMapper;
+import de.hs_esslingen.besy.mappers.response.SupplierWithAddressResponseMapper;
+import de.hs_esslingen.besy.models.Address;
+import de.hs_esslingen.besy.models.Supplier;
+import de.hs_esslingen.besy.repositories.SupplierRepository;
 
 @ExtendWith(MockitoExtension.class)
 class SupplierServiceTest {
@@ -49,7 +50,7 @@ class SupplierServiceTest {
     private SupplierResponseMapper supplierResponseMapper;
 
     @Mock
-    private CreateSupplierResponseMapper createSupplierResponseMapper;
+    private SupplierWithAddressResponseMapper createSupplierResponseMapper;
 
     @Mock
     private AddressRequestMapper addressRequestMapper;
@@ -62,7 +63,7 @@ class SupplierServiceTest {
     private SupplierRequestDTO requestDto;
     private AddressRequestDTO addressRequestDto;
     private SupplierResponseDTO responseDto;
-    private CreateSupplierResponseDTO createResponseDto;
+    private SupplierWithAddressResponseDTO createResponseDto;
     private AddressResponseDTO addressResponseDto;
 
     @BeforeEach
@@ -85,8 +86,7 @@ class SupplierServiceTest {
                 "12345",
                 "County",
                 "Country",
-                "Comment"
-        );
+                "Comment");
 
         requestDto = new SupplierRequestDTO(
                 "Supplier GmbH",
@@ -97,8 +97,7 @@ class SupplierServiceTest {
                 "https://example.com",
                 "VAT-1",
                 false,
-                addressRequestDto
-        );
+                addressRequestDto);
 
         responseDto = new SupplierResponseDTO(
                 1,
@@ -110,8 +109,7 @@ class SupplierServiceTest {
                 "https://example.com",
                 "VAT-1",
                 false,
-                null
-        );
+                null);
 
         addressResponseDto = new AddressResponseDTO(
                 10,
@@ -122,10 +120,9 @@ class SupplierServiceTest {
                 "12345",
                 "County",
                 "Country",
-                "Comment"
-        );
+                "Comment");
 
-        createResponseDto = new CreateSupplierResponseDTO(
+        createResponseDto = new SupplierWithAddressResponseDTO(new SupplierResponseDTO(
                 1,
                 "Supplier GmbH",
                 "123",
@@ -135,9 +132,8 @@ class SupplierServiceTest {
                 "https://example.com",
                 "VAT-1",
                 false,
-                null,
-                addressResponseDto
-        );
+                null),
+                addressResponseDto);
     }
 
     @Test
@@ -185,7 +181,7 @@ class SupplierServiceTest {
         when(supplierRepository.save(any(Supplier.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(createSupplierResponseMapper.toDto(any(Supplier.class))).thenReturn(createResponseDto);
 
-        ResponseEntity<CreateSupplierResponseDTO> response = supplierService.createSupplier(requestDto);
+        ResponseEntity<SupplierWithAddressResponseDTO> response = supplierService.createSupplier(requestDto);
 
         assertEquals(200, response.getStatusCode().value());
         assertSame(createResponseDto, response.getBody());
@@ -198,14 +194,13 @@ class SupplierServiceTest {
         verify(createSupplierResponseMapper).toDto(saved);
     }
 
-
     @Test
     void should_update_supplier_and_update_address() {
         when(supplierRepository.findById(1)).thenReturn(Optional.of(supplier));
         when(supplierRepository.save(any(Supplier.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(createSupplierResponseMapper.toDto(any(Supplier.class))).thenReturn(createResponseDto);
 
-        ResponseEntity<CreateSupplierResponseDTO> response = supplierService.updateSupplier(1, requestDto);
+        ResponseEntity<SupplierWithAddressResponseDTO> response = supplierService.updateSupplier(1, requestDto);
 
         assertEquals(200, response.getStatusCode().value());
         assertSame(createResponseDto, response.getBody());
@@ -235,6 +230,7 @@ class SupplierServiceTest {
         assertEquals(true, ex.getMessage().contains("Adresse"));
         verify(supplierRepository, never()).save(any(Supplier.class));
     }
+
     @Test
     void should_exists_supplier_by_id() {
         when(supplierRepository.existsById(1)).thenReturn(true);

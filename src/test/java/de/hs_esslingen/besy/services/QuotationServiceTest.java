@@ -1,5 +1,24 @@
 package de.hs_esslingen.besy.services;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
+
 import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
 import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
 import de.hs_esslingen.besy.mappers.request.QuotationRequestMapper;
@@ -10,25 +29,6 @@ import de.hs_esslingen.besy.models.QuotationId;
 import de.hs_esslingen.besy.repositories.OrderRepository;
 import de.hs_esslingen.besy.repositories.QuotationRepository;
 import de.hs_esslingen.besy.repositories.SupplierRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class QuotationServiceTest {
@@ -68,20 +68,17 @@ class QuotationServiceTest {
         quotation.setQuoteDate(LocalDate.of(2025, 1, 10));
 
         requestDto = new QuotationRequestDTO(
-                null,
-                LocalDate.of(2025, 1, 10),
-                BigDecimal.valueOf(123.45),
                 "Quote Co",
-                "Quote City"
-        );
+                "Quote City",
+                LocalDate.of(2025, 1, 10),
+                BigDecimal.valueOf(123.45));
 
         responseDto = new QuotationResponseDTO(
                 (short) 1,
                 LocalDate.of(2025, 1, 10),
                 BigDecimal.valueOf(123.45),
                 "Quote Co",
-                "Quote City"
-        );
+                "Quote City");
     }
 
     @Test

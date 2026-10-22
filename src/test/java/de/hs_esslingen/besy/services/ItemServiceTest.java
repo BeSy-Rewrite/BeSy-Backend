@@ -78,9 +78,9 @@ class ItemServiceTest {
                 "pcs",
                 "A-1",
                 "Comment",
-                BigDecimal.valueOf(19),
                 PreferredList.RZ,
                 "PL-1",
+                BigDecimal.valueOf(19),
                 VatType.netto);
 
         item = new Item();

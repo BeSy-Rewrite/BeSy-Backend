@@ -201,7 +201,7 @@ class OrderServiceTest {
                 (short) 1,
                 null,
                 "LA",
-                1,
+                1L,
                 "Content",
                 OrderStatus.IN_PROGRESS,
                 null,
