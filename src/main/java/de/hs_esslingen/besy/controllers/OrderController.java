@@ -405,7 +405,7 @@ public class OrderController {
     @ApiResponse(responseCode = "400", description = "Diese Rechnung besitzt bereits ein verknüpftes Dokument mit der id `paperless_id`.")
     @ApiResponse(responseCode = "404", description = "Rechnung nicht gefunden.")
     @ApiResponse(responseCode = "500", description = "Fehler beim Hochladen des Dokumentes. Interner Serverfehler.")
-    public ResponseEntity<InvoiceResponseDTO> createOrderInvoice(
+    public ResponseEntity<InvoiceResponseDTO> uploadOrderInvoicePdf(
             @Parameter(description = "Die hochzuladende PDF-Datei.", content = @Content(mediaType = "multipart/form-data")) @RequestParam("file") MultipartFile file,
             @Parameter(description = "Die ID der Rechnung, mit der das Dokument verknüpft werden soll") @PathVariable("invoice-id") String invoiceId)
             throws IOException, ParseException {
