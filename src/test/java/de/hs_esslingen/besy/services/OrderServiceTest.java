@@ -393,9 +393,8 @@ class OrderServiceTest {
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
         when(orderRepository.save(order)).thenReturn(order);
 
-        ResponseEntity<String> response = orderService.deleteOrderById(1L);
+        orderService.deleteOrderById(1L);
 
-        assertEquals(204, response.getStatusCode().value());
         assertEquals(OrderStatus.DELETED, order.getStatus());
         verify(orderRepository).save(order);
     }
@@ -404,9 +403,8 @@ class OrderServiceTest {
     void should_return_no_content_when_deleting_nonexistent_order() {
         when(orderRepository.findById(1L)).thenReturn(Optional.empty());
 
-        ResponseEntity<String> response = orderService.deleteOrderById(1L);
+        orderService.deleteOrderById(1L);
 
-        assertEquals(204, response.getStatusCode().value());
         verify(orderRepository, never()).save(any(Order.class));
     }
 

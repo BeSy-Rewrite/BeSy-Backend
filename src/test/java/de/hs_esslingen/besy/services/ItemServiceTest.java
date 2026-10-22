@@ -189,9 +189,8 @@ class ItemServiceTest {
         Long orderId = 100L;
         Integer itemId = 1;
 
-        ResponseEntity<String> response = itemService.deleteItemOfOrder(orderId, itemId);
+        itemService.deleteItemOfOrder(orderId, itemId);
 
-        assertEquals(204, response.getStatusCode().value());
         verify(itemRepository).deleteItemByOrderIdAndItemId(orderId, itemId);
         verify(itemRepository, never()).delete(any(Item.class));
         verify(itemRepository, never()).deleteAll();

@@ -171,9 +171,8 @@ class QuotationServiceTest {
         Long orderId = 100L;
         Short index = 1;
 
-        ResponseEntity<String> response = quotationService.deleteQuotation(orderId, index);
+        quotationService.deleteQuotation(orderId, index);
 
-        assertEquals(204, response.getStatusCode().value());
         verify(quotationRepository).deleteById(new QuotationId(orderId, index));
     }
 
