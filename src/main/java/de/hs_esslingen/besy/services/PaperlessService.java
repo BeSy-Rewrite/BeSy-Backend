@@ -1,13 +1,7 @@
 package de.hs_esslingen.besy.services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.hs_esslingen.besy.dtos.response.InvoiceResponseDTO;
-import de.hs_esslingen.besy.exceptions.StatusNotSuccessException;
-import de.hs_esslingen.besy.interfaces.paperless.Task;
-import de.hs_esslingen.besy.mappers.response.InvoiceResponseMapper;
-import de.hs_esslingen.besy.models.Invoice;
-import de.hs_esslingen.besy.repositories.InvoiceRepository;
+import java.io.IOException;
+
 import org.apache.coyote.BadRequestException;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -16,16 +10,26 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.hs_esslingen.besy.dtos.response.InvoiceResponseDTO;
+import de.hs_esslingen.besy.exceptions.NotFoundException;
+import de.hs_esslingen.besy.mappers.response.InvoiceResponseMapper;
+import de.hs_esslingen.besy.models.Invoice;
+import de.hs_esslingen.besy.repositories.InvoiceRepository;
 
 @Service
 @EnableRetry
@@ -50,33 +54,37 @@ public class PaperlessService {
     @Value("${paperless.api.token}")
     private String authToken;
 
-    public PaperlessService(InvoiceRepository invoiceRepository, PaperlessRetryService retryService, ObjectMapper mapper, InvoiceResponseMapper invoiceResponseMapper) {
+    public PaperlessService(InvoiceRepository invoiceRepository, PaperlessRetryService retryService,
+            ObjectMapper mapper, InvoiceResponseMapper invoiceResponseMapper) {
         this.invoiceRepository = invoiceRepository;
         this.retryService = retryService;
         this.invoiceResponseMapper = invoiceResponseMapper;
     }
 
-
-    public ResponseEntity<InvoiceResponseDTO> uploadPdfToPaperless(MultipartFile file, String invoiceId) throws IOException, ParseException {
+    public ResponseEntity<InvoiceResponseDTO> uploadPdfToPaperless(MultipartFile file, String invoiceId)
+            throws IOException, ParseException {
 
         Invoice invoice = invoiceRepository.findById(invoiceId).get();
 
-        if(invoice.getPaperlessId() != null) throw new BadRequestException("Diese Rechnung besitzt bereits ein verknüpftes Dokument mit der id: " + invoice.getPaperlessId());
+        if (invoice.getPaperlessId() != null)
+            throw new BadRequestException(
+                    "Diese Rechnung besitzt bereits ein verknüpftes Dokument mit der id: " + invoice.getPaperlessId());
 
         // Upload the pdf to paperless
         String uuid = uploadDocument(file);
-        if (uuid == null) throw new RuntimeException("Fehler beim Hochladen des Dokumentes.");
+        if (uuid == null)
+            throw new RuntimeException("Fehler beim Hochladen des Dokumentes.");
 
         // Check task's status and retry if necessary
         Long documentId = Long.parseLong(retryService.getDocumentIdWithRetry(uuid));
 
-        if(documentId == null) throw new RuntimeException("Fehler beim Hochladen des Dokumentes.");
+        if (documentId == null)
+            throw new RuntimeException("Fehler beim Hochladen des Dokumentes.");
         invoice.setPaperlessId(documentId);
         Invoice savedInvoice = invoiceRepository.save(invoice);
 
         return ResponseEntity.ok(invoiceResponseMapper.toDto(savedInvoice));
     }
-
 
     public ResponseEntity<byte[]> getPdfOfInvoice(String invoiceId) throws IOException {
         Invoice invoice = invoiceRepository.findById(invoiceId).get();
@@ -84,7 +92,8 @@ public class PaperlessService {
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
 
-            HttpGet get = new HttpGet(paperlessBaseUrl + paperlessDownloadUrl.replace("{id}", String.valueOf(paperlessId)));
+            HttpGet get = new HttpGet(
+                    paperlessBaseUrl + paperlessDownloadUrl.replace("{id}", String.valueOf(paperlessId)));
             get.setHeader("Authorization", "Token " + authToken);
 
             try (CloseableHttpResponse response = client.execute(get)) {
@@ -92,7 +101,7 @@ public class PaperlessService {
 
                     HttpHeaders headers = new HttpHeaders();
                     headers.setContentType(MediaType.APPLICATION_PDF);
-                    headers.setContentDisposition(ContentDisposition.builder(invoice.getId()+ ".pdf").build());
+                    headers.setContentDisposition(ContentDisposition.builder(invoice.getId() + ".pdf").build());
                     return new ResponseEntity<>(EntityUtils.toByteArray(response.getEntity()), headers, HttpStatus.OK);
                 } else {
                     throw new RuntimeException("Fehler beim Herunterladen der PDF.");
@@ -101,32 +110,28 @@ public class PaperlessService {
         }
     }
 
-
-    public ResponseEntity<byte[]> getPreviewOfPdfOfInvoice(String invoiceId) throws IOException {
-        Invoice invoice = invoiceRepository.findById(invoiceId).get();
+    public HttpEntity getPreviewOfPdfOfInvoice(String invoiceId) throws IOException {
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new NotFoundException("Dokument nicht gefunden."));
         Long paperlessId = invoice.getPaperlessId();
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
 
-            HttpGet get = new HttpGet(paperlessBaseUrl + paperlessPreviewUrl.replace("{id}", String.valueOf(paperlessId)));
+            HttpGet get = new HttpGet(
+                    paperlessBaseUrl + paperlessPreviewUrl.replace("{id}", String.valueOf(paperlessId)));
             get.setHeader("Authorization", "Token " + authToken);
 
             try (CloseableHttpResponse response = client.execute(get)) {
                 if (response.getCode() == 200) {
 
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.setContentType(MediaType.IMAGE_PNG);
-                    headers.setContentDisposition(ContentDisposition.builder(invoice.getId()+ ".webp").build());
+                    return response.getEntity();
 
-                    return new ResponseEntity<>(EntityUtils.toByteArray(response.getEntity()), headers, HttpStatus.OK);
                 } else {
                     throw new RuntimeException("Fehler beim Herunterladen des Fotos");
                 }
             }
         }
     }
-
-
 
     private String uploadDocument(MultipartFile file) throws IOException, ParseException {
 
@@ -147,7 +152,5 @@ public class PaperlessService {
             }
         }
     }
-
-
 
 }

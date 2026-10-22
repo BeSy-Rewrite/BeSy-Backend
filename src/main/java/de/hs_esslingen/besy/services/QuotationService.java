@@ -1,7 +1,14 @@
 package de.hs_esslingen.besy.services;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
 import de.hs_esslingen.besy.dtos.request.QuotationRequestDTO;
 import de.hs_esslingen.besy.dtos.response.QuotationResponseDTO;
+import de.hs_esslingen.besy.exceptions.NotFoundException;
 import de.hs_esslingen.besy.mappers.request.QuotationRequestMapper;
 import de.hs_esslingen.besy.mappers.response.QuotationResponseMapper;
 import de.hs_esslingen.besy.models.Order;
@@ -9,13 +16,7 @@ import de.hs_esslingen.besy.models.Quotation;
 import de.hs_esslingen.besy.models.QuotationId;
 import de.hs_esslingen.besy.repositories.OrderRepository;
 import de.hs_esslingen.besy.repositories.QuotationRepository;
-import de.hs_esslingen.besy.repositories.SupplierRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @AllArgsConstructor
@@ -23,7 +24,6 @@ public class QuotationService {
 
     private final QuotationRepository quotationRepository;
     private final OrderRepository orderRepository;
-    private final SupplierRepository supplierRepository;
     private final QuotationRequestMapper quotationRequestMapper;
     private final QuotationResponseMapper quotationResponseMapper;
 
@@ -60,5 +60,13 @@ public class QuotationService {
     public boolean existsQuotation(Long orderId, Short index) {
         return quotationRepository.existsById(new QuotationId(orderId, index));
     }
-}
 
+    public Quotation updateQuotation(Long orderId, Short index, QuotationRequestDTO dto) {
+        QuotationId quotationId = new QuotationId(orderId, index);
+        Quotation quotation = quotationRepository.findById(quotationId)
+                .orElseThrow(() -> new NotFoundException("Quotation not found"));
+
+        quotationRequestMapper.partialUpdate(quotation, dto);
+        return quotationRepository.save(quotation);
+    }
+}
