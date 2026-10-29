@@ -498,18 +498,41 @@ public class PDFOrder {
         }
     }
 
+    /**
+     * Returns the full description of an item, including its article ID and name.
+     * 
+     * This is needed as the PDF has no separate field for the article ID, so it
+     * must be included in the description.
+     * This should only be used inside the wrapping logic.
+     *
+     * @param item the item for which to get the full description
+     * @return the full description of the item
+     */
+    private String getFullItemDescription(Item item) {
+        return item.getArticleId() + " " + item.getName();
+    }
+
+    /**
+     * Wraps the item descriptions – prefixed with the article ID – into multiple
+     * lines if they exceed the maximum width.
+     * 
+     * This method uses a stack to process the items in reverse order, so that the
+     * wrapped items are added in the correct order.
+     * 
+     * @param items
+     * @return a list of items with wrapped descriptions
+     */
     private List<Item> wrapItemLines(List<Item> items) {
         Deque<Item> itemStack = new ArrayDeque<>();
         List<Item> wrappedItems = new ArrayList<>();
-        List<Item> reversedItems = new ArrayList<>(items);
-        java.util.Collections.reverse(reversedItems);
+        List<Item> reversedItems = items.reversed();
         for (Item item : reversedItems) {
             itemStack.push(item);
         }
         while (!itemStack.isEmpty()) {
             Item item = itemStack.pop();
             try {
-                float descriptionWidth = getStringWidth(item.getName());
+                float descriptionWidth = getStringWidth(getFullItemDescription(item));
                 if (descriptionWidth <= itemDescriptionMaxWidth) {
                     wrappedItems.add(item);
                 } else {
@@ -529,7 +552,7 @@ public class PDFOrder {
 
     private List<Item> wrapItem(Item item) {
         List<Item> wrappedItems = new ArrayList<>();
-        String fullDescription = item.getName();
+        String fullDescription = getFullItemDescription(item);
 
         try {
             // Calculate how much text fits in the first line (accounting for other columns)
