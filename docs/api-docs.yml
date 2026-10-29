@@ -28,14 +28,14 @@ paths:
               $ref: "#/components/schemas/UserPreferencesRequestDTO"
         required: true
       responses:
-        "404":
-          description: Benutzerpräferenz nicht gefunden
+        "400":
+          description: Ungültige Anfrage
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Ungültige Anfrage
+        "404":
+          description: Benutzerpräferenz nicht gefunden
           content:
             application/json:
               schema:
@@ -78,14 +78,14 @@ paths:
             type: integer
             format: int32
       responses:
-        "404":
-          description: Benutzerpräferenz nicht gefunden
+        "400":
+          description: Ungültige Anfrage
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Ungültige Anfrage
+        "404":
+          description: Benutzerpräferenz nicht gefunden
           content:
             application/json:
               schema:
@@ -123,14 +123,14 @@ paths:
             type: integer
             format: int32
       responses:
-        "404":
-          description: Lieferant nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Lieferant nicht gefunden.
           content:
             application/json:
               schema:
@@ -175,14 +175,14 @@ paths:
               $ref: "#/components/schemas/SupplierRequestDTO"
         required: true
       responses:
-        "404":
-          description: Lieferant nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Lieferant nicht gefunden.
           content:
             application/json:
               schema:
@@ -226,14 +226,14 @@ paths:
             type: integer
             format: int64
       responses:
-        "404":
-          description: Person nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Person nicht gefunden.
           content:
             application/json:
               schema:
@@ -282,14 +282,14 @@ paths:
               $ref: "#/components/schemas/PersonRequestDTO"
         required: true
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -342,17 +342,17 @@ paths:
               $ref: "#/components/schemas/OrderStatus"
         required: true
       responses:
-        "404":
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
         "400":
           description:
             "Löschen nicht erlaubt, nutze DELETE endpoint! Ungültiger Statusü\
             bergang von `old_status` zu `new_status`. primary_cost_center_id darf\
             \ nicht null sein."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -389,14 +389,14 @@ paths:
           schema:
             type: string
       responses:
-        "404":
-          description: Benutzer nicht gefunden
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Benutzer nicht gefunden
           content:
             application/json:
               schema:
@@ -443,14 +443,14 @@ paths:
               $ref: "#/components/schemas/UserPreferencesRequestDTO"
         required: true
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Ungültige Anfrage
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Ungültige Anfrage
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -486,14 +486,14 @@ paths:
       description: Gibt eine Liste von Lieferanten zurück.
       operationId: getAllSuppliers
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -530,14 +530,14 @@ paths:
               $ref: "#/components/schemas/SupplierRequestDTO"
         required: true
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Ungültige Eingabe(n).
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Ungültige Eingabe(n).
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -583,14 +583,14 @@ paths:
             type: integer
             format: int32
       responses:
-        "404":
-          description: Lieferant nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Lieferant nicht gefunden.
           content:
             application/json:
               schema:
@@ -637,14 +637,14 @@ paths:
               $ref: "#/components/schemas/CustomerIdRequestDTO"
         required: true
       responses:
-        "404":
-          description: Lieferant nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Lieferant nicht gefunden.
           content:
             application/json:
               schema:
@@ -682,14 +682,14 @@ paths:
       description: Gibt alle Personen zurück.
       operationId: getAllPersons
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -726,14 +726,14 @@ paths:
               $ref: "#/components/schemas/PersonRequestDTO"
         required: true
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -771,14 +771,14 @@ paths:
         \ sind."
       operationId: getAddresses
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -816,14 +816,14 @@ paths:
               $ref: "#/components/schemas/AddressRequestDTO"
         required: true
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Ungültige Eingabe(n).
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Ungültige Eingabe(n).
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -1044,14 +1044,14 @@ paths:
           schema:
             type: string
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -1089,14 +1089,14 @@ paths:
               $ref: "#/components/schemas/OrderRequestDTO"
         required: true
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -1142,14 +1142,14 @@ paths:
             type: integer
             format: int64
       responses:
-        "404":
-          description: Bestellung nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Bestellung nicht gefunden.
           content:
             application/json:
               schema:
@@ -1198,14 +1198,14 @@ paths:
                 $ref: "#/components/schemas/QuotationRequestDTO"
         required: true
       responses:
-        "404":
-          description: Bestellung nicht gefunden.
+        "400":
+          description: Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!
+        "404":
+          description: Bestellung nicht gefunden.
           content:
             application/json:
               schema:
@@ -1249,14 +1249,14 @@ paths:
             type: integer
             format: int64
       responses:
-        "404":
-          description: Bestellung nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Bestellung nicht gefunden.
           content:
             application/json:
               schema:
@@ -1305,14 +1305,14 @@ paths:
                 $ref: "#/components/schemas/ItemRequestDTO"
         required: true
       responses:
-        "404":
-          description: Bestellung nicht gefunden.
+        "400":
+          description: Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!
+        "404":
+          description: Bestellung nicht gefunden.
           content:
             application/json:
               schema:
@@ -1354,14 +1354,14 @@ paths:
             type: integer
             format: int64
       responses:
-        "404":
-          description: Bestellung nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Bestellung nicht gefunden.
           content:
             application/json:
               schema:
@@ -1414,14 +1414,14 @@ paths:
               $ref: "#/components/schemas/InvoiceRequestDTO"
         required: true
       responses:
-        "404":
-          description: Bestellung oder Kostenstelle nicht gefunden.
+        "400":
+          description: Ungültige Anfrage (z. B. falscher Bestellstatus).
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Ungültige Anfrage (z. B. falscher Bestellstatus).
+        "404":
+          description: Bestellung oder Kostenstelle nicht gefunden.
           content:
             application/json:
               schema:
@@ -1464,14 +1464,14 @@ paths:
           schema:
             type: string
       responses:
-        "404":
-          description: Rechnung nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Rechnung nicht gefunden.
           content:
             application/json:
               schema:
@@ -1529,16 +1529,16 @@ paths:
                   description: Die hochzuladende PDF-Datei.
                   format: binary
       responses:
-        "404":
-          description: Rechnung nicht gefunden.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
         "400":
           description:
             Diese Rechnung besitzt bereits ein verknüpftes Dokument mit
             der id `paperless_id`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Rechnung nicht gefunden.
           content:
             application/json:
               schema:
@@ -1582,14 +1582,14 @@ paths:
             type: integer
             format: int64
       responses:
-        "404":
-          description: Bestellung nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Bestellung nicht gefunden.
           content:
             application/json:
               schema:
@@ -1625,14 +1625,14 @@ paths:
       description: Gibt alle Kostenstellen zurück.
       operationId: getAllCostCenters
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -1669,14 +1669,14 @@ paths:
               $ref: "#/components/schemas/CostCenterRequestDTO"
         required: true
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -1714,14 +1714,14 @@ paths:
             type: integer
             format: int64
       responses:
-        "404":
-          description: Bestellung nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Bestellung nicht gefunden.
           content:
             application/json:
               schema:
@@ -1760,14 +1760,14 @@ paths:
             type: integer
             format: int64
       responses:
-        "404":
-          description: Bestellung mit der angegebenen ID nicht gefunden.
+        "400":
+          description: Bestellstatus befindet sich nicht in gültigem Bestellstatus!
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bestellstatus befindet sich nicht in gültigem Bestellstatus!
+        "404":
+          description: Bestellung mit der angegebenen ID nicht gefunden.
           content:
             application/json:
               schema:
@@ -1811,14 +1811,14 @@ paths:
               $ref: "#/components/schemas/OrderRequestDTO"
         required: true
       responses:
-        "404":
-          description: Bestellung nicht gefunden.
+        "400":
+          description: Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!
+        "404":
+          description: Bestellung nicht gefunden.
           content:
             application/json:
               schema:
@@ -1871,14 +1871,14 @@ paths:
             type: integer
             format: int32
       responses:
-        "404":
-          description: Bestellung nicht gefunden. Vergleichsartikel nicht gefunden.
+        "400":
+          description: Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!
+        "404":
+          description: Bestellung nicht gefunden. Vergleichsartikel nicht gefunden.
           content:
             application/json:
               schema:
@@ -1928,14 +1928,14 @@ paths:
               $ref: "#/components/schemas/QuotationRequestDTO"
         required: true
       responses:
-        "404":
-          description: Bestellung nicht gefunden. Angebot nicht gefunden.
+        "400":
+          description: Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!
+        "404":
+          description: Bestellung nicht gefunden. Angebot nicht gefunden.
           content:
             application/json:
               schema:
@@ -1988,14 +1988,14 @@ paths:
             type: integer
             format: int32
       responses:
-        "404":
-          description: Bestellung nicht gefunden. Artikel nicht gefunden.
+        "400":
+          description: Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!
+        "404":
+          description: Bestellung nicht gefunden. Artikel nicht gefunden.
           content:
             application/json:
               schema:
@@ -2043,14 +2043,14 @@ paths:
               $ref: "#/components/schemas/ItemRequestDTO"
         required: true
       responses:
-        "404":
-          description: Bestellung nicht gefunden. Artikel nicht gefunden.
+        "400":
+          description: Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bestellstatus befindet sich nicht in Bearbeitung (`IN_PROGRESS`)!
+        "404":
+          description: Bestellung nicht gefunden. Artikel nicht gefunden.
           content:
             application/json:
               schema:
@@ -2088,14 +2088,14 @@ paths:
             type: integer
             format: int64
       responses:
-        "404":
-          description: Bestellung nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Bestellung nicht gefunden.
           content:
             application/json:
               schema:
@@ -2146,14 +2146,14 @@ paths:
               $ref: "#/components/schemas/ApprovalRequestDTO"
         required: true
       responses:
-        "404":
-          description: Bestellung nicht gefunden.
+        "400":
+          description: Bestellstatus befindet sich nicht auf fertiggestellt (`COMPLETED`)!
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bestellstatus befindet sich nicht auf fertiggestellt (`COMPLETED`)!
+        "404":
+          description: Bestellung nicht gefunden.
           content:
             application/json:
               schema:
@@ -2201,14 +2201,14 @@ paths:
               $ref: "#/components/schemas/UpdateCostCenterDTO"
         required: true
       responses:
-        "404":
-          description: Kostenstelle nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Kostenstelle nicht gefunden.
           content:
             application/json:
               schema:
@@ -2244,14 +2244,14 @@ paths:
       description: Der `value` einer VAT ist zugleich dessen ID.
       operationId: getAllVats
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -2283,14 +2283,14 @@ paths:
       description: Gibt alle Benutzer zurück.
       operationId: getAllUsers
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -2330,14 +2330,14 @@ paths:
             type: integer
             format: int64
       responses:
-        "404":
-          description: Benutzer nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Benutzer nicht gefunden.
           content:
             application/json:
               schema:
@@ -2367,14 +2367,14 @@ paths:
       description: Gibt den aktuell authentifizierten Benutzer zurück.
       operationId: getCurrentUser
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -2418,14 +2418,14 @@ paths:
             type: integer
             format: int32
       responses:
-        "404":
-          description: Lieferant nicht gefunden. Dieser Lieferant besitzt keine Adresse.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Lieferant nicht gefunden. Dieser Lieferant besitzt keine Adresse.
           content:
             application/json:
               schema:
@@ -2455,14 +2455,14 @@ paths:
       description: Gibt eine Liste aller Lieferantenadressen zurück.
       operationId: getAddresses_1
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -2503,14 +2503,14 @@ paths:
             type: integer
             format: int64
       responses:
-        "404":
-          description: Person nicht gefunden. Diese Person besitzt keine Adresse.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Person nicht gefunden. Diese Person besitzt keine Adresse.
           content:
             application/json:
               schema:
@@ -2552,14 +2552,14 @@ paths:
             type: integer
             format: int64
       responses:
-        "404":
-          description: Bestellung nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Bestellung nicht gefunden.
           content:
             application/json:
               schema:
@@ -2601,14 +2601,14 @@ paths:
             type: integer
             format: int64
       responses:
-        "404":
-          description: Bestellung nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Bestellung nicht gefunden.
           content:
             application/json:
               schema:
@@ -2647,14 +2647,14 @@ paths:
         \ OrderStatus-Werte zuordnet."
       operationId: getOrderStates
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -2698,14 +2698,14 @@ paths:
           schema:
             type: string
       responses:
-        "404":
-          description: Rechnung nicht gefunden.
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Rechnung nicht gefunden.
           content:
             application/json:
               schema:
@@ -2742,14 +2742,14 @@ paths:
       description: Gibt alle verfügbaren Währungen zurück.
       operationId: getAllCurrencies
       responses:
-        "404":
-          description: Not Found
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Not Found
           content:
             application/json:
               schema:
@@ -2788,14 +2788,14 @@ paths:
           schema:
             type: string
       responses:
-        "404":
-          description: Währung nicht gefunden
+        "400":
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "400":
-          description: Bad Request
+        "404":
+          description: Währung nicht gefunden
           content:
             application/json:
               schema:
@@ -2860,6 +2860,14 @@ components:
           type: object
           additionalProperties:
             type: object
+            example:
+              theme: dark
+              notifications: true
+              limit: 5
+          example:
+            theme: dark
+            notifications: true
+            limit: 5
     UserPreferencesResponseDTO:
       required:
         - id
@@ -3606,10 +3614,6 @@ components:
         number:
           type: integer
           format: int32
-        first:
-          type: boolean
-        last:
-          type: boolean
         number_of_elements:
           type: integer
           format: int32
@@ -3617,6 +3621,10 @@ components:
           $ref: "#/components/schemas/SortObject"
         pageable:
           $ref: "#/components/schemas/PageableObject"
+        first:
+          type: boolean
+        last:
+          type: boolean
         empty:
           type: boolean
     PageableObject:

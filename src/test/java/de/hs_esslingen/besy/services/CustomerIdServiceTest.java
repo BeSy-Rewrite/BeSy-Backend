@@ -1,5 +1,25 @@
 package de.hs_esslingen.besy.services;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
+
 import de.hs_esslingen.besy.dtos.request.CustomerIdRequestDTO;
 import de.hs_esslingen.besy.dtos.response.CustomerIdResponseDTO;
 import de.hs_esslingen.besy.exceptions.EntityAlreadyExistsException;
@@ -10,26 +30,6 @@ import de.hs_esslingen.besy.models.CustomerIdId;
 import de.hs_esslingen.besy.models.Supplier;
 import de.hs_esslingen.besy.repositories.CustomerIdRepository;
 import de.hs_esslingen.besy.repositories.SupplierRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CustomerIdServiceTest {
@@ -60,7 +60,7 @@ class CustomerIdServiceTest {
         customerId = new CustomerId();
         customerId.setCustomerId("CUST-1");
         customerId.setComment("Comment");
-        responseDto = new CustomerIdResponseDTO("CUST-1", "Comment");
+        responseDto = new CustomerIdResponseDTO(1, "CUST-1", "Comment");
         supplier = new Supplier();
     }
 
@@ -122,7 +122,8 @@ class CustomerIdServiceTest {
 
         when(customerIdRepository.existsById(expectedId)).thenReturn(true);
 
-        assertThrows(EntityAlreadyExistsException.class, () -> customerIdService.createCustomerId(supplierId, requestDto));
+        assertThrows(EntityAlreadyExistsException.class,
+                () -> customerIdService.createCustomerId(supplierId, requestDto));
 
         verify(customerIdRepository).existsById(expectedId);
         verifyNoInteractions(customerIdRequestMapper);

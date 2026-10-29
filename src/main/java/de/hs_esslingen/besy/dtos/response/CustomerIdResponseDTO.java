@@ -12,6 +12,8 @@ import lombok.Value;
 @Value
 public class CustomerIdResponseDTO implements Serializable {
     @NotNull
+    int supplierId;
+    @NotNull
     @Schema(description = "Kundenkennung (extern oder intern)")
     String customerId;
     @Schema(description = "Optionaler Kommentar zur Kundenkennung")
