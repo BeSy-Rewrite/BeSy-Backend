@@ -1,8 +1,8 @@
 package de.hs_esslingen.besy.dtos.request;
 
 import java.io.Serializable;
-import java.util.Map;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Value;
 
@@ -14,5 +14,6 @@ public class UserPreferencesRequestDTO implements Serializable {
     @NotNull
     String preferenceType;
     @NotNull
-    Map<String, Object> preferences;
+    @Schema(type = "object", additionalProperties = Schema.AdditionalPropertiesValue.TRUE)
+    Object preferences;
 }

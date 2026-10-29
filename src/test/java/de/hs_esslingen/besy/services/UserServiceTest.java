@@ -25,6 +25,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+
 import de.hs_esslingen.besy.dtos.request.UserPreferencesRequestDTO;
 import de.hs_esslingen.besy.dtos.response.UserPreferencesResponseDTO;
 import de.hs_esslingen.besy.dtos.response.UserResponseDTO;
@@ -82,8 +84,10 @@ class UserServiceTest {
         preferences.setPreferences(Map.of("pageSize", 20));
         preferences.setUser(user);
 
-        preferencesRequestDTO = new UserPreferencesRequestDTO("table", Map.of("pageSize", 20));
-        preferencesResponseDTO = new UserPreferencesResponseDTO(10, "table", Map.of("pageSize", 20));
+        preferencesRequestDTO = new UserPreferencesRequestDTO("table",
+                JsonNodeFactory.instance.objectNode().put("pageSize", 20));
+        preferencesResponseDTO = new UserPreferencesResponseDTO(10, "table",
+                Map.of("pageSize", 20));
 
         jwt = Jwt.withTokenValue("token")
                 .header("alg", "none")
